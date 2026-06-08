@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment Form</title>
+  <link rel="stylesheet" href="styles.css" /> 
+  <!-- <style>
+    /* Add or modify these styles in your styles.css for a better look */
+    body {
+      font-family: 'Poppins', sans-serif; /* Using Poppins for consistency */
+      background: var(--dg-page-bg-cover, linear-gradient(135deg, #fff8e1 0%, #fafafa 45%, rgba(242, 103, 39, 0.1) 100%));
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      overflow: hidden; /* Prevent body scroll when popup is active */
+    }
+    .form-container {
+      background-color: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      width: 550px; /* Increased width */
+      max-width: 95%; /* Increased max-width for better responsiveness */
+      box-sizing: border-box;
+      transition: opacity 0.5s ease-out, transform 0.5s ease-out; /* For hiding effect */
+    }
+    .form-container.hidden {
+        opacity: 0;
+        transform: translateY(20px);
+        pointer-events: none;
+        position: absolute; /* Take it out of flow but keep in DOM for transition */
+    }
+
+    .form-container h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 2em;
+    }
+    .form-container label {
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+      font-weight: 600;
+    }
+    .form-container input[type="text"],
+    .form-container input[type="tel"],
+    .form-container input[type="file"],
+    .form-container textarea {
+      width: calc(100% - 20px);
+      padding: 12px 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1em;
+      font-family: 'Poppins', sans-serif;
+    }
+    .form-container input[type="file"] {
+        padding: 10px;
+    }
+    .form-container textarea {
+        resize: vertical;
+    }
+    .form-container button[type="submit"] {
+      width: 100%;
+      padding: 15px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.2em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .form-container button[type="submit"]:hover {
+      background-color: #218838;
+    }
+
+    .doctor-details {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        gap: 20px;
+    }
+    .doctor-details div {
+        flex: 1;
+    }
+    .doctor-details label {
+        margin-bottom: 5px;
+        font-size: 0.9em;
+        color: #777;
+    }
+    .doctor-details p {
+        background-color: #e9ecef;
+        padding: 12px 10px;
+        border-radius: 8px;
+        margin: 0;
+        font-weight: bold;
+        color: #333;
+        font-size: 1em;
+    }
+
+    .pay-banner {
+      text-align: center;
+      margin: 30px 0;
+      padding: 20px;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      background-color: #f8f9fa;
+    }
+    .pay-banner h3 {
+      color: #007bff;
+      margin-bottom: 15px;
+    }
+    #qrCode {
+      margin: 15px auto;
+      width: 180px; /* Increased QR code size for better scan */
+      height: 180px;
+    }
+    #qrCode canvas {
+        width: 100%;
+        height: 100%;
+        display: block; /* Remove extra space below canvas */
+    }
+    .qr-section p {
+        font-size: 1.1em;
+        font-weight: 600;
+        color: #444;
+    }
+    #filePreview {
+        margin-top: 10px;
+        margin-bottom: 20px;
+        color: #666;
+        font-style: italic;
+    }
+    .response-message {
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-align: center;
+      display: none; /* Hidden by default */
+    }
+    .response-message.success {
+      background-color: #d4edda;
+      color: #155724;
+      border-color: #c3e6cb;
+    }
+    .response-message.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border-color: #f5c6cb;
+    }
+    .response-message.info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border-color: #bee5eb;
+    }
+
+    /* --- Popup Styles --- */
+    .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .popup-overlay.visible {
+        visibility: visible;
+        opacity: 1;
+    }
+    .popup-content {
+        background-color: white;
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        width: 450px;
+        max-width: 90%;
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+    }
+    .popup-overlay.visible .popup-content {
+        transform: scale(1);
+    }
+    .popup-content h3 {
+        color: #007bff;
+        font-size: 1.8em;
+        margin-bottom: 20px;
+    }
+    .popup-content p {
+        color: #555;
+        font-size: 1.1em;
+        line-height: 1.6;
+        margin-bottom: 25px;
+    }
+    .popup-content .note-red {
+        color: red;
+        font-weight: bold;
+        display: block;
+        margin-top: 10px;
+    }
+    .popup-content button {
+        background-color: #007bff;
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1em;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .popup-content button:hover {
+        background-color: #0056b3;
+    }
+
+    /* Updated file input styles */
+    .form-inputfile {
+        margin-bottom: 20px;
+    }
+
+    .form-inputfile label[for="patientReports"] {
+        display: inline-block;
+        padding: 12px 20px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-align: center;
+        width: auto;
+        margin-bottom: 10px;
+    }
+
+    .form-inputfile label[for="patientReports"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .form-inputfile input[type="file"] {
+        display: none;
+    }
+
+    /* File list styles */
+    #patientFileList {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0;
+    }
+
+    #patientFileList li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 6px;
+        margin-bottom: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    #patientFileList .file-name {
+        color: #333;
+        font-size: 0.9em;
+        margin-right: 10px;
+    }
+
+    #patientFileList button {
+        background: none;
+        border: none;
+        color: #dc3545;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+    }
+
+    #patientFileList button:hover {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+  .terms-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+/* Checkbox */
+.terms-box input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #F26727; /* 🔥 modern checkbox color */
+}
+
+/* Text */
+.terms-box label {
+    font-size: 14px;
+    color: #3C3C3C;
+}
+
+/* Links */
+.terms-box a {
+    color: #F26727;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.terms-box a:hover {
+    text-decoration: underline;
+}
+  </style> -->
+  <style>
+/* ================= RESET ================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ================= BODY ================= */
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #fff5ef, #ffe8dc);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ================= FORM CONTAINER ================= */
+.form-container {
+  width: 550px;
+  max-width: 95%;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+  animation: fadeIn 0.5s ease;
+  max-height: calc(100dvh - 120px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.form-container.hidden {
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  position: absolute;
+}
+
+/* ================= TITLE ================= */
+.form-container h2 {
+  text-align: center;
+  color: #F26727;
+  margin-bottom: 25px;
+  font-size: 1.8rem;
+}
+
+/* ================= LABEL ================= */
+.form-container label {
+  display: block;
+  margin-bottom: 6px;
+  color: #3C3C3C;
+  font-weight: 600;
+}
+
+/* ================= INPUT ================= */
+.form-container input,
+.form-container textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+  margin-bottom: 18px;
+  transition: all 0.3s ease;
+}
+
+/* Hover */
+.form-container input:hover,
+.form-container textarea:hover {
+  border-color: #F26727;
+}
+
+/* Focus */
+.form-container input:focus,
+.form-container textarea:focus {
+  border-color: #F26727;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(242,103,39,0.12);
+  outline: none;
+}
+
+/* ================= BUTTON ================= */
+.form-container button[type="submit"] {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #F26727, #ff8a50);
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Hover */
+.form-container button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(242,103,39,0.25);
+}
+
+/* Click */
+.form-container button:active {
+  transform: scale(0.97);
+}
+
+/* ================= DOCTOR DETAILS ================= */
+.doctor-details {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.doctor-details div {
+  flex: 1;
+}
+
+.doctor-details label {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+.doctor-details p {
+  background: #fafafa;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #3C3C3C;
+}
+
+/* ================= PAY BANNER ================= */
+.pay-banner {
+  text-align: center;
+  margin: 25px 0;
+  padding: 20px;
+  background: #fff3ec;
+  border-radius: 10px;
+}
+
+.pay-banner h3 {
+  color: #F26727;
+  margin-bottom: 10px;
+}
+
+#qrCode {
+  margin: 15px auto;
+  width: 180px;
+  height: 180px;
+}
+
+/* ================= FILE UPLOAD ================= */
+.form-inputfile {
+  margin-bottom: 20px;
+}
+
+.form-inputfile label {
+  display: inline-block;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #F26727, #ff8a50);
+  color: #ffffff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.form-inputfile label:hover {
+  transform: translateY(-2px);
+}
+
+.form-inputfile input {
+  display: none;
+}
+
+/* ================= FILE LIST ================= */
+#patientFileList {
+  list-style: none;
+  margin-top: 10px;
+}
+
+#patientFileList li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  background: #fafafa;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+#patientFileList button {
+  background: none;
+  border: none;
+  color: red;
+  cursor: pointer;
+}
+
+/* ================= RESPONSE ================= */
+.response-message {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  display: none;
+}
+
+.response-message.success {
+  background: #fff3ec;
+  color: #F26727;
+}
+
+.response-message.error {
+  background: #fdecea;
+  color: red;
+}
+
+/* ================= POPUP ================= */
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup-overlay.visible {
+  display: flex;
+}
+
+.popup-content {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  animation: popupIn 0.3s ease;
+}
+
+.popup-content h3 {
+  color: #F26727;
+  margin-bottom: 10px;
+}
+
+.popup-content button {
+  background: #F26727;
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.popup-content button:hover {
+  background: #ff8a50;
+}
+
+/* ================= TERMS ================= */
+.terms-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.terms-box input {
+  width: 18px;
+  height: 18px;
+  accent-color: #F26727;
+}
+
+.terms-box label {
+  color: #3C3C3C;
+  font-size: 14px;
+}
+
+.terms-box a {
+  color: #F26727;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.terms-box a:hover {
+  text-decoration: underline;
+}
+
+/* ================= ANIMATIONS ================= */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popupIn {
+  from { transform: scale(0.9); }
+  to { transform: scale(1); }
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .form-container {
+    padding: 20px;
+  }
+
+  .doctor-details {
+    flex-direction: column;
+  }
+}
+</style>
+  <link rel="stylesheet" href="css/dheergayush-theme.css">
+  <link rel="stylesheet" href="css/dheergayush-forms.css">
+  <link rel="stylesheet" href="css/dg-platform.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="dg-page" style="display:block;padding:0;">
+  <nav class="dg-navbar" style="position:relative;">
+    <div class="dg-nav-inner">
+      <a href="/" class="logo"><img src="/logos/logo-horizontal.png" alt="DHEERGAYUSH" style="height:56px;"></a>
+      <ul class="dg-nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="landingpage.html">Consultation</a></li>
+        <li><a href="stores.html">Store</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="form-container dg-form-panel" id="paymentFormContainer" style="margin:24px auto;">
+    <form id="paymentForm" enctype="multipart/form-data">
+      <h2 style="font-family:'Playfair Display',serif;color:#3C3C3C;">Consultation payment</h2>
+      <p style="color:#666;font-size:0.9rem;margin:-12px 0 20px;">Complete booking to join your video consultation</p>
+      <div class="doctor-details">
+        <div>
+          <label>Selected Doctor:</label>
+          <p id="displayDoctorName"></p>
+          <input type="hidden" id="selectedDoctorName" name="selectedDoctorName">
+        </div>
+        <div>
+          <label>Consultation Fee:</label>
+          <p id="displayDoctorFee"></p>
+          <input type="hidden" id="selectedDoctorFee" name="selectedDoctorFee">
+        </div>
+      </div>
+
+      <label for="name"><i class="fas fa-user dg-label-icon" aria-hidden="true"></i>Full Name</label>
+      <input type="text" id="name" name="name" required />
+
+      <label for="phone"><i class="fas fa-phone dg-label-icon" aria-hidden="true"></i>Phone Number (Registered)</label>
+      <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" placeholder="Enter 10-digit mobile number" required />
+
+      <label for="address"><i class="fas fa-house dg-label-icon" aria-hidden="true"></i>Address</label>
+      <textarea id="address" name="address" rows="3" required></textarea>
+      <div class="terms-box">
+                        <input type="checkbox" id="agree"> <label for="agree">
+                            I agree to the 
+                            <a href="#" data-legal="privacy">Privacy Policy</a>
+                        </label>
+                       
+                         <input type="checkbox" id="agree">
+                        <label for="agree">
+                            I agree to the 
+                            <a href="#" data-legal="terms">Terms and Conditions</a>
+                        </label>
+                    </div>
+      <div class="form-inputfile form-group">
+        <label for="patientReports"><i class="fas fa-file-medical dg-label-icon" aria-hidden="true"></i>Upload Medical Reports (Optional)</label>
+        <input type="file" id="patientReports" name="reports" multiple accept=".pdf,.jpg,.jpeg,.png">
+        <ul id="patientFileList"></ul>
+        <p class="dg-note-box" style="color: #666; font-size: 0.9em; margin-top: 5px;">
+          <i class="fas fa-lightbulb dg-label-icon" aria-hidden="true"></i>
+          <span><strong>Note:</strong> Uploading medical reports helps doctors provide better consultation.
+          You can proceed without reports, but it's recommended for better diagnosis.</span>
+        </p>
+      </div>
+
+      <div class="pay-banner" style="border-color:#F26727;background:#fff8f3;">
+        <h3 style="color:#F26727;">Pay securely with Razorpay</h3>
+        <p style="margin:0 0 12px;color:#444;">UPI, cards, netbanking &amp; wallets — instant confirmation.</p>
+        <p id="razorpayFee" style="font-size:1.2em;font-weight:700;color:#000;"></p>
+        <p id="razorpayLoginHint" style="display:none;color:#c62828;font-size:0.9rem;">Please <a href="patient.html">log in</a> before paying.</p>
+      </div>
+
+      <button type="submit" id="payBtn"><i class="fas fa-lock dg-inline-icon" aria-hidden="true"></i>Pay now with Razorpay</button>
+      <div id="responseMessage" class="response-message"></div>
+    </form>
+  </div>
+
+  <div class="popup-overlay" id="appointmentPopup">
+      <div class="popup-content">
+          <h3>Appointment Confirmed!</h3>
+          <p>Your appointment details will be processed shortly.</p>
+          <p>You can check your appointments by logging in with your patient ID and password.
+             <span class="note-red">(Note: Not registration)</span>
+          </p>
+          <button id="popupOkBtn">OK</button>
+      </div>
+  </div>
+  <div class="popup-overlay" id="waitingPopup">
+  <div class="popup-content">
+    <h3>Please Wait...</h3>
+    <p>The doctor is currently in another consultation.</p>
+    <p>We are retrying to connect every 30 seconds.<br>You will be redirected once the doctor is free.</p>
+    <p id="countdown">⏳ 5:00 minutes remaining</p>
+  </div>
+</div>
+
+
+  <div class="popup-overlay" id="consultationWaitingRoom" style="display:none;">
+    <div class="popup-content dg-consultation-wait">
+      <div class="dg-wait-pulse"></div>
+      <h3>Waiting for Doctor</h3>
+      <p id="consultWaitStatus">Payment successful. Notifying your doctor…</p>
+      <p class="dg-wait-sub" id="consultWaitTimer">⏳ 5:00 remaining</p>
+      <button type="button" id="cancelConsultWaitBtn" class="dg-btn dg-btn-ghost">Cancel Request</button>
+    </div>
+  </div>
+
+  <script src="js/dg-api.js"></script>
+  <script src="js/dg-auth.js"></script>
+  <script src="js/dg-razorpay-checkout.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  <script src="js/dg-realtime.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="payment.js"></script>
+
+  <script>
+    document.getElementById('paymentForm').addEventListener('submit', function(e) {
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const address = document.getElementById('address').value.trim();
+
+      const nameRegex = /^[A-Za-z ]+$/;
+      const phoneRegex = /^\d{10}$/;
+      const addressRegex = /^[A-Za-z0-9 ,\.\-#]{10,}$/; // At least 10 chars, allow letters, numbers, comma, period, dash, #
+
+      if (!nameRegex.test(name)) {
+        alert('Full Name should contain only letters and spaces.');
+        e.preventDefault();
+        return false;
+      }
+      if (!phoneRegex.test(phone)) {
+        alert('Phone number must be exactly 10 digits.');
+        e.preventDefault();
+        return false;
+      }
+      if (!addressRegex.test(address)) {
+        alert('Address should be at least 10 characters and can contain letters, numbers, commas, periods, dashes, and #.');
+        e.preventDefault();
+        return false;
+      }
+      // No validation for medical reports since it's optional
+    });
+  </script>
+      <script src="js/dg-site-contact.js"></script>
+      <script src="js/dg-responsive-nav.js"></script>
+    <script src="js/dg-legal-modals.js"></script>
+</body>
+</html>

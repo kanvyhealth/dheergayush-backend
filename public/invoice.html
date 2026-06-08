@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Receipt - Dheergayush</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            background-color: #f4f5f6; /* Light background for the page */
+        }
+        .receipt-container {
+            width: 150mm; /* Standard receipt width, ideal for printing */
+            min-height: 120mm; /* Minimum height */
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background-color: #fff;
+            box-sizing: border-box;
+        }
+        h1, h2, h3 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        h1 { font-size: 1.8em; margin-bottom: 5px; }
+        h2 { font-size: 1.5em; color: #555; }
+        h3 { font-size: 1.2em; color: #333; margin-top: 20px; }
+        hr { border: none; border-top: 1px dashed #ddd; margin: 15px 0; }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .detail-row span:first-child {
+            font-weight: 600;
+            color: #444;
+            flex-basis: 40%; /* Adjust as needed */
+        }
+        .detail-row span:last-child {
+            text-align: right;
+            flex-basis: 60%; /* Adjust as needed */
+        }
+        .total-section {
+            text-align: center;
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #e6ffed; /* Light green background for total */
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+        }
+        .total-section h2 {
+            color: #28a745;
+            font-size: 2em;
+            margin: 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .print-button {
+            display: block;
+            margin: 30px auto;
+            padding: 12px 25px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease;
+        }
+        .print-button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Styles for printing */
+        @media print {
+            body { background-color: #fff; } /* White background for print */
+            .receipt-container {
+                box-shadow: none;
+                border: none;
+                margin: 0 auto;
+            }
+            .print-button {
+                display: none; /* Hide the print button when printing */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-container">
+        <h1>Dheergayush</h1>
+        <h2>Payment Receipt</h2>
+        <hr>
+        <div style="margin-right: 50px;margin-left: 40px;">
+        <div class="detail-row"><span>Transaction ID:</span> <span id="receiptTransactionId"></span></div>
+        <div class="detail-row"><span>Date:</span> <span id="receiptDate"></span></div>
+        <hr>
+        <h3>Doctor Details</h3>
+        <div class="detail-row"><span>Doctor Name:</span> <span id="receiptDoctorName"></span></div>
+        <div class="detail-row"><span>Consultation Fee:</span> <span id="receiptDoctorFee"></span></div>
+        <hr>
+        <h3>Patient Details</h3>
+        <div class="detail-row"><span>Patient Name:</span> <span id="receiptPatientName"></span></div>
+        <div class="detail-row"><span>Phone:</span> <span id="receiptPatientPhone"></span></div>
+        <div class="detail-row"><span>Address:</span> <span id="receiptPatientAddress"></span></div>
+        </div><hr>
+        <div class="total-section">
+            <h2>Total Paid: <span id="receiptTotalPaid"></span></h2>
+        </div>
+        <div class="footer">
+            <p>Thank you for your payment!</p>
+            <p>Your appointment will be processed shortly.</p>
+            <p style="margin-top:10px;font-size:0.9rem;">Support: <a href="tel:+917842736777">+91 7842736777</a> · <a href="mailto:contact@dheergayush.net">contact@dheergayush.net</a></p>
+        </div>
+    </div>
+    <button class="print-button" onclick="window.print()">Print Receipt</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            document.getElementById('receiptTransactionId').textContent = params.get('transactionId') || 'N/A';
+            document.getElementById('receiptDate').textContent = new Date().toLocaleDateString('en-GB'); // Format date
+            document.getElementById('receiptDoctorName').textContent = params.get('doctorName') || 'N/A';
+            document.getElementById('receiptDoctorFee').textContent = params.get('doctorFee') || 'N/A';
+            document.getElementById('receiptPatientName').textContent = params.get('patientName') || 'N/A';
+            document.getElementById('receiptPatientPhone').textContent = params.get('patientPhone') || 'N/A';
+            document.getElementById('receiptPatientAddress').textContent = params.get('patientAddress') || 'N/A';
+            document.getElementById('receiptTotalPaid').textContent = params.get('totalPaid') || 'N/A';
+
+            // Automatically trigger print dialog when the page loads
+            // window.print(); // Uncomment this line if you want to auto-open print dialog
+        });
+    </script>
+    <script src="js/dg-responsive-nav.js"></script>
+</body>
+</html>

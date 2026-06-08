@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0;url=/video-call.html">
+  <title>Redirecting to video call…</title>
+  <script>
+    (function () {
+      var p = new URLSearchParams(window.location.search);
+      var roomID = p.get('roomID') || localStorage.getItem('videoRoomId') || localStorage.getItem('zegoRoomId') || '';
+      if (roomID && !localStorage.getItem('videoRoomId')) {
+        localStorage.setItem('videoRoomId', roomID);
+      }
+      var url = '/video-call.html';
+      if (window.location.search) url += window.location.search;
+      window.location.replace(url);
+    })();
+  </script>
+</head>
+<body>
+  <p>Redirecting to secure video call… <a href="/video-call.html">Continue</a></p>
+</body>
+</html>

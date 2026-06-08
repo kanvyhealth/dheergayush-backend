@@ -1,0 +1,344 @@
+/* DHEERGAYUSH — brand assets from Dheergayush-Logo-Guide.pdf */
+:root {
+  --dg-page-bg: linear-gradient(135deg, #fff8e1 0%, #fafafa 45%, rgba(242, 103, 39, 0.1) 100%);
+  --dg-page-bg-cover: var(--dg-page-bg);
+  --dg-logo-horizontal: url('/logos/logo-horizontal.png');
+  --dg-logo-icon: url('/logos/logo-icon.png');
+}
+
+.dg-page-bg,
+body.dg-has-bg {
+  background: var(--dg-page-bg-cover) !important;
+  background-attachment: fixed !important;
+  background-size: cover !important;
+}
+
+
+#siteLogoImg {
+  max-height: 64px;
+  width: auto;
+}
+
+.dg-server-connecting {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 248, 225, 0.96);
+  backdrop-filter: blur(6px);
+  padding: 1.5rem;
+}
+
+.dg-server-connecting.hidden {
+  display: none;
+}
+
+.dg-server-connecting-card {
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  box-shadow: 0 12px 40px rgba(60, 60, 60, 0.12);
+  border: 1px solid rgba(60, 60, 60, 0.08);
+}
+
+.dg-server-connecting-card h2 {
+  margin: 0 0 0.5rem;
+  color: #3C3C3C;
+  font-size: 1.15rem;
+}
+
+.dg-server-connecting-card p {
+  margin: 0 0 1rem;
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.dg-server-connecting-spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 1rem;
+  border: 3px solid rgba(242, 103, 39, 0.2);
+  border-top-color: #F26727;
+  border-radius: 50%;
+  animation: dg-spin 0.9s linear infinite;
+}
+
+@keyframes dg-spin {
+  to { transform: rotate(360deg); }
+}
+
+.dg-server-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.25rem;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #F26727, #ff8a50);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.dg-server-retry-btn:hover {
+  opacity: 0.92;
+}
+
+.dg-call-status-bar {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10001;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(45, 106, 79, 0.92);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  max-width: 92vw;
+  text-align: center;
+}
+
+.dg-call-status-bar.show {
+  display: flex;
+}
+
+.dg-call-status-bar.reconnecting {
+  background: rgba(255, 193, 7, 0.95);
+  color: #3C3C3C;
+}
+
+.dg-call-status-bar.ended {
+  background: rgba(220, 53, 69, 0.92);
+}
+
+.dg-call-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #90EE90;
+  flex-shrink: 0;
+}
+
+.dg-call-status-bar.reconnecting .dg-call-status-dot {
+  background: #ffc107;
+  animation: dg-pulse 1s ease infinite;
+}
+
+@keyframes dg-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.dg-listening-banner {
+  display: none;
+  margin: 1rem auto 0;
+  max-width: 560px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(45, 106, 79, 0.12);
+  border: 1px solid rgba(45, 106, 79, 0.25);
+  color: #2d6a4f;
+  text-align: center;
+  font-weight: 600;
+}
+
+.dg-listening-banner.show {
+  display: block;
+}
+
+.dg-toast-message {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10002;
+  max-width: min(92vw, 480px);
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: rgba(45, 106, 79, 0.95);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+.dg-toast-success { background: rgba(45, 106, 79, 0.95); color: #fff; }
+.dg-toast-error { background: rgba(220, 53, 69, 0.95); color: #fff; }
+.dg-toast-warning { background: rgba(255, 193, 7, 0.95); color: #333; }
+.dg-toast-info { background: rgba(52, 152, 219, 0.95); color: #fff; }
+
+/* Slim scrolling contact strip — tap to call */
+:root {
+  --dg-contact-strip-height: 38px;
+}
+
+body.dg-has-contact-strip {
+  padding-bottom: var(--dg-contact-strip-height);
+}
+
+.dg-contact-strip {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1040;
+  height: var(--dg-contact-strip-height);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-decoration: none;
+  color: #3c3c3c;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 248, 225, 0.97) 0%,
+    rgba(255, 255, 255, 0.98) 35%,
+    rgba(242, 103, 39, 0.12) 50%,
+    rgba(255, 255, 255, 0.98) 65%,
+    rgba(255, 248, 225, 0.97) 100%
+  );
+  border-top: 1px solid rgba(242, 103, 39, 0.22);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 -4px 20px rgba(60, 60, 60, 0.06);
+  -webkit-tap-highlight-color: transparent;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.dg-contact-strip:hover,
+.dg-contact-strip:focus-visible {
+  border-top-color: rgba(242, 103, 39, 0.45);
+  box-shadow: 0 -6px 24px rgba(242, 103, 39, 0.18);
+  outline: none;
+}
+
+.dg-contact-strip__viewport {
+  width: 100%;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.dg-contact-strip__track {
+  display: flex;
+  width: max-content;
+  animation: dg-contact-scroll 22s linear infinite;
+}
+
+.dg-contact-strip__chunk {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 28px;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.dg-contact-strip__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f26727, #ff8a50);
+  color: #fff;
+  flex-shrink: 0;
+  animation: dg-contact-pulse 2.4s ease-in-out infinite;
+}
+
+.dg-contact-strip__svg {
+  display: block;
+}
+
+.dg-contact-strip__number {
+  color: #f26727;
+  font-weight: 800;
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
+}
+
+.dg-contact-strip__link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.dg-contact-strip__link:hover,
+.dg-contact-strip__link:focus-visible {
+  color: #f26727;
+  outline: none;
+}
+
+.dg-contact-strip__email {
+  font-weight: 600;
+  color: rgba(60, 60, 60, 0.88);
+}
+
+.dg-contact-strip__hint {
+  color: rgba(60, 60, 60, 0.72);
+  font-weight: 500;
+}
+
+.dg-contact-strip__dot {
+  color: rgba(242, 103, 39, 0.55);
+  font-weight: 700;
+}
+
+@keyframes dg-contact-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes dg-contact-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(242, 103, 39, 0.35); }
+  50% { transform: scale(1.06); box-shadow: 0 0 0 6px rgba(242, 103, 39, 0); }
+}
+
+@media (min-width: 993px) {
+  .dg-contact-strip__viewport {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  .dg-contact-strip__track {
+    width: 100%;
+    justify-content: center;
+    animation: none;
+  }
+
+  .dg-contact-strip__chunk + .dg-contact-strip__chunk {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dg-contact-strip__track {
+    animation: none;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .dg-contact-strip__chunk + .dg-contact-strip__chunk {
+    display: none;
+  }
+
+  .dg-contact-strip__icon {
+    animation: none;
+  }
+}

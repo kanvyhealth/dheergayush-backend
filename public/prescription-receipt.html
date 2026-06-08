@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescription Payment Receipt - Dheergayush</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            background-color: #f4f5f6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .receipt-container {
+            width: 210mm; /* A4 width */
+            min-height: 297mm; /* A4 height */
+            margin: 0 auto;
+            padding: 40px;
+            background-color: #fff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #0c3dff;
+            background: linear-gradient(135deg, #0c3dff, #4c87ff);
+            margin: -40px -40px 40px -40px;
+            padding: 40px;
+            color: white;
+        }
+        .receipt-header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .receipt-header h2 {
+            color: white;
+            font-size: 1.6em;
+            margin: 10px 0 0;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+        .receipt-header .tagline {
+            color: white;
+            font-size: 1.1em;
+            margin-top: 10px;
+            font-style: italic;
+            opacity: 0.9;
+        }
+        .receipt-section {
+            margin: 30px 0;
+            padding: 0 20px;
+        }
+        .receipt-section h3 {
+            color: #0c3dff;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+            font-weight: 600;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            padding: 8px 0;
+            border-bottom: 1px dashed #e0e0e0;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-row span:first-child {
+            font-weight: 600;
+            color: #0c3dff;
+            flex-basis: 30%;
+        }
+        .detail-row span:last-child {
+            text-align: left;
+            flex-basis: 70%;
+            color: #333;
+            word-break: break-all;
+        }
+        .medicine-list {
+            margin: 20px 0;
+            background: linear-gradient(135deg, #f8f9fa, #ffffff);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .medicine-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+            background: white;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .medicine-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .medicine-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .medicine-details {
+            flex: 1;
+            padding-right: 20px;
+        }
+        .medicine-details strong {
+            color: #0c3dff;
+            display: block;
+            margin-bottom: 6px;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        .medicine-details span {
+            color: #666;
+            font-size: 1em;
+            display: block;
+        }
+        .medicine-price {
+            font-weight: 700;
+            color: #28a745;
+            font-size: 1.2em;
+            min-width: 100px;
+            text-align: right;
+            padding: 8px 15px;
+            background: #e6ffed;
+            border-radius: 6px;
+        }
+        .total-section {
+            text-align: center;
+            margin: 40px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #28a745, #34c759);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
+        }
+        .total-section h2 {
+            color: white;
+            font-size: 1.2em;
+            margin: 0;
+            font-weight: 700;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px dashed #e0e0e0;
+            background: linear-gradient(135deg, #f8f9fa, #ffffff);
+            margin: 40px -40px -40px -40px;
+            padding: 40px;
+            border-radius: 0 0 12px 12px;
+        }
+        .footer p {
+            margin: 10px 0;
+            color: #666;
+            font-size: 1.1em;
+        }
+        .footer .tagline {
+            color: #0c3dff;
+            font-style: italic;
+            font-weight: 600;
+            margin-top: 20px;
+            font-size: 1.2em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+        }
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 5em;
+            color: rgba(12, 61, 255, 0.03);
+            font-weight: 700;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 1;
+        }
+        @media print {
+            body {
+                background-color: #fff;
+                padding: 0;
+            }
+            .receipt-container {
+                box-shadow: none;
+                margin: 0;
+                padding: 20px;
+            }
+            .watermark {
+                display: none;
+            }
+            .receipt-header {
+                margin: -20px -20px 20px -20px;
+                padding: 20px;
+            }
+            .footer {
+                margin: 20px -20px -20px -20px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-container" id="receiptContent">
+        <div class="watermark">DHEERGAYUSH</div>
+        <div class="receipt-header">
+            <h1>Dheergayush</h1>
+            <h2>Prescription Payment Receipt</h2>
+            <div class="tagline">Your Health, Our Priority</div>
+        </div>
+        
+        <div class="receipt-section">
+            <div class="detail-row">
+                <span>Date:</span>
+                <span id="receiptDate"></span>
+            </div>
+            <div class="detail-row">
+                <span>Room ID:</span>
+                <span id="receiptRoomId"></span>
+            </div>
+            <div class="detail-row">
+                <span>Phone:</span>
+                <span id="receiptPatientPhone"></span>
+            </div>
+        </div>
+
+        <div class="receipt-section">
+            <h3>Prescribed Medicines</h3>
+            <div class="medicine-list" id="medicineList">
+                <!-- Medicine items will be populated here -->
+            </div>
+        </div>
+
+        <div class="total-section">
+            <h2>Total Paid: <span id="receiptTotalPaid"></span></h2>
+        </div>
+
+        <div class="footer">
+            <p>Thank you for choosing Dheergayush!</p>
+            <p>Your medicines will be delivered soon.</p>
+            <p class="tagline">"Your health is our priority"</p>
+            <p style="margin-top:10px;font-size:0.9rem;">Support: <a href="tel:+917842736777">+91 7842736777</a> · <a href="mailto:contact@dheergayush.net">contact@dheergayush.net</a></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            
+            // Set basic details
+            document.getElementById('receiptDate').textContent = params.get('date') || new Date().toLocaleDateString('en-GB');
+            document.getElementById('receiptRoomId').textContent = params.get('roomId') || 'N/A';
+            document.getElementById('receiptPatientPhone').textContent = params.get('patientPhone') || 'N/A';
+            document.getElementById('receiptTotalPaid').textContent = params.get('totalPaid') || 'N/A';
+
+            // Parse and display medicine items
+            const medicineList = document.getElementById('medicineList');
+            const medicines = JSON.parse(params.get('medicines') || '[]');
+            
+            medicines.forEach(medicine => {
+                const item = document.createElement('div');
+                item.className = 'medicine-item';
+                item.innerHTML = `
+                    <div class="medicine-details">
+                        <strong>${medicine.name}</strong>
+                        <span>${medicine.selectedWeight.value} ${medicine.selectedWeight.unit} - Quantity: ${medicine.quantity}</span>
+                    </div>
+                    <div class="medicine-price">₹${medicine.totalPrice}</div>
+                `;
+                medicineList.appendChild(item);
+            });
+
+            // Generate PDF immediately
+            const element = document.getElementById('receiptContent');
+            const opt = {
+                margin: 1,
+                filename: `prescription_receipt_${params.get('roomId')}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            try {
+                await html2pdf().set(opt).from(element).save();
+                // Close the window after download
+                setTimeout(() => {
+                    window.close();
+                }, 1000); // Give it a moment to start download
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+            }
+        });
+    </script>
+    <script src="js/dg-responsive-nav.js"></script>
+</body>
+</html> 

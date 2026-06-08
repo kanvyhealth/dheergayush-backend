@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Telemedicine Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="css/dheergayush-theme.css">
+    <link rel="stylesheet" href="css/dheergayush-forms.css">
+</head>
+<body class="admin-page">
+    <div id="adminLoginContainer" class="dg-form-panel admin-login-panel" style="display:none;">
+        <h2 class="admin-login-title">Admin Login</h2>
+        <form id="adminLoginForm">
+            <div class="form-group">
+                <label for="adminUsername">Username</label>
+                <input type="text" id="adminUsername" name="adminUsername" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label for="adminPassword">Password</label>
+                <input type="password" id="adminPassword" name="adminPassword" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="login-btn dg-btn-primary">Login</button>
+            <div id="adminLoginError" class="admin-login-error"></div>
+        </form>
+        <div id="adminLoginSuccess" class="admin-login-success">Admin login successful!</div>
+    </div>
+    <div class="admin-container" id="adminDashboardContainer" style="display:none;">
+        <header>
+            <h1>Admin Dashboard</h1>
+            <div class="user-info">
+                <span id="adminFirebaseStatus" class="admin-firebase-status checking" title="Firebase connection">Checking Firebase…</span>
+                <span id="adminName">Admin</span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <nav class="tab-navigation">
+            <button class="tab-btn active" data-tab="doctors">Doctors</button>
+            <button class="tab-btn" data-tab="patients">Patients</button>
+            <button class="tab-btn" data-tab="payments">Payments</button>
+            <button class="tab-btn" data-tab="prescriptions">Prescriptions</button>
+            <button class="tab-btn" data-tab="orders">Orders</button>
+        </nav>
+
+        <main>
+            <!-- Doctors Tab -->
+            <section id="doctors" class="tab-content active">
+                <div class="section-header">
+                    <h2>Manage Doctors</h2>
+                </div>
+                <div class="table-container">
+                    <table id="doctorsTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Specialization</th>
+                                <th>License</th>
+                                <th>Languages</th>
+                                <th>Documents</th>
+                                <th>Available Time</th>
+                                <th>Registration Status</th>
+                                <th>Availability Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doctorsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Patients Tab -->
+            <section id="patients" class="tab-content">
+                <div class="section-header">
+                    <h2>Manage Patients</h2>
+                </div>
+                <div class="table-container">
+                    <table id="patientsTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Reports</th>
+                                <th>Created At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patientsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Payments Tab -->
+            <section id="payments" class="tab-content">
+                <div class="section-header">
+                    <h2>Manage Payments</h2>
+                </div>
+                <div class="filter-controls">
+                    <div class="filter-group">
+                        <label for="roomNameFilter">Room Name/ID:</label>
+                        <input type="text" id="roomNameFilter" placeholder="Enter room name or ID">
+                    </div>
+                    <div class="filter-group">
+                        <label for="startDateFilter">Start Date:</label>
+                        <input type="date" id="startDateFilter">
+                    </div>
+                    <div class="filter-group">
+                        <label for="endDateFilter">End Date:</label>
+                        <input type="date" id="endDateFilter">
+                    </div>
+                    <div class="filter-group filter-group--actions">
+                        <span class="filter-group-label">Actions</span>
+                        <div class="filter-buttons">
+                            <button type="button" onclick="applyPaymentFilters()" class="filter-btn">Apply Filters</button>
+                            <button type="button" onclick="clearPaymentFilters()" class="clear-btn">Clear Filters</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="paymentsTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Address</th>
+                                <th>Doctor</th>
+                                <th>Fee</th>
+                                <th>UPI ID</th>
+                                <th>Room Name</th>
+                                <th>Payment Proof</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Prescriptions Tab -->
+            <section id="prescriptions" class="tab-content">
+                <div class="section-header">
+                    <h2>Manage Prescriptions</h2>
+                </div>
+                <div class="table-container">
+                    <table id="prescriptionsTable">
+                        <thead>
+                            <tr>
+                                <th>Phone</th>
+                                <th>Total Items</th>
+                                <th>Total Amount</th>
+                                <th>Payment Proof</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prescriptionsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Orders Tab -->
+            <section id="orders" class="tab-content">
+                <div class="section-header">
+                    <h2>Manage Orders</h2>
+                </div>
+                <div class="filter-controls">
+                    <div class="filter-group">
+                        <label for="orderStatusFilter">Order Status:</label>
+                        <select id="orderStatusFilter">
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="processing">Processing</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="filter-group filter-group--actions">
+                        <span class="filter-group-label">Actions</span>
+                        <div class="filter-buttons">
+                            <button type="button" onclick="applyOrderFilters()" class="filter-btn">Apply Filters</button>
+                            <button type="button" onclick="clearOrderFilters()" class="clear-btn">Clear Filters</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="ordersTable">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Phone</th>
+                                <th>Items</th>
+                                <th>Total Amount</th>
+                                <th>Order Status</th>
+                                <th>Payment Proof</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle">Edit Details</h2>
+            <form id="editForm">
+                <div id="modalFields"></div>
+                <div class="modal-buttons">
+                    <button type="submit" class="save-btn">Save Changes</button>
+                    <button type="button" class="cancel-btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h2>Confirm Deletion</h2>
+            <p>Are you sure you want to delete this item? This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button class="delete-btn" id="confirmDeleteBtn">Delete</button>
+                <button class="cancel-btn" id="cancelDeleteBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script src="js/dg-api.js"></script>
+    <script src="js/dg-doctor-status.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <script src="js/dg-realtime.js"></script>
+    <script src="admin.js"></script>
+    <script src="js/dg-responsive-nav.js"></script>
+</body>
+</html> 

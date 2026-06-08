@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMEs & Webinars — DHEERGAYUSH Ayurveda Learning</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/dheergayush-theme.css">
+    <link rel="stylesheet" href="css/dheergayush-forms.css">
+    <style>
+        :root {
+            --orange: #F26727;
+            --orange-light: #ff8a50;
+            --charcoal: #3C3C3C;
+            --cream: #fff8e1;
+            --bg: #fafafa;
+            --card: #ffffff;
+            --text: #3C3C3C;
+            --muted: #666;
+            --border: rgba(60, 60, 60, 0.1);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            --sidebar-w: 260px;
+            --queue-w: 340px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #ffffff 0%, #f26727 18%, #fafafa 45%, #3c3c3c 100%);
+            background-attachment: fixed;
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* Navbar — matches index.html */
+        .navbar {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            padding: 14px 5%;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 1rem;
+        }
+
+        .logo img {
+            height: 72px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 1.25rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--charcoal);
+            font-weight: 600;
+            font-size: 0.92rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--orange); }
+
+        .nav-links a.active {
+            color: var(--orange);
+            border-bottom: 2px solid var(--orange);
+            padding-bottom: 2px;
+        }
+
+        .get-started-btn, .stores-btn {
+            background: linear-gradient(135deg, var(--orange), var(--orange-light));
+            color: var(--charcoal) !important;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(242, 103, 39, 0.35);
+        }
+
+        /* Page hero */
+        .page-hero {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 28px 5% 20px;
+        }
+
+        .page-hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            background: linear-gradient(45deg, var(--charcoal), var(--orange), var(--orange-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .page-hero p {
+            color: var(--muted);
+            max-width: 720px;
+            font-size: 1rem;
+        }
+
+        .search-bar {
+            max-width: 1400px;
+            margin: 0 auto 20px;
+            padding: 0 5%;
+        }
+
+        .search-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--card);
+            border-radius: 50px;
+            padding: 12px 22px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .search-wrap i { color: var(--orange); }
+
+        .search-wrap input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-family: inherit;
+            font-size: 1rem;
+            background: transparent;
+        }
+
+        /* YouTube-like layout */
+        .yt-layout {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 5% 48px;
+            display: grid;
+            grid-template-columns: var(--sidebar-w) 1fr var(--queue-w);
+            gap: 20px;
+            align-items: start;
+        }
+
+        /* Topic sidebar */
+        .topics-panel {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 16px 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+
+        .topics-panel h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            padding: 0 10px 12px;
+        }
+
+        .topic-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 12px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--text);
+            text-align: left;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .topic-btn:hover {
+            background: rgba(242, 103, 39, 0.1);
+        }
+
+        .topic-btn.active {
+            background: linear-gradient(135deg, var(--orange), var(--orange-light));
+            color: var(--charcoal);
+            font-weight: 600;
+        }
+
+        .topic-btn i {
+            width: 20px;
+            text-align: center;
+            color: var(--orange);
+        }
+
+        .topic-btn.active i { color: var(--charcoal); }
+
+        .topic-count {
+            margin-left: auto;
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+
+        /* Main player area */
+        .main-panel { min-width: 0; }
+
+        .player-wrap {
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            aspect-ratio: 16 / 9;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .player-wrap iframe {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .player-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--charcoal), #1a1a1a);
+            color: #fff;
+            text-align: center;
+            padding: 24px;
+        }
+
+        .player-placeholder i {
+            font-size: 3rem;
+            color: var(--orange);
+            margin-bottom: 16px;
+        }
+
+        .now-playing {
+            background: var(--card);
+            border-radius: 16px;
+            margin-top: 16px;
+            padding: 20px 22px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .now-playing h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1.35;
+        }
+
+        .now-playing-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 20px;
+            font-size: 0.88rem;
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+
+        .now-playing-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .topic-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(242, 103, 39, 0.15), rgba(255, 138, 80, 0.2));
+            color: var(--orange);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+
+        .now-playing p {
+            font-size: 0.95rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .yt-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .yt-actions a, .yt-actions button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 50px;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-yt {
+            background: #ff0000;
+            color: #fff !important;
+        }
+
+        .btn-yt:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255, 0, 0, 0.35); }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--orange) !important;
+            color: var(--charcoal) !important;
+        }
+
+        /* Video grid below player */
+        .browse-section {
+            margin-top: 28px;
+        }
+
+        .browse-section h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .browse-section h3 i { color: var(--orange); }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 18px;
+        }
+
+        .video-card {
+            background: var(--card);
+            border-radius: 14px;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .video-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(242, 103, 39, 0.15);
+        }
+
+        .video-card.playing {
+            outline: 3px solid var(--orange);
+            outline-offset: 2px;
+        }
+
+        .thumb-wrap {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            background: #222;
+        }
+
+        .thumb-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .duration-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .play-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.25);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .video-card:hover .play-overlay { opacity: 1; }
+
+        .play-overlay i {
+            font-size: 2.5rem;
+            color: #fff;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+        }
+
+        .video-card-body {
+            padding: 12px 14px 16px;
+        }
+
+        .video-card-body h4 {
+            font-size: 0.92rem;
+            font-weight: 600;
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .video-card-body .channel {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        /* Up next sidebar */
+        .queue-panel {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+
+        .queue-panel h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .queue-item {
+            display: flex;
+            gap: 10px;
+            padding: 10px 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .queue-item:hover { background: rgba(242, 103, 39, 0.08); }
+
+        .queue-item.active { background: rgba(242, 103, 39, 0.15); }
+
+        .queue-thumb {
+            width: 120px;
+            min-width: 120px;
+            aspect-ratio: 16 / 9;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #222;
+        }
+
+        .queue-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+        .queue-info h4 {
+            font-size: 0.82rem;
+            font-weight: 600;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .queue-info .channel {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* Channels strip */
+        .channels-section {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 5% 56px;
+        }
+
+        .channels-section h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+
+        .channels-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .channel-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 22px;
+            background: var(--card);
+            border-radius: 50px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .channel-chip:hover {
+            transform: translateY(-2px);
+            border-color: var(--orange);
+        }
+
+        .channel-chip i { color: #ff0000; }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--muted);
+            grid-column: 1 / -1;
+        }
+
+        /* Mobile topic chips */
+        .topics-mobile {
+            display: none;
+            overflow-x: auto;
+            gap: 8px;
+            padding: 0 5% 16px;
+            scrollbar-width: none;
+        }
+
+        .topics-mobile::-webkit-scrollbar { display: none; }
+
+        .topic-chip-mobile {
+            flex-shrink: 0;
+            padding: 8px 16px;
+            border-radius: 50px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .topic-chip-mobile.active {
+            background: linear-gradient(135deg, var(--orange), var(--orange-light));
+            border-color: transparent;
+        }
+
+        @media (max-width: 1100px) {
+            .yt-layout {
+                grid-template-columns: 1fr;
+            }
+            .topics-panel, .queue-panel { display: none; }
+            .topics-mobile { display: flex; }
+            .queue-panel-mobile {
+                display: block;
+                margin-top: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .logo img { height: 52px; }
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo"><img src="/logos/logo-horizontal.png" alt="DHEERGAYUSH"></a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/#about">About</a></li>
+                <li><a href="/#doctors">Doctors</a></li>
+                <li><a href="CMEs.html" class="active">CMEs</a></li>
+                <li><a href="Library.html">E-Library</a></li>
+                <li><a href="landingpage.html" class="get-started-btn">Get Started</a></li>
+                <li><a href="stores.html" class="stores-btn"><span class="dg-cart-icon"><i class="fas fa-bag-shopping" aria-hidden="true"></i></span> Stores</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="page-hero">
+        <h1>CMEs &amp; Webinars</h1>
+        <p>Watch accredited Ayurveda CME lectures on YouTube — grouped by clinical disorders from rheumatoid arthritis and diabetes to skin, thyroid, infertility, and more.</p>
+    </header>
+
+    <div class="search-bar">
+        <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="search" id="searchInput" placeholder="Search topics, videos, channels…" autocomplete="off">
+        </div>
+    </div>
+
+    <div class="topics-mobile" id="topicsMobile"></div>
+
+    <div class="yt-layout">
+        <aside class="topics-panel" id="topicsPanel">
+            <h3>Topics</h3>
+            <div id="topicsList"></div>
+        </aside>
+
+        <main class="main-panel">
+            <div class="player-wrap" id="playerWrap">
+                <div class="player-placeholder" id="playerPlaceholder">
+                    <i class="fas fa-play-circle"></i>
+                    <p>Select a video to start learning</p>
+                </div>
+                <iframe id="ytPlayer" title="Ayurveda educational video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen hidden></iframe>
+            </div>
+
+            <article class="now-playing" id="nowPlaying">
+                <span class="topic-tag" id="npTopic">Ayurveda Education</span>
+                <h2 id="npTitle">Choose a video from the library</h2>
+                <div class="now-playing-meta">
+                    <span><i class="fas fa-user"></i> <span id="npChannel">—</span></span>
+                    <span><i class="fas fa-clock"></i> <span id="npDuration">—</span></span>
+                </div>
+                <p id="npDesc">Browse disorder categories on the left or explore the CME video grid below. All lectures stream from YouTube while you stay on DHEERGAYUSH.</p>
+                <div class="yt-actions" id="npActions" style="display: none;">
+                    <a id="openYoutube" href="#" target="_blank" rel="noopener" class="btn-yt"><i class="fab fa-youtube"></i> Watch on YouTube</a>
+                    <button type="button" class="btn-outline" id="shareBtn"><i class="fas fa-share-nodes"></i> Copy link</button>
+                </div>
+            </article>
+
+            <section class="browse-section">
+                <h3><i class="fas fa-th-large"></i> <span id="gridTitle">All CME videos</span></h3>
+                <div class="video-grid" id="videoGrid"></div>
+            </section>
+
+            <section class="queue-panel queue-panel-mobile" id="queueMobile">
+                <h3><i class="fas fa-list"></i> Up next</h3>
+                <div id="queueListMobile"></div>
+            </section>
+        </main>
+
+        <aside class="queue-panel" id="queuePanel">
+            <h3><i class="fas fa-list"></i> Up next</h3>
+            <div id="queueList"></div>
+        </aside>
+    </div>
+
+    <section class="channels-section">
+        <h3>Explore more on YouTube</h3>
+        <p style="text-align: center; color: var(--muted); margin-bottom: 20px; font-size: 0.95rem;">Subscribe to trusted Ayurveda channels for the latest CMEs and webinars</p>
+        <div class="channels-grid" id="channelsGrid"></div>
+    </section>
+
+    <script src="cmes-data.js"></script>
+    <script>
+(function () {
+    const uniqueVideos = getUniqueVideos(CME_VIDEOS);
+    let activeTopic = 'all';
+    let activeVideoId = null;
+    let searchQuery = '';
+
+    const $ = (id) => document.getElementById(id);
+
+    function thumbUrl(id) {
+        return 'https://img.youtube.com/vi/' + id + '/hqdefault.jpg';
+    }
+
+    function embedUrl(id) {
+        return 'https://www.youtube.com/embed/' + id + '?rel=0&modestbranding=1&autoplay=1';
+    }
+
+    function watchUrl(id) {
+        return 'https://www.youtube.com/watch?v=' + id;
+    }
+
+    function topicLabel(topicId) {
+        const t = CME_TOPICS.find((x) => x.id === topicId);
+        return t ? t.label : topicId;
+    }
+
+    function filterVideos() {
+        let list = getVideosForTopic(activeTopic);
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            list = list.filter((v) =>
+                v.title.toLowerCase().includes(q) ||
+                v.channel.toLowerCase().includes(q) ||
+                v.description.toLowerCase().includes(q) ||
+                topicLabel(v.topic).toLowerCase().includes(q) ||
+                CME_VIDEOS.some((row) => row.id === v.id && topicLabel(row.topic).toLowerCase().includes(q))
+            );
+        }
+        return list;
+    }
+
+    function getUpNext(currentId) {
+        const filtered = filterVideos();
+        const idx = filtered.findIndex((v) => v.id === currentId);
+        const rest = idx >= 0 ? filtered.slice(idx + 1).concat(filtered.slice(0, idx)) : filtered;
+        return rest.slice(0, 12);
+    }
+
+    function playVideo(video) {
+        activeVideoId = video.id;
+        const iframe = $('ytPlayer');
+        const placeholder = $('playerPlaceholder');
+        iframe.src = embedUrl(video.id);
+        iframe.hidden = false;
+        placeholder.style.display = 'none';
+
+        $('npTopic').textContent = topicLabel(video.topic);
+        $('npTitle').textContent = video.title;
+        $('npChannel').textContent = video.channel;
+        $('npDuration').textContent = video.duration;
+        $('npDesc').textContent = video.description;
+        $('npActions').style.display = 'flex';
+        $('openYoutube').href = watchUrl(video.id);
+
+        document.title = video.title + ' — CMEs | DHEERGAYUSH';
+        renderGrid();
+        renderQueue();
+    }
+
+    function renderTopics() {
+        const html = CME_TOPICS.map((t) => {
+            const count = countByTopic(t.id);
+            if (t.id !== 'all' && count === 0) return '';
+            return '<button type="button" class="topic-btn' + (activeTopic === t.id ? ' active' : '') + '" data-topic="' + t.id + '">' +
+                '<i class="fas ' + t.icon + '"></i>' + t.label +
+                '<span class="topic-count">' + count + '</span></button>';
+        }).join('');
+        $('topicsList').innerHTML = html;
+
+        const mobileHtml = CME_TOPICS.map((t) => {
+            const count = countByTopic(t.id);
+            if (t.id !== 'all' && count === 0) return '';
+            return '<button type="button" class="topic-chip-mobile' + (activeTopic === t.id ? ' active' : '') + '" data-topic="' + t.id + '">' + t.label + '</button>';
+        }).join('');
+        $('topicsMobile').innerHTML = mobileHtml;
+
+        document.querySelectorAll('.topic-btn, .topic-chip-mobile').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                activeTopic = btn.dataset.topic;
+                $('gridTitle').textContent = activeTopic === 'all' ? 'All CME videos' : topicLabel(activeTopic);
+                renderTopics();
+                renderGrid();
+                renderQueue();
+            });
+        });
+    }
+
+    function renderGrid() {
+        const list = filterVideos();
+        if (!list.length) {
+            $('videoGrid').innerHTML = '<div class="empty-state"><i class="fas fa-video-slash" style="font-size:2rem;margin-bottom:12px;color:var(--orange);"></i><p>No videos match your search. Try another topic or keyword.</p></div>';
+            return;
+        }
+        $('videoGrid').innerHTML = list.map((v) =>
+            '<article class="video-card' + (v.id === activeVideoId ? ' playing' : '') + '" data-id="' + v.id + '">' +
+            '<div class="thumb-wrap">' +
+            '<img src="' + thumbUrl(v.id) + '" alt="" loading="lazy">' +
+            '<span class="duration-badge">' + v.duration + '</span>' +
+            '<div class="play-overlay"><i class="fas fa-play"></i></div></div>' +
+            '<div class="video-card-body"><h4>' + escapeHtml(v.title) + '</h4>' +
+            '<div class="channel">' + escapeHtml(v.channel) + ' · ' + escapeHtml(topicLabel(v.topic)) + '</div></div></article>'
+        ).join('');
+
+        $('videoGrid').querySelectorAll('.video-card').forEach((card) => {
+            card.addEventListener('click', () => {
+                const v = getVideoMeta(card.dataset.id, activeTopic) || uniqueVideos.find((x) => x.id === card.dataset.id);
+                if (v) playVideo(v);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+    }
+
+    function renderQueueItem(v, compact) {
+        return '<div class="queue-item' + (v.id === activeVideoId ? ' active' : '') + '" data-id="' + v.id + '">' +
+            '<div class="queue-thumb"><img src="' + thumbUrl(v.id) + '" alt="" loading="lazy"></div>' +
+            '<div class="queue-info"><h4>' + escapeHtml(v.title) + '</h4><div class="channel">' + escapeHtml(v.channel) + '</div></div></div>';
+    }
+
+    function bindQueue(container) {
+        container.querySelectorAll('.queue-item').forEach((item) => {
+            item.addEventListener('click', () => {
+                const v = getVideoMeta(item.dataset.id, activeTopic) || uniqueVideos.find((x) => x.id === item.dataset.id);
+                if (v) playVideo(v);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+    }
+
+    function renderQueue() {
+        const upNext = activeVideoId ? getUpNext(activeVideoId) : filterVideos().slice(0, 12);
+        const html = upNext.length
+            ? upNext.map((v) => renderQueueItem(v)).join('')
+            : '<p style="color:var(--muted);font-size:0.88rem;padding:8px;">No more videos in this list.</p>';
+        $('queueList').innerHTML = html;
+        $('queueListMobile').innerHTML = html;
+        bindQueue($('queueList'));
+        bindQueue($('queueListMobile'));
+    }
+
+    function renderChannels() {
+        $('channelsGrid').innerHTML = CME_CHANNELS.map((c) =>
+            '<a class="channel-chip" href="' + c.url + '" target="_blank" rel="noopener">' +
+            '<i class="fab fa-youtube"></i>' + escapeHtml(c.name) + '</a>'
+        ).join('');
+    }
+
+    function escapeHtml(s) {
+        const d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+
+    $('searchInput').addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderGrid();
+        renderQueue();
+    });
+
+    $('shareBtn').addEventListener('click', () => {
+        if (!activeVideoId) return;
+        const url = location.origin + location.pathname + '?v=' + activeVideoId;
+        navigator.clipboard.writeText(url).then(() => {
+            $('shareBtn').innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(() => {
+                $('shareBtn').innerHTML = '<i class="fas fa-share-nodes"></i> Copy link';
+            }, 2000);
+        });
+    });
+
+    // Deep link ?v=VIDEO_ID
+    const params = new URLSearchParams(location.search);
+    const startId = params.get('v');
+    const startVideo = startId
+        ? (getVideoMeta(startId, 'all') || uniqueVideos.find((v) => v.id === startId))
+        : uniqueVideos[0];
+
+    renderTopics();
+    renderChannels();
+    renderGrid();
+    renderQueue();
+
+    if (startVideo) {
+        playVideo(startVideo);
+    }
+})();
+    </script>
+    <script src="js/dg-responsive-nav.js"></script>
+</body>
+</html>

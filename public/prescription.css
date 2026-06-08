@@ -1,0 +1,375 @@
+/* Prescription Button Styles */
+#prescription-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: #4CAF50;
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  border: none;
+}
+
+#prescription-btn:hover {
+  background: #45a049;
+  transform: scale(1.05);
+}
+
+#prescription-btn i {
+  font-size: 28px;
+}
+
+/* Badge for cart items */
+.cart-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #f44336;
+  color: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Prescription Modal Styles */
+.prescription-modal {
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  width: 450px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  z-index: 1000;
+  display: none;
+  max-height: 70vh;
+  overflow-y: auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.modal-header {
+  padding: 18px 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+  border-radius: 12px 12px 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 20px;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+/* Tab styles */
+.tab-buttons {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 12px;
+  text-align: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  color: #7f8c8d;
+  transition: all 0.3s;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-btn.active {
+  color: #2c3e50;
+  border-bottom: 3px solid #4CAF50;
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Medicine List Styles */
+.medicine-list {
+  display: grid;
+  gap: 15px;
+}
+
+.medicine-item {
+  background: #fff;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+
+.medicine-item:hover {
+  transform: translateY(-3px);
+}
+
+.medicine-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.medicine-type-options {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.type-option {
+  flex: 1;
+}
+
+.type-option input {
+  display: none;
+}
+
+.type-option label {
+  display: block;
+  padding: 8px;
+  text-align: center;
+  border-radius: 6px;
+  background: #f5f5f5;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.type-option input:checked + label {
+  background: #4CAF50;
+  color: white;
+}
+
+.medicine-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quantity-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quantity-btn:hover {
+  background: #e0e0e0;
+}
+
+.quantity-btn i {
+  font-size: 12px;
+}
+
+.medicine-qty {
+  min-width: 20px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.add-to-cart-btn {
+  padding: 8px 15px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.add-to-cart-btn:hover {
+  background: #45a049;
+}
+
+/* Cart Styles */
+.cart-items {
+  display: grid;
+  gap: 12px;
+}
+
+.cart-item {
+  background: #fff;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cart-item-info {
+  flex: 1;
+}
+
+.cart-item-name {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.cart-item-type {
+  font-size: 13px;
+  color: #7f8c8d;
+}
+
+.cart-item-price {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.cart-total {
+  text-align: right;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Payment Form Styles */
+.payment-form {
+  animation: fadeIn 0.3s ease;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: inherit;
+  transition: border 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #4CAF50;
+  outline: none;
+}
+
+.qr-code-container {
+  text-align: center;
+  margin: 20px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.upi-id {
+  margin-top: 10px;
+  font-family: monospace;
+  background: #f0f0f0;
+  padding: 5px 10px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.file-upload {
+  margin: 20px 0;
+}
+
+.file-upload-label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submit-btn:hover {
+  background: #45a049;
+}
+
+/* Close Button */
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #7f8c8d;
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
+  color: #e74c3c;
+}
+
+/* Responsive adjustments */
+@media (max-width: 500px) {
+  .prescription-modal {
+    width: 90%;
+    right: 5%;
+    bottom: 80px;
+  }
+}

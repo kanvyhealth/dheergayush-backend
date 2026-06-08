@@ -1,0 +1,310 @@
+(function (global) {
+  'use strict';
+
+  let client = null;
+  let localTracks = [];
+  let joined = false;
+  let micEnabled = true;
+  let camEnabled = true;
+  let uiRefs = null;
+  let autoplayResumeHandler = null;
+
+  const AUDIO_TRACK_CONFIG = {
+    AEC: true,
+    ANS: true,
+    AGC: true,
+    encoderConfig: 'speech_standard'
+  };
+
+  const VIDEO_TRACK_CONFIG = {
+    encoderConfig: {
+      width: 640,
+      height: 480,
+      frameRate: 24,
+      bitrateMin: 300,
+      bitrateMax: 1000
+    },
+    optimizationMode: 'motion'
+  };
+
+  function getMicTrack() {
+    return localTracks.find((t) => t.trackMediaType === 'audio');
+  }
+
+  function getCamTrack() {
+    return localTracks.find((t) => t.trackMediaType === 'video');
+  }
+
+  function ensureLayout(rootEl) {
+    rootEl.innerHTML =
+      '<div class="dg-agora-stage">' +
+        '<div id="dg-agora-remote" class="dg-agora-remote"></div>' +
+        '<div id="dg-agora-local" class="dg-agora-local dg-agora-local--mirror"></div>' +
+        '<div id="dg-agora-autoplay" class="dg-agora-autoplay" hidden>' +
+          '<p>Tap to hear the other participant</p>' +
+          '<button type="button" id="dg-agora-resume-audio">Enable sound</button>' +
+        '</div>' +
+        '<div class="dg-agora-toolbar">' +
+          '<button type="button" id="dg-agora-mic" class="dg-agora-ctrl" title="Microphone" aria-label="Toggle microphone">' +
+            '<i class="fas fa-microphone"></i>' +
+          '</button>' +
+          '<button type="button" id="dg-agora-cam" class="dg-agora-ctrl" title="Camera" aria-label="Toggle camera">' +
+            '<i class="fas fa-video"></i>' +
+          '</button>' +
+          '<button type="button" id="dg-agora-leave" class="dg-agora-leave">Leave call</button>' +
+        '</div>' +
+      '</div>';
+    return {
+      remote: document.getElementById('dg-agora-remote'),
+      local: document.getElementById('dg-agora-local'),
+      leaveBtn: document.getElementById('dg-agora-leave'),
+      micBtn: document.getElementById('dg-agora-mic'),
+      camBtn: document.getElementById('dg-agora-cam'),
+      autoplayBanner: document.getElementById('dg-agora-autoplay'),
+      resumeAudioBtn: document.getElementById('dg-agora-resume-audio')
+    };
+  }
+
+  function updateInCallControlButtons() {
+    if (!uiRefs) return;
+    if (uiRefs.micBtn) {
+      uiRefs.micBtn.classList.toggle('dg-agora-ctrl--off', !micEnabled);
+    }
+    if (uiRefs.camBtn) {
+      uiRefs.camBtn.classList.toggle('dg-agora-ctrl--off', !camEnabled);
+    }
+  }
+
+  async function playRemoteMedia(user, mediaType, remoteEl) {
+    if (!client || !user) return;
+    try {
+      await client.subscribe(user, mediaType);
+      if (mediaType === 'video' && user.videoTrack && remoteEl) {
+        user.videoTrack.play(remoteEl, { fit: 'cover' });
+      }
+      if (mediaType === 'audio' && user.audioTrack) {
+        user.audioTrack.setVolume(100);
+        await user.audioTrack.play();
+        if (uiRefs && uiRefs.autoplayBanner) {
+          uiRefs.autoplayBanner.hidden = true;
+        }
+      }
+    } catch (err) {
+      console.warn('Remote media play failed:', mediaType, err);
+      if (mediaType === 'audio' && uiRefs && uiRefs.autoplayBanner) {
+        uiRefs.autoplayBanner.hidden = false;
+      }
+    }
+  }
+
+  async function subscribeExistingRemoteUsers(remoteEl) {
+    if (!client) return;
+    const users = client.remoteUsers || [];
+    for (const user of users) {
+      if (user.hasVideo) await playRemoteMedia(user, 'video', remoteEl);
+      if (user.hasAudio) await playRemoteMedia(user, 'audio', remoteEl);
+    }
+  }
+
+  function setupAutoplayRecovery(onNeedGesture) {
+    if (typeof AgoraRTC === 'undefined') return;
+
+    AgoraRTC.onAutoplayFailed = () => {
+      if (uiRefs && uiRefs.autoplayBanner) {
+        uiRefs.autoplayBanner.hidden = false;
+      }
+      if (typeof onNeedGesture === 'function') onNeedGesture();
+    };
+
+    autoplayResumeHandler = async () => {
+      if (!client) return;
+      for (const user of client.remoteUsers || []) {
+        if (user.audioTrack) {
+          try {
+            user.audioTrack.setVolume(100);
+            await user.audioTrack.play();
+          } catch (e) {
+            console.warn('Resume remote audio failed:', e);
+          }
+        }
+      }
+      if (uiRefs && uiRefs.autoplayBanner) {
+        uiRefs.autoplayBanner.hidden = true;
+      }
+    };
+  }
+
+  async function createLocalTracks(micOn, camOn) {
+    micEnabled = micOn !== false;
+    camEnabled = camOn !== false;
+    localTracks = [];
+
+    if (micEnabled && camEnabled) {
+      localTracks = await AgoraRTC.createMicrophoneAndCameraTracks(
+        AUDIO_TRACK_CONFIG,
+        VIDEO_TRACK_CONFIG
+      );
+    } else if (micEnabled) {
+      localTracks = [await AgoraRTC.createMicrophoneAudioTrack(AUDIO_TRACK_CONFIG)];
+    } else if (camEnabled) {
+      localTracks = [await AgoraRTC.createCameraVideoTrack(VIDEO_TRACK_CONFIG)];
+    }
+
+    const mic = getMicTrack();
+    if (mic) await mic.setEnabled(micEnabled);
+    const cam = getCamTrack();
+    if (cam) await cam.setEnabled(camEnabled);
+
+    return localTracks;
+  }
+
+  async function joinCall(options) {
+    if (typeof AgoraRTC === 'undefined') {
+      throw new Error('Agora Web SDK not loaded');
+    }
+
+    const rootEl = document.getElementById(options.containerId || 'root');
+    if (!rootEl) throw new Error('Video container not found');
+
+    await leaveCall();
+
+    uiRefs = ensureLayout(rootEl);
+    updateInCallControlButtons();
+
+    client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+
+    if (typeof client.setAudioProfile === 'function') {
+      try {
+        await client.setAudioProfile('speech_standard');
+      } catch (e) {
+        console.warn('setAudioProfile:', e);
+      }
+    }
+
+    client.on('user-published', async (user, mediaType) => {
+      await playRemoteMedia(user, mediaType, uiRefs.remote);
+      if (typeof options.onUserJoined === 'function') options.onUserJoined(user);
+    });
+
+    client.on('user-unpublished', (user, mediaType) => {
+      if (mediaType === 'video' && user.videoTrack) {
+        user.videoTrack.stop();
+      }
+      if (mediaType === 'audio' && user.audioTrack) {
+        user.audioTrack.stop();
+      }
+    });
+
+    client.on('user-left', () => {
+      if (typeof options.onUserLeft === 'function') options.onUserLeft();
+    });
+
+    client.on('connection-state-change', (curState, revState, reason) => {
+      if (typeof options.onConnectionStateChange === 'function') {
+        options.onConnectionStateChange(curState, revState, reason);
+      }
+    });
+
+    setupAutoplayRecovery(options.onAutoplayBlocked);
+
+    if (uiRefs.resumeAudioBtn) {
+      uiRefs.resumeAudioBtn.onclick = () => {
+        if (autoplayResumeHandler) autoplayResumeHandler();
+      };
+    }
+
+    await client.join(options.appId, options.channel, options.token, options.uid);
+
+    await subscribeExistingRemoteUsers(uiRefs.remote);
+
+    await createLocalTracks(
+      options.microphoneEnabled !== false,
+      options.cameraEnabled !== false
+    );
+
+    const videoTrack = getCamTrack();
+    if (videoTrack) videoTrack.play(uiRefs.local);
+    if (localTracks.length) await client.publish(localTracks);
+    joined = true;
+    updateInCallControlButtons();
+
+    uiRefs.micBtn.onclick = async () => {
+      await setMicrophoneEnabled(!micEnabled);
+      if (typeof options.onMicToggled === 'function') options.onMicToggled(micEnabled);
+    };
+
+    uiRefs.camBtn.onclick = async () => {
+      await setCameraEnabled(!camEnabled);
+      if (typeof options.onCameraToggled === 'function') options.onCameraToggled(camEnabled);
+    };
+
+    uiRefs.leaveBtn.onclick = () => leaveCall().then(() => {
+      if (typeof options.onLeave === 'function') options.onLeave();
+    });
+
+    if (typeof options.onConnected === 'function') options.onConnected();
+    return client;
+  }
+
+  async function setMicrophoneEnabled(enabled) {
+    micEnabled = !!enabled;
+    const mic = getMicTrack();
+    if (mic) {
+      await mic.setEnabled(micEnabled);
+    } else if (micEnabled && client && joined) {
+      const track = await AgoraRTC.createMicrophoneAudioTrack(AUDIO_TRACK_CONFIG);
+      localTracks.push(track);
+      await client.publish([track]);
+    }
+    updateInCallControlButtons();
+    return micEnabled;
+  }
+
+  async function setCameraEnabled(enabled) {
+    camEnabled = !!enabled;
+    const cam = getCamTrack();
+    if (cam) {
+      await cam.setEnabled(camEnabled);
+    } else if (camEnabled && client && joined) {
+      const track = await AgoraRTC.createCameraVideoTrack(VIDEO_TRACK_CONFIG);
+      localTracks.push(track);
+      track.play(uiRefs.local);
+      await client.publish([track]);
+    }
+    updateInCallControlButtons();
+    return camEnabled;
+  }
+
+  async function leaveCall() {
+    joined = false;
+    micEnabled = true;
+    camEnabled = true;
+
+    localTracks.forEach((track) => {
+      track.stop();
+      track.close();
+    });
+    localTracks = [];
+
+    if (client) {
+      await client.unpublish().catch(() => {});
+      await client.leave().catch(() => {});
+      client.removeAllListeners();
+      client = null;
+    }
+
+    uiRefs = null;
+    autoplayResumeHandler = null;
+  }
+
+  global.DgAgoraCall = {
+    joinCall,
+    leaveCall,
+    setMicrophoneEnabled,
+    setCameraEnabled,
+    isMicrophoneEnabled: () => micEnabled,
+    isCameraEnabled: () => camEnabled,
+    getClient: () => client,
+    isJoined: () => joined
+  };
+})(window);

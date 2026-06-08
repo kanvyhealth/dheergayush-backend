@@ -1,0 +1,180 @@
+.custom-time-picker-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .custom-time-display {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        min-height: 44px;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        background-color: #fff;
+        cursor: pointer;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .custom-time-display:hover {
+        border-color: #9ca3af;
+    }
+    .custom-time-display.active {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+    }
+    .custom-time-display .time-placeholder {
+        color: #6b7280;
+        user-select: none;
+    }
+    .custom-time-picker-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: #fff;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        z-index: 10;
+        margin-top: 0.5rem;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0.2s ease-out;
+        padding: 15px; /* Added padding for better spacing */
+    }
+    .custom-time-picker-dropdown.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .hour-buttons-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); /* 4 columns for hours */
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .hour-button, .ampm-button {
+        padding: 10px 15px;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        background-color: #f9fafb;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+    }
+
+    .hour-button:hover, .ampm-button:hover {
+        background-color: #e5e7eb;
+        border-color: #9ca3af;
+    }
+
+    .hour-button.selected, .ampm-button.selected {
+        background-color: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+        box-shadow: 0 2px 5px rgba(59, 130, 246, 0.2);
+    }
+
+    .ampm-toggle-group {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    /* Specific styling for the 'Choose Files' button and file list */
+    .file-input-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        background-color: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    .file-input-button:hover {
+        background-color: #dbeafe;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-inputfile ul {
+        list-style: none;
+        padding: 0;
+        margin-top: 0.75rem;
+    }
+    .form-inputfile li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .form-inputfile li:last-child {
+        border-bottom: none;
+    }
+    .file-name {
+        color: black; /* Ensuring black font for file names */
+        flex-grow: 1;
+        margin-right: 1rem;
+    }
+    .form-inputfile button {
+        background-color: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 0.375rem;
+        padding: 0.3rem 0.6rem;
+        cursor: pointer;
+        font-size: 0.875rem;
+        transition: background-color 0.2s ease-in-out;
+    }
+    .form-inputfile button:hover {
+        background-color: #dc2626;
+    }/* Ensure selected time slot text is black */
+#doctorTimeDisplay {
+    color: black; /* This sets the color of the displayed time to black */
+}
+
+/* Ensure "No documents uploaded yet." / "No reports uploaded yet." text is black */
+.form-inputfile ul li.text-gray-500 {
+    color: black; /* Overrides the gray color for the "no files" message */
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 30px;
+  width: 400px;
+  max-width: 90%;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 24px;
+  cursor: pointer;
+}

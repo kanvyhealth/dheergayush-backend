@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Started — DHEERGAYUSH</title>
+    <meta name="description" content="Join DHEERGAYUSH as a doctor or patient. Register for Ayurvedic telemedicine or sign in to your account.">
+    <meta name="robots" content="index, follow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/dheergayush-theme.css">
+    <link rel="stylesheet" href="css/dg-premium-icons.css?v=3">
+    <link rel="stylesheet" href="css/dg-landing.css?v=4">
+    <link rel="stylesheet" href="css/dheergayush-forms.css">
+</head>
+<body class="dg-page dg-landing-page">
+    <div class="dg-landing-bg" aria-hidden="true">
+        <span class="dg-landing-orb dg-landing-orb--1"></span>
+        <span class="dg-landing-orb dg-landing-orb--2"></span>
+        <span class="dg-landing-orb dg-landing-orb--3"></span>
+    </div>
+
+    <header class="dg-landing-nav">
+        <div class="dg-landing-nav-inner">
+            <a href="/" class="dg-nav-logo" aria-label="DHEERGAYUSH home">
+                <img src="/logos/logo-horizontal.png" alt="DHEERGAYUSH" onerror="this.style.display='none';this.nextElementSibling.style.display='inline';">
+                <span class="dg-nav-logo-text">DHEERGAYUSH</span>
+            </a>
+            <nav class="dg-landing-nav-actions" aria-label="Page navigation">
+                <a href="/" class="dg-home-link">
+                    <i class="fas fa-house" aria-hidden="true"></i>
+                    Home
+                </a>
+                <a href="stores.html" class="dg-home-link dg-home-link--muted">
+                    <i class="fas fa-store" aria-hidden="true"></i>
+                    Stores
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="dg-landing-shell">
+        <section class="dg-landing-hero" aria-label="Welcome">
+            <div class="dg-landing-eyebrow">
+                <i class="fas fa-leaf" aria-hidden="true"></i>
+                Ayurvedic Telemedicine
+            </div>
+            <h1 class="dg-landing-title">Begin Your Wellness Journey</h1>
+            <p class="dg-landing-lead">
+                Connect with certified Ayurvedic practitioners through secure video consultations,
+                digital prescriptions, and authentic medicine delivery — all in one trusted platform.
+            </p>
+
+            <div class="dg-landing-stats" role="list">
+                <div class="dg-landing-stat" role="listitem">
+                    <strong>500+</strong>
+                    <span>Consultations</span>
+                </div>
+                <div class="dg-landing-stat" role="listitem">
+                    <strong>50+</strong>
+                    <span>Certified Vaidyas</span>
+                </div>
+                <div class="dg-landing-stat" role="listitem">
+                    <strong>24/7</strong>
+                    <span>Support</span>
+                </div>
+            </div>
+
+            <img src="patient-illustration.svg" alt="" class="dg-landing-illustration" loading="lazy">
+
+            <div class="dg-landing-trust">
+                <div class="dg-landing-trust-item">
+                    <i class="fas fa-shield-halved" aria-hidden="true"></i>
+                    Secure &amp; Private
+                </div>
+                <div class="dg-landing-trust-item">
+                    <i class="fas fa-video" aria-hidden="true"></i>
+                    HD Consultations
+                </div>
+                <div class="dg-landing-trust-item">
+                    <i class="fas fa-truck-fast" aria-hidden="true"></i>
+                    Medicine Delivery
+                </div>
+            </div>
+        </section>
+
+        <section class="dg-landing-panel-wrap" aria-label="Account options">
+            <div class="dg-landing-progress" aria-hidden="true">
+                <div class="dg-landing-progress-track">
+                    <div class="dg-landing-progress-fill" id="landingProgressFill"></div>
+                </div>
+                <p class="dg-landing-progress-label" id="landingStepLabel">Step 1 of 2</p>
+            </div>
+
+            <div class="dg-landing-panel visible" id="mainCard" role="region" aria-label="Choose your role">
+                <p class="dg-landing-step"><i class="fas fa-circle-dot" aria-hidden="true"></i> Getting started</p>
+                <h2 class="dg-landing-panel-title">Join us as</h2>
+                <p class="dg-landing-panel-sub">Choose how you would like to access DHEERGAYUSH</p>
+
+                <button type="button" class="dg-landing-role-btn" id="doctorBtn">
+                    <span class="dg-icon-badge dg-icon-badge--sm"><i class="fas fa-user-md" aria-hidden="true"></i></span>
+                    <span class="dg-landing-role-copy">
+                        <strong>Doctor</strong>
+                        <span>Register or sign in to your practitioner account</span>
+                    </span>
+                    <i class="fas fa-chevron-right dg-landing-chevron" aria-hidden="true"></i>
+                </button>
+
+                <div class="dg-landing-or" role="separator">OR</div>
+
+                <button type="button" class="dg-landing-role-btn" id="patientBtn">
+                    <span class="dg-icon-badge dg-icon-badge--sm"><i class="fas fa-user" aria-hidden="true"></i></span>
+                    <span class="dg-landing-role-copy">
+                        <strong>Patient</strong>
+                        <span>Book consultations and manage your health digitally</span>
+                    </span>
+                    <i class="fas fa-chevron-right dg-landing-chevron" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <div class="dg-landing-panel hidden" id="doctorOptionsCard" role="region" aria-label="Doctor account options" aria-hidden="true">
+                <button type="button" class="dg-landing-back" id="doctorBackBtn" aria-label="Go back to role selection">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Back
+                </button>
+                <span class="dg-landing-role-tag"><i class="fas fa-user-md" aria-hidden="true"></i> Doctor</span>
+                <h2 class="dg-landing-panel-title">Welcome, Vaidya</h2>
+                <p class="dg-landing-panel-sub">Create a new profile or access your existing account</p>
+
+                <div class="dg-landing-action-row">
+                    <button type="button" class="dg-landing-action-btn dg-landing-action-btn--register register-btn" data-role="doctor">
+                        <span class="dg-icon-badge dg-icon-badge--sm"><i class="fas fa-user-plus" aria-hidden="true"></i></span>
+                        <strong>Register</strong>
+                        <span>New practitioner</span>
+                    </button>
+                    <button type="button" class="dg-landing-action-btn dg-landing-action-btn--login login-btn" data-role="doctor">
+                        <span class="dg-icon-badge dg-icon-badge--sm"><i class="fas fa-right-to-bracket" aria-hidden="true"></i></span>
+                        <strong>Login</strong>
+                        <span>Existing account</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="dg-landing-panel hidden" id="patientOptionsCard" role="region" aria-label="Patient account options" aria-hidden="true">
+                <button type="button" class="dg-landing-back" id="patientBackBtn" aria-label="Go back to role selection">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Back
+                </button>
+                <span class="dg-landing-role-tag"><i class="fas fa-user" aria-hidden="true"></i> Patient</span>
+                <h2 class="dg-landing-panel-title">Welcome</h2>
+                <p class="dg-landing-panel-sub">Start your Ayurvedic care journey in minutes</p>
+
+                <div class="dg-landing-action-row">
+                    <button type="button" class="dg-landing-action-btn dg-landing-action-btn--register register-btn" data-role="patient">
+                        <span class="dg-icon-badge dg-icon-badge--sm"><i class="fas fa-user-plus" aria-hidden="true"></i></span>
+                        <strong>Register</strong>
+                        <span>New patient</span>
+                    </button>
+                    <button type="button" class="dg-landing-action-btn dg-landing-action-btn--login login-btn" data-role="patient">
+                        <span class="dg-icon-badge dg-icon-badge--sm"><i class="fas fa-right-to-bracket" aria-hidden="true"></i></span>
+                        <strong>Login</strong>
+                        <span>Existing account</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="dg-landing-footer">
+        <div class="dg-landing-footer-inner">
+            <p>&copy; 2026 DHEERGAYUSH INDIA PRIVATE LIMITED</p>
+            <p style="margin:8px 0 0;font-size:0.9rem;">
+                <a href="tel:+917842736777">+91 7842736777</a>
+                &nbsp;·&nbsp;
+                <a href="mailto:contact@dheergayush.net">contact@dheergayush.net</a>
+            </p>
+            <nav class="dg-landing-footer-links" aria-label="Legal links">
+                <a href="PrivacyPage.html">Privacy</a>
+                <a href="terms.html">Terms</a>
+                <a href="contact-us.html">Contact</a>
+                <a href="support.html">Support</a>
+            </nav>
+        </div>
+    </footer>
+
+    <script src="script1.js"></script>
+    <script src="js/dg-responsive-nav.js"></script>
+</body>
+</html>

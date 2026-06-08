@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /api/
+Disallow: /dev
+Disallow: /developer.html
+
+Sitemap: https://dheergayush.net/sitemap.xml

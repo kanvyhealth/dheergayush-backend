@@ -1,0 +1,3722 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Doctor-Patient Video Call</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="prescription.css">
+  <link rel="stylesheet" href="css/dg-assets.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js"></script>
+  <script src="js/dg-auth.js"></script>
+  <script src="js/dg-agora-call.js"></script>
+  <script src="js/dg-doctor-end-calls.js"></script>
+    <style>
+              @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+html, body {
+        height: 100%;
+        margin: 0; /* Ensure no default body margin */
+        padding: 0; /* Ensure no default body padding */
+        position: relative; /* Make body a positioning context for absolute children */
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        /* Removed flex properties as we are using absolute positioning for centering the card */
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        overflow: hidden; /* Prevent scroll on initial animation */
+    }
+
+        #root {
+            width: 100vw;
+            height: 100vh;
+        }
+
+    /* Fix for pre-join layout */
+    .AgoraRoomCss {
+      max-width: 800px !important;
+      margin: 0 auto !important;
+    }
+
+    .dg-agora-stage {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      background: #1a1a2e;
+      overflow: hidden;
+    }
+    .dg-agora-remote {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    .dg-agora-remote video,
+    .dg-agora-remote canvas {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+    }
+    .dg-agora-local,
+    #dg-agora-local {
+      position: absolute;
+      bottom: max(88px, calc(72px + env(safe-area-inset-bottom, 0px)));
+      right: max(16px, env(safe-area-inset-right, 0px));
+      width: min(180px, 32vw);
+      height: min(135px, 24vw);
+      min-width: 100px;
+      min-height: 75px;
+      max-width: calc(100% - 32px);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      z-index: 12;
+      background: #000;
+      pointer-events: none;
+    }
+    .dg-agora-local--mirror video,
+    #dg-agora-local video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+    .dg-agora-toolbar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 20;
+      display: flex;
+      justify-content: center;
+      padding: max(12px, env(safe-area-inset-bottom, 0px)) 12px 12px;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.55));
+      pointer-events: none;
+    }
+    .dg-agora-toolbar > * {
+      pointer-events: auto;
+    }
+    .dg-agora-leave {
+      padding: 12px 24px;
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      min-width: 140px;
+    }
+    .dg-agora-ctrl {
+      width: 48px;
+      height: 48px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      font-size: 1.1rem;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    .dg-agora-ctrl--off {
+      background: #c0392b;
+    }
+    .dg-agora-autoplay {
+      position: absolute;
+      top: max(56px, env(safe-area-inset-top, 0px));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 25;
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 10px;
+      text-align: center;
+      max-width: calc(100% - 32px);
+    }
+    .dg-agora-autoplay p {
+      margin: 0 0 8px;
+      font-size: 0.9rem;
+    }
+    .dg-agora-autoplay button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      background: #2d6a4f;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    body.vcall-in-call #prescription-btn,
+    body.vcall-in-call #reports-btn {
+      z-index: 18;
+    }
+
+    .dg-patient-rx-actions {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: max(12px, env(safe-area-inset-left, 0px));
+      bottom: max(132px, calc(116px + env(safe-area-inset-bottom, 0px)));
+      flex-direction: column;
+      gap: 10px;
+      align-items: stretch;
+      width: min(280px, calc(100vw - 24px));
+      max-width: calc(100vw - 24px);
+      pointer-events: none;
+    }
+    .dg-patient-rx-actions.dg-patient-rx-actions--visible {
+      display: flex;
+      pointer-events: auto;
+    }
+    .dg-patient-rx-btn {
+      position: static;
+      width: 100%;
+      margin: 0;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.9rem;
+      line-height: 1.25;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      text-align: center;
+      white-space: normal;
+    }
+    #view-prescription-btn.dg-rx-ready::after {
+      content: '';
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #e74c3c;
+      box-shadow: 0 0 0 2px #fff;
+    }
+    #view-prescription-btn.dg-patient-rx-btn {
+      position: relative;
+      background-color: #f39c12;
+    }
+    #download-written-btn.dg-patient-rx-btn {
+      background-color: #16a085;
+    }
+    body.vcall-prejoin {
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+    @media (max-width: 768px) {
+      body.vcall-prejoin {
+        min-height: 100dvh;
+      }
+      #custom-prejoin {
+        position: relative;
+        left: auto;
+        top: auto;
+        transform: none;
+        margin: max(12px, env(safe-area-inset-top)) auto max(16px, env(safe-area-inset-bottom));
+        width: calc(100% - 24px);
+        max-width: 520px;
+        padding: 1.25rem;
+        opacity: 1;
+        animation: none;
+      }
+      .left-panel {
+        min-height: 200px;
+        height: min(38vh, 280px);
+        width: 100%;
+      }
+      #preview-video {
+        min-height: 180px;
+      }
+      .dg-agora-local,
+      #dg-agora-local {
+        top: max(52px, calc(8px + env(safe-area-inset-top, 0px)));
+        bottom: auto;
+        right: max(12px, env(safe-area-inset-right, 0px));
+        width: min(120px, 28vw);
+        height: min(90px, 21vw);
+        z-index: 14;
+      }
+      #prescription-btn {
+        left: max(12px, env(safe-area-inset-left)) !important;
+        margin-left: 0 !important;
+        bottom: max(76px, calc(60px + env(safe-area-inset-bottom, 0px))) !important;
+      }
+      #reports-btn {
+        left: max(68px, calc(56px + env(safe-area-inset-left))) !important;
+        bottom: max(76px, calc(60px + env(safe-area-inset-bottom, 0px))) !important;
+      }
+      .dg-patient-rx-actions {
+        bottom: max(148px, calc(132px + env(safe-area-inset-bottom, 0px))) !important;
+        max-width: calc(100vw - 24px);
+      }
+      .dg-agora-leave {
+        width: min(100%, 280px);
+      }
+    }
+    @media (max-width: 896px) and (orientation: landscape) {
+      #custom-prejoin {
+        flex-direction: row;
+        flex-wrap: wrap;
+        max-height: none;
+        padding: 1rem;
+        gap: 1rem;
+      }
+      .left-panel {
+        flex: 1 1 42%;
+        min-height: 160px;
+        height: auto;
+        max-height: 70vh;
+      }
+      .right-panel {
+        flex: 1 1 48%;
+        padding-top: 0;
+      }
+      .dg-agora-local,
+      #dg-agora-local {
+        width: min(100px, 22vw);
+        height: min(75px, 16vw);
+        top: max(8px, env(safe-area-inset-top, 0px));
+      }
+      #prescription-btn,
+      #reports-btn {
+        bottom: max(12px, env(safe-area-inset-bottom, 0px)) !important;
+      }
+    }
+    .dg-end-active-calls-btn {
+      display: none;
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 10px 14px;
+      border: 2px solid #dc2626;
+      border-radius: 0.75rem;
+      background: #fff5f5;
+      color: #b91c1c;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .dg-end-active-calls-btn.show {
+      display: block;
+    }
+
+    /* Payment form styling */
+    .payment-form {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: none; /* Hide by default */
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .qr-code-container {
+      text-align: center;
+      margin: 20px 0;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .upi-id {
+      margin: 10px 0;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .file-upload {
+      margin: 20px 0;
+    }
+
+    .file-upload-label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    #payment-proof {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      background: #3498db;
+      color: white;
+            border: none;
+      border-radius: 4px;
+            font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .submit-btn:hover {
+      background: #2980b9;
+    }
+
+    #prescription-btn {
+      display: none; /* Hide by default */
+      position: fixed;
+      left: 20px;
+      margin-left: 0;
+      bottom: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #2ecc71; /* Changed to green */
+            color: white;
+      border: none;
+            cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+      transition: background 0.3s;
+    }
+
+    #prescription-btn:hover {
+      background: #27ae60; /* Darker green on hover */
+    }
+
+    .cart-badge {
+      position: absolute;
+      top: -5px;
+      left: -5px;
+      background: #e74c3c;
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      display: none;
+            align-items: center;
+      justify-content: center;
+    }
+
+    /* Add these styles to your existing styles */
+    #reports-btn {
+      display: none; /* Hide by default */
+      position: fixed;
+      left: 80px; /* Position it next to prescription button */
+      bottom: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #3498db; /* Blue color for reports */
+            color: white;
+            border: none;
+            cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      transition: background 0.3s;
+    }
+
+    #reports-btn:hover {
+      background: #2980b9;
+    }
+
+    /* Reports Modal Styles */
+    .reports-modal {
+      display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1001;
+    }
+
+    .reports-modal-content {
+      position: relative;
+      background-color: #fff;
+      margin: 50px auto;
+      padding: 20px;
+      width: 80%;
+            max-width: 600px;
+      border-radius: 8px;
+      max-height: 80vh;
+            overflow-y: auto;
+    }
+
+    .reports-list {
+      margin-top: 20px;
+    }
+
+    .report-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      border: 1px solid #eee;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      background-color: white;
+    }
+
+    .report-item:hover {
+      background-color: #f8f9fa;
+    }
+
+    .report-name {
+      flex: 1;
+      margin-right: 15px;
+    }
+
+    .report-preview {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-right: 15px;
+    }
+
+    .report-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .view-report-btn {
+      padding: 8px 15px;
+      background-color: #3498db;
+            color: white;
+            border: none;
+      border-radius: 4px;
+            cursor: pointer;
+      font-size: 14px;
+    }
+
+    .view-report-btn:hover {
+      background-color: #2980b9;
+    }
+
+    .latest-report-badge {
+      background-color: #2ecc71;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      margin-left: 10px;
+    }
+
+    .refresh-indicator {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    /* Add these styles to your existing styles */
+    .refresh-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #3498db;
+      font-size: 14px;
+    }
+
+    .refresh-btn:hover {
+      color: #2980b9;
+    }
+
+    .refresh-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .refresh-btn.spinning svg {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .report-preview {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-right: 15px;
+      cursor: pointer;
+        }
+
+    /* Add these styles to your existing styles */
+    .store-navigation {
+      display: none; /* Hide by default, show only when in medicine view */
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .medicine-list {
+      margin-top: 20px;
+    }
+
+    .medicine-item {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Add these styles */
+    .store-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0;
+      padding: 10px;
+    }
+
+    .store-button {
+      padding: 10px 20px;
+      border: 2px solid #3498db;
+      border-radius: 20px;
+      background: white;
+      color: #3498db;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .store-button:hover {
+      background: #3498db;
+      color: white;
+    }
+
+    .store-button.active {
+      background: #3498db;
+      color: white;
+    }
+
+    .search-container {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+      padding: 0 10px;
+    }
+
+    #search-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    #search-btn {
+      padding: 10px 20px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #search-btn:hover {
+      background: #2980b9;
+    }
+
+    /* Styles for quantity controls and weight buttons within medicine item */
+    .medicine-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-top: 10px;
+    }
+
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .quantity-btn {
+      background: none;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 16px;
+      color: #3498db;
+    }
+
+    .medicine-qty {
+      padding: 0 10px;
+      font-weight: bold;
+    }
+
+    .weight-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .weight-btn {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      background: white;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+
+    .weight-btn.active {
+      background: #3498db;
+      color: white;
+      border-color: #3498db;
+    }
+
+    .add-to-cart-btn {
+      padding: 8px 15px;
+      background: #2ecc71;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+
+    .add-to-cart-btn:hover {
+      background: #27ae60;
+    }
+
+    .add-to-cart-btn:disabled {
+        background: #cccccc;
+        cursor: not-allowed;
+    }
+
+    /* Cart item styling */
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+
+    .cart-item-info {
+        flex: 1;
+    }
+
+    .cart-item-name {
+        font-weight: bold;
+        color: #2c3e50;
+    }
+
+    .cart-item-details {
+        font-size: 0.9em;
+        color: #7f8c8d;
+    }
+
+    .cart-item-price {
+        font-weight: bold;
+        color: #34495e;
+    }
+
+    .cart-total {
+        padding: 15px;
+        text-align: right;
+        font-size: 1.1em;
+        font-weight: bold;
+        border-top: 1px solid #eee;
+    }
+
+    .cart-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .empty-cart-btn {
+        background: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 10px 15px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .empty-cart-btn:hover {
+        background: #c0392b;
+    }
+
+    .add-all-to-db-btn {
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 10px 15px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .add-all-to-db-btn:hover {
+        background: #2980b9;
+    }
+
+    /* Update prescription modal styles */
+    .prescription-modal {
+        display: none;
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        width: 420px;
+        height: 600px;
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        z-index: 1000;
+        overflow: hidden;
+    }
+
+    .modal-content {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .modal-header {
+        flex-shrink: 0;
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        background: #fff;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+
+    .modal-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 15px;
+        padding-bottom: 30px; /* Add extra padding at bottom */
+        margin-right: 5px; /* Reduce right margin */
+        scrollbar-width: thin; /* For Firefox */
+        scrollbar-color: #ccc #f1f1f1; /* For Firefox */
+    }
+
+    /* Custom scrollbar for Webkit browsers */
+    .modal-body::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .modal-body::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .modal-body::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
+
+    .modal-body::-webkit-scrollbar-thumb:hover {
+        background: #999;
+    }
+
+    /* Remove scrollbar from tab-content since modal-body handles scrolling */
+    .tab-content {
+        height: auto; /* Change from 100% to auto */
+        overflow: visible; /* Change from hidden to visible */
+        padding-right: 0; /* Remove right padding */
+    }
+
+    /* Ensure proper spacing for manual report upload section */
+    .manual-report-upload {
+        margin-top: 30px;
+        padding: 20px 0;
+        border-top: 1px solid #eee;
+        margin-bottom: 20px; /* Add bottom margin */
+    }
+
+    /* Ensure proper spacing for cart actions */
+    .cart-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin: 20px 0;
+        padding-bottom: 20px; /* Add bottom padding */
+    }
+
+    /* Ensure proper spacing for payment form */
+    .payment-form {
+        padding-bottom: 30px; /* Add extra bottom padding */
+    }
+
+    /* Ensure proper spacing for medicine list */
+    .medicine-list {
+        margin-bottom: 30px; /* Add bottom margin */
+    }
+
+
+    /* Ensure proper spacing for search container */
+    .search-container {
+        margin: 15px 0;
+        padding: 0 5px;
+    }
+
+    /* Ensure proper spacing for tab buttons */
+    .tab-buttons {
+        margin-bottom: 15px;
+        padding: 0 5px;
+    }
+
+    /* Update back to cart button styles */
+    .back-to-cart-btn {
+        display: none !important; /* Force hide by default */
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 8px 15px;
+        background: #6c757d;
+        color: white;
+        margin-top:50px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.3s;
+        z-index: 2;
+    }
+
+    /* Only show back to cart button in payment form */
+    .payment-form .back-to-cart-btn {
+        display: block !important;
+    }
+
+    /* Hide back to cart button in other views */
+    #prescription-view .back-to-cart-btn,
+    #shop-prescription .back-to-cart-btn {
+        display: none !important;
+    }
+
+    /* Add Animation */
+    @keyframes animatetop {
+      from {top: -300px; opacity: 0}
+      to {top: 0; opacity: 1}
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      color: #333;
+    }
+
+    .close-btn {
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    .close-btn:hover,
+    .close-btn:focus {
+      color: black;
+      text-decoration: none;
+    }
+
+    .tab-buttons {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .tab-btn {
+      padding: 10px 15px;
+      border: none;
+      background-color: #f1f1f1;
+      cursor: pointer;
+      font-size: 16px;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      margin-right: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .tab-btn.active {
+      background-color: #3498db;
+      color: white;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 10000;
+        opacity: 0;
+        animation: fadeinout 4s forwards;
+    }
+
+    .message.success {
+        background-color: #28a745;
+    }
+
+    .message.error {
+        background-color: #dc3545;
+    }
+
+    .message.warning {
+        background-color: #ffc107;
+    }
+
+    @keyframes fadeinout {
+        0% { opacity: 0; transform: translateY(-20px); }
+        10% { opacity: 1; transform: translateY(0); }
+        90% { opacity: 1; transform: translateY(0); }
+        100% { opacity: 0; transform: translateY(-20px); }
+    }
+
+    /* New style for the back button in store navigation */
+    .back-to-stores-btn {
+      padding: 8px 15px;
+      background: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+
+    .back-to-stores-btn:hover {
+      background: #5a6268;
+    }
+
+    .manual-report-upload {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .manual-report-upload h4 {
+        margin-bottom: 15px;
+        color: #2c3e50;
+    }
+
+    #report-upload-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .store-navigation {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+    #prescription-view {
+        display: none;
+        padding: 15px;
+    }
+
+    .back-to-cart-btn {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 8px 15px;
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .back-to-cart-btn:hover {
+        background: #5a6268;
+    }
+
+    #store-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 15px;
+        justify-content: center;
+        margin-bottom: 16px;
+    }
+
+    #store-buttons .store-button {
+        min-width: 120px;
+        padding: 12px 20px;
+        border: 2px solid #3498db;
+        border-radius: 20px;
+        background: white;
+        color: #3498db;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 14px;
+        text-align: center;
+    }
+
+    #store-buttons .store-button:hover {
+        background: #3498db;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+         #root {
+        display: none;
+        width: 100vw;
+        height: 100vh;
+        }
+         #custom-prejoin {
+        display: flex;
+        flex-direction: column; /* Stack elements vertically on small screens */
+        background-color: #ffffff;
+        border-radius: 1.5rem; /* More rounded corners */
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); /* Stronger, softer shadow */
+        padding: 2.5rem; /* Decreased vertical padding */
+        max-width: 900px; /* Further increased max-width for the main card */
+        width: 95%;
+        max-height: calc(100dvh - 48px);
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        
+        /* New Centering Method: Absolute Positioning + Transform */
+        position: absolute; /* Position relative to the body */
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) translateY(20px); /* Adjust initial Y for animation */
+        
+        opacity: 0; /* Hidden for animation */
+        animation: fadeInSlideUp 0.8s ease-out forwards;
+        /* Removed margin: auto as it conflicts with absolute positioning */
+    }
+        @media (min-width: 768px) {
+            #custom-prejoin {
+                flex-direction: row; /* Side-by-side on larger screens */
+                padding: 3rem;
+                gap: 2.5rem; /* Space between panels */
+            }
+        }
+
+        @keyframes fadeInSlideUp {
+        from {
+            opacity: 0;
+            transform: translate(-50%, -50%) translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translate(-50%, -50%) translateY(0);
+        }
+    }
+
+        .left-panel {
+            flex: 1.5; /* Takes more space for video */
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative;
+            background-color: #f0f0f0; /* Placeholder background for video area */
+            border-radius: 1rem;
+            overflow: hidden; /* To ensure video fits rounded corners */
+            min-height: 250px; /* Minimum height for video area */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        #preview-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cover the area, crop if necessary */
+            border-radius: 1rem;
+            transform: scaleX(-1); /* Mirror effect for self-preview */
+            transition: opacity 0.3s ease-in-out; /* Smooth fade for video toggle */
+        }
+
+        .camera-off-message {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            border-radius: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .camera-off-message.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .camera-off-message i {
+            font-size: 3rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .toggle-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem; /* Space below video */
+        }
+
+        .toggle-buttons button {
+            background-color: #e0e7ff; /* Light blue */
+            color: #4a63b0; /* Darker blue text */
+            border: none;
+            border-radius: 50%; /* Circular buttons */
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            position: relative; /* For active state line */
+            overflow: hidden; /* For line animation */
+        }
+
+        .toggle-buttons button.active {
+            background-color: #ffcccc; /* Red for muted/off state */
+            color: #d32f2f; /* Darker red */
+        }
+
+        .toggle-buttons button:hover {
+            background-color: #d1d9fa; /* Slightly darker on hover */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .toggle-buttons button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle-buttons button .line-through {
+            position: absolute;
+            width: 80%;
+            height: 2px;
+            background-color: #d32f2f;
+            transform: rotate(-45deg) scaleX(0); /* Start hidden */
+            transition: transform 0.3s ease-out;
+        }
+
+        .toggle-buttons button.active .line-through {
+            transform: rotate(-45deg) scaleX(1); /* Show line */
+        }
+
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center content vertically */
+            gap: 1.5rem;
+            padding-top: 1rem; /* Adjust padding for mobile */
+        }
+
+        @media (min-width: 768px) {
+            .right-panel {
+                padding-top: 0;
+            }
+        }
+
+        .right-panel h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #333;
+            text-align: center;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        #username-input {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            border: 1px solid #ddd;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            box-sizing: border-box; /* Include padding in width */
+        }
+
+        #username-input:focus {
+            outline: none;
+            border-color: #6a8cff;
+            box-shadow: 0 0 0 3px rgba(106, 140, 255, 0.2);
+        }
+
+        .role-selection {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            font-size: 1.05rem;
+            color: #555;
+        }
+
+        .role-selection label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .role-selection input[type="radio"] {
+            /* Make the default radio button visible and interactive */
+            position: static; /* Revert to normal positioning */
+            margin-right: 8px; /* Add some space between radio and label text */
+            width: 18px; /* Give it a reasonable size */
+            height: 18px;
+            vertical-align: middle; /* Align with text */
+            cursor: pointer;
+        }
+
+        #join-btn {
+            background: linear-gradient(45deg, #6a8cff, #4CAF50); /* Gradient background */
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 9999px; /* Fully rounded */
+            font-weight: 700;
+            font-size: 1.2rem;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease-in-out;
+            letter-spacing: 0.05em;
+            margin-top: 1.5rem;
+        }
+
+        #join-btn:hover {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+            background: linear-gradient(45deg, #4CAF50, #2196F3); /* Change gradient on hover */
+        }
+
+        #join-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Message Box Styling */
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 25px 35px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #333;
+            max-width: 400px;
+            width: 90%;
+            animation: fadeInScale 0.3s ease-out forwards;
+        }
+
+        .message-box.show {
+            display: flex;
+        }
+
+        .message-box h3 {
+            margin-top: 0;
+            color: #d32f2f;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+        }
+
+        .message-box p {
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .message-box button {
+            background-color: #6a8cff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .message-box button:hover {
+            background-color: #4CAF50;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -40%) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+            animation: fadeInOverlay 0.3s ease-out forwards;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        @keyframes fadeInOverlay {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dheergayush-theme.css">
+    <link rel="stylesheet" href="css/dheergayush-forms.css">
+    <link rel="stylesheet" href="css/dg-platform.css">
+</head>
+<body class="vcall-prejoin">
+  
+  <div id="dg-patient-rx-actions" class="dg-patient-rx-actions" aria-label="Prescription actions">
+    <button type="button" id="view-prescription-btn" class="dg-patient-rx-btn">View Prescription</button>
+    <button type="button" id="download-written-btn" class="dg-patient-rx-btn">Download Prescription</button>
+  </div>
+
+  <!-- Agora container (shown after join) -->
+  <div id="dgCallStatusBar" class="dg-call-status-bar" aria-live="polite">
+    <span class="dg-call-status-dot"></span>
+    <span id="dgCallStatusText">Preparing call…</span>
+  </div>
+  <div id="message-container" class="dg-toast-message" style="display:none;" role="status" aria-live="polite"></div>
+
+ <div id="custom-prejoin">
+        <div class="left-panel">
+            <video id="preview-video" autoplay playsinline muted></video>
+            <div class="camera-off-message">
+                <i class="fas fa-video-slash"></i>
+                <span>Camera is OFF</span>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <h2>Join Video Call</h2>
+            <input type="text" id="username-input" placeholder="Enter your name">
+
+            <div class="role-selection">
+                <label>
+                    <input type="radio" name="role" value="doctor">
+                    Doctor
+                </label>
+                <label>
+                    <input type="radio" name="role" value="patient">
+                    Patient
+                </label>
+            </div>
+
+            <div class="toggle-buttons">
+                <button id="toggle-camera">
+                    <i class="fas fa-video"></i>
+                    <span class="line-through"></span>
+                </button>
+                <button id="toggle-mic">
+                    <i class="fas fa-microphone"></i>
+                    <span class="line-through"></span>
+                </button>
+            </div>
+
+            <button type="button" id="dg-end-active-calls-prejoin" class="dg-end-active-calls-btn" title="End other active video sessions before joining a new room">
+              End other active video calls
+            </button>
+            <button id="join-btn">Join Call</button>
+        </div>
+    </div>
+
+    <!-- Message Box for alerts -->
+    <div id="message-box" class="message-box">
+        <h3>Error!</h3>
+        <p id="message-content"></p>
+        <button id="message-box-ok">OK</button>
+    </div>
+    <div id="overlay" class="overlay"></div>
+
+    <div id="root"></div>
+
+  <button id="prescription-btn" style="display: none;">
+    <i class="fas fa-shopping-cart"></i>
+    <span class="cart-badge" id="cart-badge">0</span>
+  </button>
+
+  <button id="reports-btn" style="display: none;">
+    <i class="fas fa-file-medical"></i>
+  </button>
+<div id="prescription-card" style="display: none; position: fixed; bottom: 20px; right: 20px; width: 400px; max-height: 600px; background: linear-gradient(135deg, #ffffff, #f8f9fa); border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.35); overflow-y: auto; padding: 20px; z-index: 10000; transition: transform 0.4s ease, opacity 0.4s ease;">
+
+  <!-- Close Button -->
+  <div onclick="document.getElementById('prescription-card').style.display='none'" 
+    style="position: absolute; top: 10px; right: 10px; background: #e74c3c; color: white; font-weight: bold; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: all 0.3s;">
+    X
+  </div>
+
+  <h3 style="margin-bottom: 15px; text-align: center; font-family: 'Segoe UI', sans-serif; color: #2c3e50; font-size: 22px;">Prescribed Medicines</h3>
+
+  <div id="prescription-list" style="margin-bottom: 20px; padding: 10px;">
+    <!-- Medicine list will be populated here -->
+  </div>
+
+  <button id="fetch-prescription-btn" 
+    style="margin: 15px 0;cursor: pointer; padding: 12px 20px; background-color: #3498db; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s;">
+    Get Prescription
+  </button>
+
+  <button id="pay-now-btn" 
+    style="display: none;cursor: pointer; margin: 15px 0; padding: 12px 20px; background: linear-gradient(45deg, #ff8c00, #ff5722); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s;">
+    Pay Now
+  </button>
+
+  <div id="patient-rx-payment-panel" style="display: none; margin-top: 20px; animation: fadeIn 0.5s;">
+    <input type="text" id="phone-input" placeholder="Enter Phone Number" 
+      style="padding: 12px; width: 90%; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
+    <div id="cart-summary" style="margin: 15px 0; font-family: 'Segoe UI', sans-serif; color: #333; font-weight: 500;"></div>
+    <div class="dg-pay-banner" style="margin-bottom:15px;padding:16px;background:#fff8f3;border-radius:10px;text-align:center;border:1px solid rgba(242,103,39,0.25);">
+      <p style="margin:0;font-weight:600;color:#F67227;"><i class="fas fa-lock"></i> Pay with Razorpay</p>
+      <p style="margin:8px 0 0;font-weight:600;">Total: ₹<span id="total-amount"></span></p>
+    </div>
+    <button id="proceed-payment-btn" 
+      style="padding: 12px 20px; cursor: pointer;background: linear-gradient(135deg, #F67227, #ff8a50); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; width: 100%; box-shadow: 0 5px 12px rgba(0,0,0,0.2);">
+      <i class="fas fa-credit-card"></i> Pay with Razorpay
+    </button>
+    <p id="patient-rx-pay-status" style="display:none;margin-top:10px;text-align:center;font-size:0.9rem;"></p>
+  </div>
+</div>
+
+
+  <div class="prescription-modal" id="prescription-modal">
+    <div class="modal-content"> <div class="modal-header">
+      <h3>Medical Prescription</h3>
+      <button class="close-btn">&times;</button>
+            </div>
+    <div class="modal-body">
+            <div class="tab-buttons">
+          <button class="tab-btn active" data-tab="stores">Stores</button>
+        <button class="tab-btn" data-tab="shop-prescription">Cart</button>
+            </div>
+
+        <div class="search-container">
+          <input type="text" id="search-input" placeholder="Search stores or medicines...">
+          <button id="search-btn"><i class="fas fa-search"></i></button>
+        </div>
+
+        <div class="tab-content active" id="stores">
+          <div class="store-navigation">
+            <button class="back-to-stores-btn" id="back-to-stores-btn" style="display: none;">
+              <i class="fas fa-chevron-left"></i> Back to Stores
+            </button>
+            <div class="current-store" id="current-store"></div>
+            </div>
+
+          <div class="store-buttons" id="store-buttons"></div>
+
+          <div class="store-categories" style="display: none;"> <button class="category-btn active" data-category="all">All</button>
+            <button class="category-btn" data-category="organic">Patent</button>
+            <button class="category-btn" data-category="general">Classical</button>
+        </div>
+
+        <div id="prescription-view" style="display: none;">
+            <h2 id="medicine-list-title">Medicines</h2>
+            <div class="medicine-list" id="medicine-list"></div>
+        </div>
+    
+          <div class="manual-report-upload">
+            <h4>Manual Report Upload</h4>
+            <form id="report-upload-form">
+              <input type="file" id="report-files" multiple accept=".pdf,.jpg,.jpeg,.png">
+              <button type="submit" class="submit-btn">Upload Reports</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="tab-content" id="shop-prescription">
+          <div class="cart-items" id="cart-items"></div>
+          <div class="cart-total" id="cart-total">Total: ₹0</div>
+          <div class="cart-actions">
+              <button class="empty-cart-btn" id="empty-cart-btn">Empty Cart</button>
+              <button class="add-all-to-db-btn" id="add-all-to-db-btn">Prescribe All</button>
+        <button class="submit-btn" id="checkout-btn">Proceed to Payment</button>
+          </div>
+    </div>
+
+        <form class="payment-form" id="doctor-checkout-form">
+            <button type="button" class="back-to-cart-btn">Back to Cart</button>
+            <h4>Payment Information</h4>
+          <div class="form-group">
+                <label for="doctor-checkout-name">Your Name:</label>
+                <input type="text" id="doctor-checkout-name" required>
+            </div>
+          <div class="form-group">
+                <label for="doctor-checkout-phone">Phone Number:</label>
+                <input type="tel" id="doctor-checkout-phone" required>
+          </div>
+          <div class="form-group">
+                <label for="doctor-checkout-address">Delivery Address:</label>
+                <textarea id="doctor-checkout-address" required></textarea>
+          </div>
+          <div class="dg-pay-banner" style="text-align:center;padding:16px;background:#fff8f3;border-radius:10px;margin:12px 0;">
+                <p style="margin:0;font-weight:600;color:#F67227;"><i class="fas fa-lock"></i> Razorpay checkout</p>
+                <p id="payment-amount" style="margin:8px 0 0;font-weight:600;">Amount to Pay: ₹0</p>
+                </div>
+            <button type="submit" class="submit-btn"><i class="fas fa-credit-card"></i> Pay &amp; submit prescription</button>
+            <p id="doctor-checkout-status" style="display:none;margin-top:10px;text-align:center;font-size:0.9rem;"></p>
+            </form>
+      </div>
+        </div>
+    </div>
+
+  <div class="reports-modal" id="reports-modal">
+    <div class="reports-modal-content">
+      <div class="modal-header">
+        <h3>Patient Reports</h3>
+        <button class="refresh-btn" id="refresh-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Refresh
+        </button>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="reports-list" id="reports-list">
+      </div>
+    </div>
+  </div>
+
+  <script src="js/dg-razorpay-checkout.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="js/dg-store-payment.js"></script>
+  <script src="js/dg-catalog-merge.js"></script>
+<script>
+        // Agora credentials loaded from server (set AGORA_APP_ID + AGORA_APP_CERTIFICATE in .env)
+
+        // Utility to get URL parameters
+        function getUrlParams(url = window.location.href) {
+            const urlStr = url.split("?")[1];
+            return new URLSearchParams(urlStr);
+        }
+
+        // Try to get roomID from URL param 'roomID'
+        let roomID = getUrlParams().get("roomID");
+
+        // If roomID is not in URL, try to get it from localStorage (set by dashboard)
+        if (!roomID) {
+            roomID = localStorage.getItem("videoRoomId");
+        }
+
+        // --- UI Elements and State Variables ---
+        const previewVideo = document.getElementById('preview-video');
+        const toggleCameraButton = document.getElementById('toggle-camera');
+        const toggleMicButton = document.getElementById('toggle-mic');
+        const cameraOffMessage = document.querySelector('.camera-off-message');
+        const joinButton = document.getElementById('join-btn');
+        const usernameInput = document.getElementById('username-input');
+        const roleFromURL = getUrlParams().get("role");
+        const storedName = localStorage.getItem('patientId') || localStorage.getItem('doctorName') || '';
+        if (storedName && usernameInput) {
+            usernameInput.value = storedName;
+        }
+
+        if (roleFromURL === "patient") {
+            const patientRadio = document.querySelector('input[value="patient"]');
+            if (patientRadio) patientRadio.checked = true;
+        } else if (roleFromURL === "doctor") {
+            const doctorRadio = document.querySelector('input[value="doctor"]');
+            if (doctorRadio) doctorRadio.checked = true;
+        }
+
+        const endActiveCallsPrejoinBtn = document.getElementById('dg-end-active-calls-prejoin');
+        function updateDoctorEndCallsButton() {
+            const isDoctor =
+                roleFromURL === 'doctor' ||
+                localStorage.getItem('userRole') === 'doctor' ||
+                (document.querySelector('input[name="role"]:checked') || {}).value === 'doctor';
+            if (endActiveCallsPrejoinBtn) {
+                endActiveCallsPrejoinBtn.classList.toggle('show', !!isDoctor);
+            }
+        }
+        updateDoctorEndCallsButton();
+        document.querySelectorAll('input[name="role"]').forEach((el) => {
+            el.addEventListener('change', updateDoctorEndCallsButton);
+        });
+        if (endActiveCallsPrejoinBtn) {
+            endActiveCallsPrejoinBtn.addEventListener('click', async () => {
+                const doctorName = localStorage.getItem('doctorName');
+                if (!doctorName) {
+                    showMessageBox('Doctor account', 'Please log in as a doctor first.');
+                    return;
+                }
+                if (!confirm('End all your other active video consultations? Use this if you are stuck in a previous call before joining a new patient.')) {
+                    return;
+                }
+                endActiveCallsPrejoinBtn.disabled = true;
+                try {
+                    const data = await DgDoctorEndCalls.endActiveCalls(doctorName);
+                    showMessageBox('Sessions cleared', data.message || 'Active calls ended.');
+                } catch (err) {
+                    showMessageBox('Could not end calls', err.message || 'Try again.');
+                } finally {
+                    endActiveCallsPrejoinBtn.disabled = false;
+                }
+            });
+        }
+
+        function setVcallBodyPhase(phase) {
+            document.body.classList.remove('vcall-prejoin', 'vcall-in-call');
+            if (phase === 'in-call') {
+                document.body.classList.add('vcall-in-call');
+                document.body.style.overflow = 'hidden';
+            } else if (phase === 'prejoin') {
+                document.body.classList.add('vcall-prejoin');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Patient: show explicit join button (user gesture required for audio autoplay)
+        if (roleFromURL === "patient" && roomID) {
+            joinButton.textContent = 'Join Consultation (Enable Audio)';
+            joinButton.style.background = 'linear-gradient(135deg, #2d6a4f, #40916c)';
+        }
+
+        
+        let localStream;
+        let videoTrack;
+        let audioTrack;
+        let cameraEnabled = true;
+        let micEnabled = true;
+
+        const messageBox = document.getElementById('message-box');
+        const messageContent = document.getElementById('message-content');
+        const messageBoxOkButton = document.getElementById('message-box-ok');
+        const overlay = document.getElementById('overlay');
+        const callStatusBar = document.getElementById('dgCallStatusBar');
+        const callStatusText = document.getElementById('dgCallStatusText');
+
+        function setCallStatus(text, mode) {
+            if (!callStatusBar || !callStatusText) return;
+            callStatusText.textContent = text;
+            callStatusBar.classList.add('show');
+            callStatusBar.classList.remove('reconnecting', 'ended');
+            if (mode === 'reconnecting') callStatusBar.classList.add('reconnecting');
+            if (mode === 'ended') callStatusBar.classList.add('ended');
+        }
+
+        function hideCallStatus() {
+            if (callStatusBar) callStatusBar.classList.remove('show');
+        }
+
+        // --- Custom Message Box Functions ---
+        function showMessageBox(title, message) {
+            messageBox.querySelector('h3').textContent = title;
+            messageContent.textContent = message;
+            messageBox.classList.add('show');
+            overlay.classList.add('show');
+        }
+
+        messageBoxOkButton.addEventListener('click', () => {
+            messageBox.classList.remove('show');
+            overlay.classList.remove('show');
+        });
+        overlay.addEventListener('click', () => {
+            messageBox.classList.remove('show');
+            overlay.classList.remove('show');
+        });
+
+        // --- Media Stream Management ---
+
+        // Request media access and start preview
+        async function initMediaAndPreview() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 24, max: 30 } },
+                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+                });
+                previewVideo.srcObject = localStream;
+
+                videoTrack = localStream.getVideoTracks()[0];
+                audioTrack = localStream.getAudioTracks()[0];
+
+                // Ensure initial state of buttons matches stream
+                cameraEnabled = videoTrack ? videoTrack.enabled : false;
+                micEnabled = audioTrack ? audioTrack.enabled : false;
+                updateButtonStates();
+            } catch (err) {
+                console.error("Error accessing media devices: ", err);
+                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                    showMessageBox("Permission Denied", "Please allow camera and microphone access to join the call.");
+                } else if (err.name === 'NotFoundError') {
+                    showMessageBox("No Devices Found", "No camera or microphone found. Please ensure they are connected and enabled.");
+                } else {
+                    showMessageBox("Media Error", `An error occurred: ${err.message}`);
+                }
+            }
+        }
+
+        // Update button visual states based on enabled flags
+        function updateButtonStates() {
+            // Update camera button and message
+            if (cameraEnabled) {
+                toggleCameraButton.classList.remove('active');
+                cameraOffMessage.classList.remove('visible');
+                previewVideo.style.opacity = '1';
+            } else {
+                toggleCameraButton.classList.add('active');
+                cameraOffMessage.classList.add('visible');
+                previewVideo.style.opacity = '0';
+            }
+
+            // Update mic button
+            if (micEnabled) {
+                toggleMicButton.classList.remove('active');
+            } else {
+                toggleMicButton.classList.add('active');
+            }
+        }
+
+        async function toggleCameraForPhase() {
+            if (DgAgoraCall.isJoined()) {
+                cameraEnabled = await DgAgoraCall.setCameraEnabled(!DgAgoraCall.isCameraEnabled());
+                updateButtonStates();
+                return;
+            }
+            if (!localStream) {
+                showMessageBox("Media Not Active", "Please allow camera access first.");
+                return;
+            }
+            if (videoTrack) {
+                cameraEnabled = !cameraEnabled;
+                videoTrack.enabled = cameraEnabled;
+                updateButtonStates();
+            } else {
+                showMessageBox("Camera Not Found", "No video track available to toggle.");
+            }
+        }
+
+        async function toggleMicForPhase() {
+            if (DgAgoraCall.isJoined()) {
+                micEnabled = await DgAgoraCall.setMicrophoneEnabled(!DgAgoraCall.isMicrophoneEnabled());
+                updateButtonStates();
+                if (!micEnabled) {
+                    showMessageBox("Microphone Off", "Your microphone is muted. The other person will not hear you until you turn it on.");
+                }
+                return;
+            }
+            if (!localStream) {
+                showMessageBox("Media Not Active", "Please allow microphone access first.");
+                return;
+            }
+            if (audioTrack) {
+                micEnabled = !micEnabled;
+                audioTrack.enabled = micEnabled;
+                updateButtonStates();
+                if (!micEnabled) {
+                    showMessageBox("Microphone Off", "Your microphone is muted. The other person will not hear you until you turn it on.");
+                }
+            } else {
+                showMessageBox("Microphone Not Found", "No audio track available to toggle.");
+            }
+        }
+
+        toggleCameraButton.addEventListener('click', () => { toggleCameraForPhase(); });
+        toggleMicButton.addEventListener('click', () => { toggleMicForPhase(); });
+
+        function setPatientRxActionsVisible(visible) {
+            const bar = document.getElementById('dg-patient-rx-actions');
+            if (bar) bar.classList.toggle('dg-patient-rx-actions--visible', !!visible);
+        }
+
+        function getFirebaseAuthHeaders(extra) {
+            const headers = Object.assign({ 'Content-Type': 'application/json' }, extra || {});
+            const token = (window.DgAuth && DgAuth.getToken && DgAuth.getToken()) ||
+                localStorage.getItem('firebaseIdToken') ||
+                sessionStorage.getItem('firebaseIdToken') || '';
+            if (token) headers.Authorization = 'Bearer ' + token;
+            return headers;
+        }
+        window.getFirebaseAuthHeaders = getFirebaseAuthHeaders;
+
+        function getFirebaseIdToken() {
+            return (window.DgAuth && DgAuth.getToken && DgAuth.getToken()) ||
+                localStorage.getItem('firebaseIdToken') ||
+                sessionStorage.getItem('firebaseIdToken') || '';
+        }
+
+        async function resolveFirebaseTokenForCall() {
+            if (window.DgAuth && DgAuth.ensureValidToken) {
+                return await DgAuth.ensureValidToken();
+            }
+            return getFirebaseIdToken();
+        }
+
+        (async function warmVideoCallAuth() {
+            const token = await resolveFirebaseTokenForCall();
+            if (!token && joinButton) {
+                joinButton.title = 'Log in first — session required for video call';
+            }
+        })();
+
+        // --- Join Button Logic ---
+        joinButton.addEventListener('click', async () => {
+            const userName = usernameInput.value.trim();
+            const selectedRole = document.querySelector('input[name="role"]:checked');
+
+            if (userName === '') {
+                showMessageBox("Input Required", "Please enter your name to join the call.");
+                return;
+            }
+
+            if (!selectedRole) {
+                showMessageBox("Role Selection Required", "Please select whether you are a Doctor or a Patient.");
+                return;
+            }
+            const role = selectedRole.value;
+
+            if (!micEnabled) {
+                const proceedMuted = confirm("Your microphone is muted. The other person will NOT hear you.\n\nJoin anyway?");
+                if (!proceedMuted) return;
+            }
+
+            localStorage.setItem("userRole", role);
+
+            // Validate Room ID before proceeding with Agora
+            if (!roomID) {
+                showMessageBox("Room ID Missing", "Room ID not found. Please join via the proper link or ensure it's in localStorage.");
+                // Potentially redirect or prevent joining fully
+                return;
+            }
+
+            if (role === 'doctor') {
+                const doctorName = localStorage.getItem('doctorName');
+                if (doctorName && window.DgDoctorEndCalls) {
+                    try {
+                        await DgDoctorEndCalls.endActiveCalls(doctorName, { exceptRoomId: roomID });
+                    } catch (e) {
+                        console.warn('Could not end other active calls:', e);
+                    }
+                }
+            }
+
+            // Stop preview stream before Agora takes over
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                previewVideo.srcObject = null; // Clear video element
+            }
+
+            // Hide custom prejoin UI
+            document.getElementById('custom-prejoin').style.display = 'none';
+            setVcallBodyPhase('in-call');
+            setCallStatus('Connecting to secure video server…', 'connecting');
+
+            const userID = localStorage.getItem('doctorName') ||
+                localStorage.getItem('patientId') ||
+                ('guest_' + String(roomID).slice(0, 24));
+
+            const firebaseToken = await resolveFirebaseTokenForCall();
+            if (!firebaseToken && role === 'doctor') {
+                document.getElementById('custom-prejoin').style.display = 'flex';
+                setVcallBodyPhase('prejoin');
+                hideCallStatus();
+                showMessageBox(
+                    'Sign in required',
+                    'Doctors must log in at /doctor.html before joining a video call.'
+                );
+                setTimeout(function () { window.location.href = '/doctor.html'; }, 2500);
+                return;
+            }
+
+            let tokenData;
+            try {
+                const agoraPayload = { roomID, userID, userName, role };
+                const agoraHeaders = getFirebaseAuthHeaders();
+                const tokenRes = await fetch('/api/agora/token', {
+                    method: 'POST',
+                    headers: agoraHeaders,
+                    body: JSON.stringify(agoraPayload)
+                });
+                tokenData = await tokenRes.json();
+                if (!tokenRes.ok) {
+                    document.getElementById('custom-prejoin').style.display = 'flex';
+                    setVcallBodyPhase('prejoin');
+                    hideCallStatus();
+                    var errMsg = tokenData.message || tokenData.error || 'Could not start video call.';
+                    if (tokenRes.status === 401) {
+                        errMsg = 'Your session expired. Please log in again and rejoin the call.';
+                        localStorage.removeItem('firebaseIdToken');
+                        if (window.DgAuth && DgAuth.clearSession) DgAuth.clearSession();
+                    }
+                    showMessageBox('Video unavailable', errMsg);
+                    return;
+                }
+            } catch (err) {
+                document.getElementById('custom-prejoin').style.display = 'flex';
+                setVcallBodyPhase('prejoin');
+                hideCallStatus();
+                showMessageBox('Connection error', 'Could not reach video server. Check your network and tap Join again.');
+                return;
+            }
+
+            document.getElementById('root').style.display = 'block';
+
+            async function handleLeaveCall() {
+                setCallStatus('Call ended', 'ended');
+                console.log(`Left Agora channel ${roomID}`);
+                prescriptionBtn.style.display = 'none';
+                reportsBtn.style.display = 'none';
+                setPatientRxActionsVisible(false);
+
+                if (roomID) {
+                    try {
+                        await fetch(`/api/video-room/${encodeURIComponent(roomID)}/call-ended`, { method: 'POST' });
+                    } catch (err) {
+                        console.warn('Could not mark consultation completed:', err);
+                    }
+                }
+
+                const userRole = localStorage.getItem("userRole");
+                const doctorName = userRole === 'doctor'
+                    ? localStorage.getItem("doctorName")
+                    : null;
+                if (doctorName) {
+                    try {
+                        const res = await fetch('/api/doctors/updateStatus', {
+                            method: 'POST',
+                            headers: getFirebaseAuthHeaders(),
+                            body: JSON.stringify({
+                                doctorName,
+                                status: 'Available'
+                            })
+                        });
+                        if (!res.ok) throw new Error('Status update failed');
+                        console.log("✅ Doctor status set to Available after call");
+                    } catch (err) {
+                        console.error("⚠️ Failed to update doctor status:", err);
+                    }
+                }
+
+                if (userRole === "doctor") {
+                    window.location.href = '/doctor1.html';
+                } else {
+                    window.location.href = '/patient.html';
+                }
+            }
+
+            try {
+                await DgAgoraCall.joinCall({
+                    containerId: 'root',
+                    appId: tokenData.appId,
+                    channel: tokenData.channel || roomID,
+                    token: tokenData.token,
+                    uid: tokenData.uid,
+                    cameraEnabled: cameraEnabled,
+                    microphoneEnabled: micEnabled,
+                    onUserJoined: () => {
+                        const role = localStorage.getItem('userRole');
+                        const label = role === 'doctor' ? 'Patient joined' : 'Doctor joined';
+                        setCallStatus(label, 'connected');
+                    },
+                    onConnectionStateChange: (state) => {
+                        if (state === 'RECONNECTING') {
+                            setCallStatus('Reconnecting…', 'reconnecting');
+                        } else if (state === 'CONNECTED') {
+                            setCallStatus('Connected', 'connected');
+                        }
+                    },
+                    onAutoplayBlocked: () => {
+                        setCallStatus('Tap “Enable sound” to hear the other person', 'reconnecting');
+                    },
+                    onConnected: async () => {
+                        setCallStatus('Connected', 'connected');
+                        const currentRole = localStorage.getItem("userRole");
+                        if (currentRole === "doctor") {
+                            const doctorName = localStorage.getItem("doctorName");
+                            if (doctorName) {
+                                try {
+                                    await fetch('/api/doctors/updateStatus', {
+                                        method: 'POST',
+                                        headers: getFirebaseAuthHeaders(),
+                                        body: JSON.stringify({ doctorName, status: 'Busy' })
+                                    });
+                                } catch (err) {
+                                    console.warn('Could not set doctor Busy:', err);
+                                }
+                            }
+                        }
+                        if (currentRole === "doctor") {
+                            prescriptionBtn.style.display = 'flex';
+                            reportsBtn.style.display = 'flex';
+                            setPatientRxActionsVisible(false);
+                        } else {
+                            prescriptionBtn.style.display = 'none';
+                            reportsBtn.style.display = 'none';
+                            setPatientRxActionsVisible(true);
+                        }
+                        if (typeof initPrescription === 'function') initPrescription();
+                    },
+                    onLeave: handleLeaveCall
+                });
+            } catch (err) {
+                console.error('Agora join failed:', err);
+                document.getElementById('custom-prejoin').style.display = 'flex';
+                setVcallBodyPhase('prejoin');
+                document.getElementById('root').style.display = 'none';
+                hideCallStatus();
+                showMessageBox('Video error', err.message || 'Could not join video call.');
+            }
+        });
+
+        // Initialize media when the window loads
+      window.addEventListener(
+    'load',
+    initMediaAndPreview
+);
+
+
+// Simple DOM injection method after zp.joinRoom()
+
+
+
+// Capture role on join click
+
+
+
+  // ================= PRESCRIPTION FUNCTIONALITY =================
+  
+  // Cart data (each item now includes storeId, medicineId, selected weight and price)
+  function getActiveRoomId() {
+    return getUrlParams().get("roomID") || localStorage.getItem("videoRoomId") || '';
+  }
+  let cart = JSON.parse(localStorage.getItem(`prescriptionCart_${getActiveRoomId()}`)) || [];
+
+  // DOM Elements
+  const prescriptionBtn = document.getElementById('prescription-btn');
+  const viewPrescriptionBtn = document.getElementById('view-prescription-btn'); 
+  const cartBadge = document.getElementById('cart-badge');
+  const prescriptionModal = document.getElementById('prescription-modal');
+  const closeBtn = prescriptionModal.querySelector('.close-btn'); // Get from within modal
+  const tabButtons = prescriptionModal.querySelectorAll('.tab-btn');
+  const tabContents = prescriptionModal.querySelectorAll('.tab-content');
+  const medicineList = document.getElementById('medicine-list');
+  const cartItemsContainer = document.getElementById('cart-items'); // Renamed to avoid conflict
+  const cartTotal = document.getElementById('cart-total');
+  const checkoutBtn = document.getElementById('checkout-btn');
+        const paymentForm = document.getElementById('doctor-checkout-form');
+  const paymentAmount = document.getElementById('payment-amount');
+
+  const reportsBtn = document.getElementById('reports-btn');
+  const reportsModal = document.getElementById('reports-modal');
+  const reportsList = document.getElementById('reports-list');
+  let isRefreshing = false;
+
+  // New DOM elements for cart actions
+  const emptyCartBtn = document.getElementById('empty-cart-btn');
+  const addAllToDbBtn = document.getElementById('add-all-to-db-btn');
+
+
+  // Add these variables
+  
+  // let searchTimeout;
+  // let currentView = 'stores'; // 'stores' or 'medicines'
+  let stores = [];
+let allMedicines = [];
+let currentStore = null;
+let currentCategory = 'all';
+let currentSearchTerm = '';
+let searchTimeout = null;
+let storesLoaded = false;
+
+  // DOM elements for store navigation and search
+  const storeNavigation = document.querySelector('.store-navigation');
+  const backToStoresBtn = document.getElementById('back-to-stores-btn');
+  const currentStoreDisplay = document.getElementById('current-store');
+  const storeButtonsContainer = document.getElementById('store-buttons');
+  const storeCategories = document.querySelector('.store-categories');
+  const searchInput = document.getElementById('search-input');
+document.getElementById('view-prescription-btn').addEventListener('click', () => {
+  document.getElementById('prescription-card').style.display = 'block';
+  loadPatientPrescription(false);
+  startPatientPrescriptionPolling();
+});
+let latestPrescription = null;
+let totalAmount = 0;
+let prescriptionPollInterval = null;
+
+function stopPatientPrescriptionPolling() {
+  if (prescriptionPollInterval) {
+    clearInterval(prescriptionPollInterval);
+    prescriptionPollInterval = null;
+  }
+}
+
+function markPatientPrescriptionReady() {
+  const btn = document.getElementById('view-prescription-btn');
+  if (btn) btn.classList.add('dg-rx-ready');
+}
+
+function startPatientPrescriptionPolling() {
+  if (localStorage.getItem('userRole') === 'doctor') return;
+  stopPatientPrescriptionPolling();
+  loadPatientPrescription(true);
+  prescriptionPollInterval = setInterval(async () => {
+    const loaded = await loadPatientPrescription(true);
+    if (loaded) {
+      markPatientPrescriptionReady();
+      stopPatientPrescriptionPolling();
+    }
+  }, 5000);
+}
+
+async function loadPatientPrescription(silent) {
+  const activeRoom = getActiveRoomId();
+  const listContainer = document.getElementById('prescription-list');
+  if (!activeRoom || !listContainer) return false;
+  try {
+    const res = await fetch(`/api/get-prescription/${encodeURIComponent(activeRoom)}`);
+    const data = await res.json();
+
+    if (!res.ok || !data || !data.cartItems || !data.cartItems.length) {
+      if (!silent) {
+        listContainer.innerHTML = '<p style="text-align:center;color:#666;padding:12px;">No prescription yet. Your doctor will prescribe medicines during the call.</p>';
+        document.getElementById('fetch-prescription-btn').style.display = 'block';
+        document.getElementById('pay-now-btn').style.display = 'none';
+      }
+      return false;
+    }
+
+    latestPrescription = data.cartItems;
+    listContainer.innerHTML = '';
+    totalAmount = 0;
+    latestPrescription.forEach(item => {
+      totalAmount += item.totalPrice;
+      const itemDiv = document.createElement('div');
+      itemDiv.style = "margin-bottom: 15px; padding: 10px; border-radius: 10px; background: linear-gradient(45deg, #f2f2f2, #e0e0e0); box-shadow: 0 2px 8px rgba(0,0,0,0.15);";
+      itemDiv.innerHTML = `
+        <div style="font-weight: bold; font-size: 17px; color: #2c3e50;">${item.name}</div>
+        <div style="color: #555;">${(item.selectedWeight && item.selectedWeight.value) || ''} ${(item.selectedWeight && item.selectedWeight.unit) || ''}</div>
+        <div style="margin-top: 5px;">Quantity: ${item.quantity} | Price: ₹${item.totalPrice}</div>
+      `;
+      listContainer.appendChild(itemDiv);
+    });
+
+    document.getElementById('fetch-prescription-btn').style.display = 'none';
+    document.getElementById('pay-now-btn').style.display = 'block';
+    markPatientPrescriptionReady();
+    if (!silent) {
+      showMessage('Your doctor has prescribed medicines. Review and pay below.', 'success');
+    }
+    return true;
+  } catch (err) {
+    console.error('Fetch prescription error:', err);
+    if (!silent) {
+      listContainer.innerHTML = '<p style="text-align:center;color:#c0392b;">Could not load prescription. Tap Get Prescription to retry.</p>';
+      document.getElementById('fetch-prescription-btn').style.display = 'block';
+    }
+    return false;
+  }
+}
+
+document.getElementById('fetch-prescription-btn').addEventListener('click', () => loadPatientPrescription(false));
+
+document.getElementById('pay-now-btn').addEventListener('click', () => {
+    document.getElementById('pay-now-btn').style.display = 'none';
+  document.getElementById('patient-rx-payment-panel').style.display = 'block';
+  document.getElementById('total-amount').innerText = totalAmount;
+});
+document.getElementById('proceed-payment-btn').addEventListener('click', async () => {
+  const phone = document.getElementById('phone-input').value.trim();
+  const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
+  const statusEl = document.getElementById('patient-rx-pay-status');
+  const btn = document.getElementById('proceed-payment-btn');
+
+  const phoneRegex = /^\d{10}$/;
+  if (!phoneRegex.test(phone)) {
+    alert('Phone number must be exactly 10 digits.');
+    return;
+  }
+  if (!window.DgRazorpayCheckout) {
+    alert('Payment system not loaded. Refresh the page.');
+    return;
+  }
+
+  if (btn) btn.disabled = true;
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Opening Razorpay…'; statusEl.style.color = '#555'; }
+
+  try {
+    const amountPaise = Math.max(100, Math.round(Number(totalAmount) * 100));
+    const { paymentResponse } = await DgRazorpayCheckout.payWithRazorpay({
+      amountPaise,
+      description: 'Prescription medicines',
+      prefill: { contact: phone }
+    });
+
+    const response = await fetch('/api/submit-prescription', {
+      method: 'POST',
+      headers: (window.getFirebaseAuthHeaders || getFirebaseAuthHeaders)(),
+      body: JSON.stringify({
+        phone,
+        items: latestPrescription,
+        total: totalAmount,
+        roomID,
+        razorpay_order_id: paymentResponse.razorpay_order_id,
+        razorpay_payment_id: paymentResponse.razorpay_payment_id,
+        razorpay_signature: paymentResponse.razorpay_signature
+      })
+    });
+    const result = await response.json();
+    if (result.success) {
+      // Generate prescription receipt data
+      const receiptData = {
+        roomId: roomID,
+        patientPhone: phone,
+        medicines: latestPrescription,
+        totalPaid: `₹${totalAmount}`
+      };
+
+      // Create URL for prescription receipt with data as query parameters
+      const receiptUrl = new URL('prescription-receipt.html', window.location.origin);
+      Object.entries(receiptData).forEach(([key, value]) => {
+        if (typeof value === 'object') {
+          receiptUrl.searchParams.append(key, JSON.stringify(value));
+        } else {
+          receiptUrl.searchParams.append(key, value);
+        }
+      });
+
+      // Redirect to the prescription receipt page to trigger download there
+      window.open(receiptUrl.toString(), '_blank');
+
+      alert("Prescription submitted successfully!");
+      document.getElementById('prescription-card').style.display = 'none';
+    } else {
+      alert(result.message || "Submission failed.");
+    }
+  } catch (err) {
+    console.error(err);
+    const msg = err.message || 'Payment failed';
+    if (statusEl) { statusEl.style.color = '#c62828'; statusEl.textContent = msg; }
+    else alert(msg);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+});
+document.getElementById("empty-cart-btn").addEventListener("click", () => {
+  const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
+
+  // Clear cart array
+  cart = [];
+
+  // Remove from localStorage
+  localStorage.removeItem(`prescriptionCart_${roomID}`);
+
+  // Re-render UI
+  renderCart();
+  updateCartBadge();
+
+  // Optional: Notify others if needed
+  if (typeof broadcastPrescriptionUpdate === 'function') {
+    broadcastPrescriptionUpdate(cart);
+  }
+
+  showMessage("Cart has been emptied", "success");
+});
+
+  function broadcastPrescriptionUpdate(cart) {
+    const roomID = getActiveRoomId();
+    if (!roomID) return;
+    localStorage.setItem(`prescriptionCart_${roomID}`, JSON.stringify(cart));
+  }
+
+  function notifyPrescriptionReady() {
+    // Patient receives updates via /api/get-prescription polling
+  }
+
+  function initOfflineMode() {
+    console.log('Initializing prescription system');
+    const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
+    
+    // Load cart from localStorage
+    cart = JSON.parse(localStorage.getItem(`prescriptionCart_${roomID}`)) || [];
+    
+    // Initial render
+    loadStores();
+    renderCart();
+    updateCartBadge();
+  }
+  document.getElementById('report-upload-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const fileInput = document.getElementById('report-files');
+  const file = fileInput.files[0];
+  const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
+
+  if (!file) {
+    showMessage('Please select a file to upload', 'warning');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('roomId', roomID);
+
+  try {
+    const uploadHeaders = {};
+    const uploadToken = (window.DgAuth && DgAuth.getToken && DgAuth.getToken()) ||
+      localStorage.getItem('firebaseIdToken') ||
+      sessionStorage.getItem('firebaseIdToken') || '';
+    if (uploadToken) uploadHeaders.Authorization = 'Bearer ' + uploadToken;
+    const response = await fetch('/api/written-prescription/upload', {
+      method: 'POST',
+      headers: uploadHeaders,
+      body: formData
+    });
+    const result = await response.json();
+    if (result.success) {
+      showMessage('Written prescription uploaded successfully!', 'success');
+      fileInput.value = '';
+    } else {
+      showMessage('Failed to upload written prescription', 'error');
+    }
+  } catch (err) {
+    showMessage('Error uploading written prescription', 'error');
+  }
+});
+
+
+  // Add to cart function (updated to handle weights and storeId)
+  function addToCart(medicineId, storeId, name, selectedWeight, pricePerUnit, quantity) {
+    // Check if medicine already exists in cart with the same weight/type
+    const existingItemIndex = cart.findIndex(item => 
+      item.id === medicineId && 
+      item.storeId === storeId &&
+      item.weightValue === selectedWeight.value &&
+      item.weightUnit === selectedWeight.unit
+    );
+
+    if (existingItemIndex > -1) {
+      // Update existing item
+      cart[existingItemIndex].quantity = quantity;
+    } else {
+      // Add new item
+      cart.push({
+        id: medicineId, // _id of the medicine sub-document
+        storeId: storeId, // _id of the store document
+        name: name,
+        weightValue: selectedWeight.value,
+        weightUnit: selectedWeight.unit,
+        price: pricePerUnit, // Price per unit of the selected weight
+        quantity: quantity
+      });
+    }
+
+    // Save to localStorage
+    const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
+    localStorage.setItem(`prescriptionCart_${roomID}`, JSON.stringify(cart));
+
+    // Update UI
+    renderCart();
+    updateCartBadge();
+    broadcastPrescriptionUpdate(cart); // Broadcast update
+  }
+
+  // Calculate total function
+  function calculateTotal() {
+    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  }
+
+  // Initialize the app
+  function init() {
+    // Clear cart on page load/refresh (only for dev, remove in production if cart should persist across sessions)
+    // cart = [];
+    // localStorage.removeItem('prescriptionCart');
+    
+    // Initialize store system instead of medicine list
+    loadStores();
+    renderCart();
+    setupEventListeners();
+    updateCartBadge();
+  }
+
+  function initPrescription() {
+    const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
+    console.log(`Initializing prescription for room: ${roomID}`);
+    initOfflineMode();
+    if (localStorage.getItem('userRole') !== 'doctor') {
+      startPatientPrescriptionPolling();
+    }
+  }
+  function handleQuantityChange(event) {
+    const button = event.currentTarget; // The clicked button (increment or decrement)
+    const medicineId = button.dataset.id;
+    const quantitySpan = document.querySelector(`.medicine-qty[data-id="${medicineId}"]`);
+    let currentQty = parseInt(quantitySpan.textContent);
+
+    if (button.classList.contains('increment-btn')) {
+        currentQty++;
+    } else if (button.classList.contains('decrement-btn')) {
+        if (currentQty > 0) { // Prevent negative quantities
+            currentQty--;
+        }
+    }
+    quantitySpan.textContent = currentQty;
+
+    // Update the 'Add'/'Update' button state
+    const medicineItem = button.closest('.medicine-item');
+    const addToCartBtn = medicineItem.querySelector('.add-to-cart-btn');
+    const activeWeightBtn = medicineItem.querySelector('.weight-btn.active'); // Check for active weight
+
+    // Enable/disable the Add/Update button based on quantity and selected weight
+    if (currentQty > 0 && activeWeightBtn) {
+        addToCartBtn.disabled = false;
+        addToCartBtn.textContent = 'Update'; // Change text if quantity > 0
+    } else {
+        addToCartBtn.disabled = true;
+        addToCartBtn.textContent = 'Add';
+    }
+
+    // Call updateMedicineState to sync UI state, if you have this function
+    updateMedicineState(medicineId, currentQty, activeWeightBtn ? {
+        value: parseFloat(activeWeightBtn.dataset.value),
+        unit: activeWeightBtn.dataset.unit
+    } : null);
+
+    // After changing quantity, you might want to call updateCartDisplay() or similar
+    // updateCartDisplay();
+}
+
+// Function to handle weight selection
+function handleWeightSelection(event) {
+    const selectedButton = event.currentTarget;
+    const medicineItem = selectedButton.closest('.medicine-item');
+    const medicineId = medicineItem.dataset.id;
+
+    // Deactivate all other weight buttons for this medicine
+    medicineItem.querySelectorAll('.weight-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Activate the clicked weight button
+    selectedButton.classList.add('active');
+
+    // Get selected weight details
+    const weightValue = parseFloat(selectedButton.dataset.value);
+    const weightUnit = selectedButton.dataset.unit;
+    const weightPrice = parseFloat(selectedButton.dataset.price);
+
+    // Get current quantity
+    const quantitySpan = medicineItem.querySelector(`.medicine-qty[data-id="${medicineId}"]`);
+    const currentQty = parseInt(quantitySpan.textContent);
+
+    // Enable/disable the Add/Update button based on quantity and selected weight
+    const addToCartBtn = medicineItem.querySelector('.add-to-cart-btn');
+    if (currentQty > 0 && selectedButton) {
+        addToCartBtn.disabled = false;
+        addToCartBtn.textContent = 'Update';
+    } else {
+        addToCartBtn.disabled = true;
+        addToCartBtn.textContent = 'Add';
+    }
+
+    // Call updateMedicineState to sync UI state
+    updateMedicineState(medicineId, currentQty, {
+        value: weightValue,
+        unit: weightUnit,
+        price: weightPrice // Include price for easier cart management
+    });
+}
+
+// Function to handle adding/updating items in the cart
+function handleAddToCart(event) {
+    const button = event.currentTarget;
+    const medicineId = button.dataset.id;
+    const medicineItem = button.closest('.medicine-item');
+
+    const quantitySpan = medicineItem.querySelector(`.medicine-qty[data-id="${medicineId}"]`);
+    const quantity = parseInt(quantitySpan.textContent);
+
+    const activeWeightBtn = medicineItem.querySelector('.weight-btn.active');
+
+    if (quantity === 0 || !activeWeightBtn) {
+        showMessage('Please select a quantity and a weight.', 'warning');
+        return;
+    }
+
+    // Find the full medicine object from the `currentStore`'s medicines
+    const medicine = currentStore.medicines.find(m => m._id === medicineId);
+
+    if (!medicine) {
+        console.error("Medicine not found in current store's data:", medicineId);
+        showMessage('Error: Medicine details not found.', 'error');
+        return;
+    }
+
+    const weightValue = parseFloat(activeWeightBtn.dataset.value);
+    const weightUnit = activeWeightBtn.dataset.unit;
+    const weightPrice = parseFloat(activeWeightBtn.dataset.price);
+
+    const existingCartItemIndex = cart.findIndex(item =>
+        item.id === medicineId &&
+        item.weightValue === weightValue &&
+        item.weightUnit === weightUnit
+    );
+
+    if (existingCartItemIndex > -1) {
+        // Update existing item in cart
+        cart[existingCartItemIndex].quantity = quantity;
+        showMessage('Item updated in cart!', 'success');
+    } else {
+        // Add new item to cart
+        const newItem = {
+            id: medicineId,
+            name: medicine.name,
+            description: medicine.description,
+            category: medicine.category,
+            quantity: quantity,
+            weightValue: weightValue,
+            weightUnit: weightUnit,
+            price: weightPrice,
+            storeId: currentStore._id, // Add store info
+            storeName: currentStore.name
+        };
+        cart.push(newItem);
+        showMessage('Item added to cart!', 'success');
+    }
+
+    console.log("Current Cart:", cart); // Log the cart to see its content
+    // You would typically update a visual cart display here
+    updateCartDisplay(); // Call a function to update the cart UI (you'll need to define this)
+}
+
+
+  // Render medicine list
+  function renderMedicines(medicinesToRender) {
+    const medicineList = document.getElementById('medicine-list');
+    medicineList.innerHTML = '';
+    
+    const medicines = Array.isArray(medicinesToRender) ? medicinesToRender : [];
+
+    console.log("Rendering medicines - count:", medicines.length);
+    console.log("Medicines to render:", medicines);
+
+    if (medicines.length === 0) {
+        medicineList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">No medicines found matching your search or category.</p>';
+        return;
+    }
+
+    // Use the validated 'medicines' array here
+    medicines.forEach(medicine => {
+      const medicineItem = document.createElement('div');
+      medicineItem.className = 'medicine-item';
+        medicineItem.dataset.id = medicine._id; // Use MongoDB _id
+
+        const currentCartItem = cart.find(item => item.id === medicine._id);
+        let initialQty = 0; // Always start from 0
+
+        let initialWeight = currentCartItem ? { value: currentCartItem.weightValue, unit: currentCartItem.weightUnit } : null;
+      
+      medicineItem.innerHTML = `
+        <div class="medicine-name">
+          <span>${medicine.name}</span>
+          <span class="medicine-description" style="font-size:12px;color:#7f8c8d;">${medicine.description}</span>
+        </div>
+        
+        <div class="medicine-controls">
+          <div class="quantity-controls">
+                    <button class="quantity-btn decrement-btn" data-id="${medicine._id}">
+              <i class="fas fa-minus"></i>
+            </button>
+                    <span class="medicine-qty" data-id="${medicine._id}">${initialQty}</span>
+                    <button class="quantity-btn increment-btn" data-id="${medicine._id}">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+
+                <div class="weight-selector">
+                    ${(medicine.weights || []).map(weight => `
+                        <button class="weight-btn ${initialWeight && initialWeight.value === weight.value && initialWeight.unit === weight.unit ? 'active' : ''}"
+                                data-value="${weight.value}" data-unit="${weight.unit}" data-price="${weight.price}">
+                            ${weight.value}${weight.unit} (₹${weight.price})
+                        </button>
+                    `).join('')}
+                </div>
+
+                <button class="add-to-cart-btn" data-id="${medicine._id}" ${initialQty === 0 || !initialWeight ? 'disabled' : ''}>
+                    ${initialQty > 0 ? 'Update' : 'Add'}
+                </button>
+        </div>
+      `;
+      
+      medicineList.appendChild(medicineItem);
+        updateMedicineState(medicine._id, initialQty, initialWeight); // Assuming this function is defined
+    });
+
+    // CRITICAL: Attach event listeners AFTER elements are added to the DOM
+    document.querySelectorAll('.quantity-btn').forEach(button => {
+        button.addEventListener('click', handleQuantityChange);
+    });
+
+    document.querySelectorAll('.weight-btn').forEach(button => {
+        button.addEventListener('click', handleWeightSelection);
+    });
+
+    document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+        button.addEventListener('click', handleAddToCart);
+    });
+}
+  // Render cart
+  function renderCart(filterTerm) {
+    cartItemsContainer.innerHTML = '';
+    const isDoctor = localStorage.getItem('userRole') === 'doctor';
+    const term = (filterTerm || '').toLowerCase().trim();
+    const visibleCart = term
+      ? cart.filter(item => (item.name || '').toLowerCase().includes(term))
+      : cart;
+
+    if (visibleCart.length === 0) {
+      cartItemsContainer.innerHTML = term
+        ? '<p style="text-align: center; color: #7f8c8d;">No matching items in cart</p>'
+        : '<p style="text-align: center; color: #7f8c8d;">No items in prescription</p>';
+      cartTotal.textContent = term ? `Showing 0 of ${cart.length} items · Total: ₹${cart.reduce((s, i) => s + i.price * i.quantity, 0)}` : 'Total: ₹0';
+      checkoutBtn.style.display = 'none';
+      emptyCartBtn.style.display = cart.length ? 'inline-block' : 'none';
+      addAllToDbBtn.style.display = (isDoctor && cart.length) ? 'inline-block' : 'none';
+      if (!term && cart.length === 0) return;
+      if (term) return;
+    }
+
+    checkoutBtn.style.display = 'none';
+    emptyCartBtn.style.display = 'inline-block';
+    addAllToDbBtn.style.display = isDoctor ? 'inline-block' : 'none';
+    let total = 0;
+
+    visibleCart.forEach(item => {
+      const cartItem = document.createElement('div');
+      cartItem.className = 'cart-item';
+      cartItem.dataset.id = item.id;
+      
+      cartItem.innerHTML = `
+        <div class="cart-item-info">
+          <div class="cart-item-name">${item.name}</div>
+          <div class="cart-item-details">${item.weightValue}${item.weightUnit} - ₹${item.price} x ${item.quantity}</div>
+        </div>
+        <div class="cart-item-price">₹${item.price * item.quantity}</div>
+      `;
+      
+      cartItemsContainer.appendChild(cartItem);
+      total += item.price * item.quantity;
+    });
+
+    const cartGrandTotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+    cartTotal.textContent = term
+      ? `Showing ${visibleCart.length} of ${cart.length} · Total: ₹${cartGrandTotal}`
+      : `Total: ₹${cartGrandTotal}`;
+    paymentAmount.textContent = `Amount to Pay: ₹${cartGrandTotal}`;
+  }
+
+  // Update cart badge
+  function updateCartBadge() {
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    cartBadge.textContent = totalItems;
+    cartBadge.style.display = totalItems > 0 ? 'flex' : 'none';
+  }
+  function displayStoresView() {
+    const prescriptionView = document.getElementById('prescription-view');
+    if (prescriptionView) prescriptionView.style.display = 'none';
+    if (storeButtonsContainer) storeButtonsContainer.style.display = 'flex';
+    if (storeNavigation) storeNavigation.style.display = 'none';
+    if (medicineList) medicineList.style.display = 'none';
+    if (storeCategories) storeCategories.style.display = 'none';
+  }
+
+
+  // Setup event listeners
+  function setupEventListeners() {
+    // Toggle prescription modal
+    prescriptionBtn.addEventListener('click', () => {
+      const prescriptionModal = document.getElementById('prescription-modal');
+      if (!prescriptionModal) {
+          console.error('Prescription modal not found');
+          return;
+      }
+      
+      prescriptionModal.style.display = prescriptionModal.style.display === 'block' ? 'none' : 'block';
+      
+      if (prescriptionModal.style.display === 'block') {
+          const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
+          cart = JSON.parse(localStorage.getItem(`prescriptionCart_${roomID}`)) || [];
+          renderCart();
+          updateCartBadge();
+            
+            // Reset view to stores
+            currentView = 'stores';
+            displayStoresView();
+            loadStores().then(() => {
+                renderStoreButtons(stores);
+            });
+            
+            searchInput.value = '';
+            searchInput.placeholder = 'Search stores...';
+      }
+    });
+    
+    // Close modal
+    closeBtn.addEventListener('click', () => {
+      prescriptionModal.style.display = 'none';
+      paymentForm.style.display = 'none'; // Ensure payment form is hidden when modal closes
+    });
+    
+    // Tab switching
+            tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+        const tabId = button.dataset.tab;
+            tabContents.forEach(content => {
+          content.classList.remove('active');
+                if (content.id === tabId) {
+                    content.classList.add('active');
+          }
+        });
+
+        // Hide payment form and back to cart button when switching tabs
+        paymentForm.style.display = 'none';
+        document.querySelector('.back-to-cart-btn').style.display = 'none';
+        
+        if (tabId === 'stores') {
+            // Reset view to stores
+            currentView = 'stores';
+            displayStoresView();
+            searchInput.placeholder = 'Search stores...';
+            searchInput.value = '';
+            loadStores().then(() => {
+                renderStoreButtons(stores);
+            });
+        } else if (tabId === 'shop-prescription') {
+            currentView = 'cart';
+            renderCart();
+            storeNavigation.style.display = 'none';
+            storeButtonsContainer.style.display = 'none';
+            storeCategories.style.display = 'none';
+            medicineList.style.display = 'none';
+            searchInput.placeholder = 'Search cart items...';
+            searchInput.value = '';
+        }
+      });
+    });
+    
+    // Medicine controls (delegated event listener)
+    medicineList.addEventListener('click', (e) => {
+      const medicineItemDiv = e.target.closest('.medicine-item');
+      if (!medicineItemDiv) return;
+      
+      const medicineId = medicineItemDiv.dataset.id;
+      const medicine = currentStore.medicines.find(m => m._id === medicineId);
+      if (!medicine) return;
+
+      const qtyElement = medicineItemDiv.querySelector(`.medicine-qty[data-id="${medicineId}"]`);
+      let qty = parseInt(qtyElement.textContent);
+      
+      const selectedWeightBtn = medicineItemDiv.querySelector('.weight-btn.active');
+      let selectedWeight = null;
+      let pricePerUnit = 0;
+
+      if (selectedWeightBtn) {
+        selectedWeight = {
+            value: parseFloat(selectedWeightBtn.dataset.value),
+            unit: selectedWeightBtn.dataset.unit
+        };
+        pricePerUnit = parseInt(selectedWeightBtn.dataset.price);
+      }
+      
+     
+      
+      // Weight button selection
+      if (e.target.closest('.weight-btn')) {
+        medicineItemDiv.querySelectorAll('.weight-btn').forEach(btn => btn.classList.remove('active'));
+        e.target.closest('.weight-btn').classList.add('active');
+        selectedWeight = {
+            value: parseFloat(e.target.closest('.weight-btn').dataset.value),
+            unit: e.target.closest('.weight-btn').dataset.unit
+        };
+        pricePerUnit = parseInt(e.target.closest('.weight-btn').dataset.price);
+        updateMedicineState(medicineId, qty, selectedWeight); // Update button state
+      }
+      
+      // Add to cart button
+      if (e.target.closest('.add-to-cart-btn')) {
+        if (qty > 0 && selectedWeight) {
+          addToCart(medicineId, currentStore._id, medicine.name, selectedWeight, pricePerUnit, qty);
+          qtyElement.textContent = '0'; // Reset quantity after adding to cart
+          medicineItemDiv.querySelectorAll('.weight-btn').forEach(btn => btn.classList.remove('active')); // Deselect weight
+          updateMedicineState(medicineId, 0, null); // Disable button
+        } else {
+            showMessage('Please select a weight and quantity greater than 0', 'warning');
+        }
+      }
+    });
+    
+    // Checkout button
+    checkoutBtn.addEventListener('click', () => {
+      if (cart.length === 0) {
+        showMessage('Please add items to prescription first', 'warning');
+        return;
+      }
+      
+      // Switch to payment form view
+      tabContents.forEach(content => content.classList.remove('active'));
+      paymentForm.style.display = 'block';
+      
+      // Hide search and other elements temporarily
+      searchInput.style.display = 'none';
+      document.getElementById('search-btn').style.display = 'none';
+      tabButtons.forEach(btn => btn.style.display = 'none');
+    });
+    
+    // Payment form submission
+    document.getElementById('doctor-checkout-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      try {
+        const name = document.getElementById('doctor-checkout-name').value.trim();
+        const phone = document.getElementById('doctor-checkout-phone').value.trim();
+        const address = document.getElementById('doctor-checkout-address').value.trim();
+        const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
+        const statusEl = document.getElementById('doctor-checkout-status');
+        const cartTotal = calculateTotal();
+        
+        if (!name || !phone || !address) {
+          showMessage('Please fill in all required fields', 'warning');
+          return;
+        }
+        
+        if (cart.length === 0) {
+          showMessage('Please add items to your prescription', 'warning');
+          return;
+        }
+
+        if (!window.DgStorePayment) {
+          showMessage('Payment system not loaded. Refresh the page.', 'error');
+          return;
+        }
+
+        if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Opening Razorpay…'; statusEl.style.color = '#555'; }
+
+        await DgStorePayment.checkoutCartOrder({
+          orderData: {
+            customerName: name,
+            customerPhone: phone,
+            deliveryAddress: address,
+            items: cart,
+            subtotal: cartTotal,
+            discount: 0,
+            deliveryFee: 0,
+            totalAmount: cartTotal,
+            notes: 'Video call prescription — room ' + roomID,
+            orderStatus: 'pending',
+            orderDate: new Date()
+          },
+          description: 'Prescription order (doctor checkout)',
+          prefill: { name, contact: phone }
+        });
+
+        const formData = {
+          name,
+          phone,
+          address,
+          items: cart,
+          total: cartTotal,
+          roomID: roomID,
+          paymentMethod: 'razorpay'
+        };
+
+        const response = await fetch('/api/prescriptions', {
+          method: 'POST',
+          headers: (window.getFirebaseAuthHeaders || getFirebaseAuthHeaders)(),
+          body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || 'Failed to save prescription');
+        }
+
+        showMessage('Payment successful! Prescription will be delivered soon.', 'success');
+        
+        // Clear cart and close modal
+        cart = [];
+        localStorage.removeItem(`prescriptionCart_${roomID}`);
+        prescriptionModal.style.display = 'none';
+        updateCartBadge();
+        renderCart();
+        // Reset form and UI
+        paymentForm.reset();
+        paymentForm.style.display = 'none';
+        searchInput.style.display = 'flex'; // Show search bar again
+        document.getElementById('search-btn').style.display = 'flex';
+        tabButtons.forEach(btn => btn.style.display = 'flex');
+        // Switch back to stores tab
+        document.querySelector('.tab-btn[data-tab="stores"]').click();
+      } catch (error) {
+        console.error('Error saving prescription:', error);
+        showMessage(`Error saving prescription: ${error.message}\nPlease try again or contact support.`, 'error');
+      }
+    });
+
+    // Reports button click
+    reportsBtn.addEventListener('click', () => {
+      reportsModal.style.display = 'block';
+      fetchAndDisplayReports();
+    });
+
+    // Refresh button click - only fetch when clicked
+    document.getElementById('refresh-btn').addEventListener('click', fetchAndDisplayReports);
+
+    // Close reports modal
+    reportsModal.querySelector('.close-btn').addEventListener('click', () => {
+      reportsModal.style.display = 'none';
+    });
+
+    // Close modal when clicking outside
+    reportsModal.addEventListener('click', (e) => {
+      if (e.target === reportsModal) {
+        reportsModal.style.display = 'none';
+      }
+    });
+
+    
+    backToStoresBtn.addEventListener('click', () => {
+        currentView = 'stores';
+        displayStoresView();
+        searchInput.placeholder = 'Search stores...';
+        searchInput.value = '';
+        renderStoreButtons(stores);
+    });
+
+    // Update back to cart button click handler
+    const backToCartBtn = document.querySelector('.back-to-cart-btn');
+    if (backToCartBtn) {
+        backToCartBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            paymentForm.style.display = 'none';
+            // Switch to cart tab
+            document.querySelector('.tab-btn[data-tab="shop-prescription"]').click();
+            // Show search and tab buttons again
+            searchInput.style.display = 'flex';
+            document.getElementById('search-btn').style.display = 'flex';
+            tabButtons.forEach(btn => btn.style.display = 'flex');
+        });
+    }
+
+    // Modify the Add All to DB button handler
+    addAllToDbBtn.addEventListener('click', async () => {
+        if (cart.length === 0) {
+            showMessage('Cart is empty. Nothing to prescribe.', 'warning');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to prescribe all items in the cart? This will save them permanently.')) {
+            return;
+        }
+
+        try {
+            const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
+            if (window.DgAuth && DgAuth.ensureValidToken) {
+                await DgAuth.ensureValidToken();
+            }
+            const authHdr = (window.getFirebaseAuthHeaders || getFirebaseAuthHeaders)();
+            if (!authHdr.Authorization) {
+                showMessage('Please log in at /doctor.html before prescribing.', 'error');
+                return;
+            }
+            const response = await fetch('/api/prescribe-cart', {
+                method: 'POST',
+                headers: authHdr,
+                body: JSON.stringify({
+                    roomId: roomID,
+                    cartItems: cart,
+                    timestamp: new Date().toISOString()
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || 'Failed to prescribe cart items');
+            }
+
+            showMessage('All items have been prescribed and saved successfully!', 'success');
+            notifyPrescriptionReady();
+            
+            // Clear cart after successful prescription
+            cart = [];
+            localStorage.removeItem(`prescriptionCart_${roomID}`);
+            renderCart();
+            updateCartBadge();
+            broadcastPrescriptionUpdate(cart);
+
+            // Switch back to stores view
+            document.querySelector('.tab-btn[data-tab="stores"]').click();
+            loadStores().then(() => {
+                renderStoreButtons(stores);
+                displayStoresView();
+            });
+
+        } catch (error) {
+            console.error('Error prescribing cart items:', error);
+            showMessage(`Failed to prescribe items: ${error.message}`, 'error');
+        }
+    });
+
+    // Search functionality
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            performSearch(e.target.value);
+        }, 300); // Debounce search
+    });
+
+    document.getElementById('search-btn').addEventListener('click', () => {
+        performSearch(searchInput.value);
+    });
+
+  } // End setupEventListeners
+
+  // Update medicine state (add/update button text, enable/disable)
+  function updateMedicineState(medicineId, quantity, selectedWeight) {
+    const medicineItemDiv = document.querySelector(`.medicine-item[data-id="${medicineId}"]`);
+    if (!medicineItemDiv) return;
+
+    const addBtn = medicineItemDiv.querySelector('.add-to-cart-btn');
+    const isReadyToAdd = quantity > 0 && selectedWeight !== null;
+    addBtn.disabled = !isReadyToAdd;
+
+    // This line updates the button text based on whether the item is already in the cart
+    addBtn.textContent = isReadyToAdd ? (cart.some(item => item.id === medicineId && item.weightValue === selectedWeight.value && item.weightUnit === selectedWeight.unit) ? 'Update' : 'Add') : 'Add';
+
+    // FIX: Use 'quantity' and 'selectedWeight' (the function's parameters) here
+    if (window.DG_DEBUG_MEDICINE) {
+        console.log(`Medicine ${medicineId} state updated: Qty=${quantity}, Weight=${selectedWeight ? selectedWeight.value + selectedWeight.unit : 'None'}`);
+    }
+  }
+  document.getElementById("download-written-btn").addEventListener("click", async () => {
+  const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
+
+  try {
+    // Step 1: Get file path from backend
+    const res = await fetch(`/api/written-prescription/${roomID}`);
+    const data = await res.json();
+
+    if (!data.success || !data.filePath) {
+      alert("No written prescription found.");
+      return;
+    }
+
+    const fileUrl = /^https?:\/\//i.test(data.filePath)
+      ? data.filePath
+      : '/' + String(data.filePath).replace(/\\/g, '/');
+    const fileName = fileUrl.split('/').pop();
+
+    // ✅ Step 2: Fetch the file as a Blob with correct headers
+    const fileRes = await fetch(fileUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/octet-stream'
+      }
+    });
+
+    if (!fileRes.ok) {
+      throw new Error('Failed to fetch the file');
+    }
+
+    const blob = await fileRes.blob();
+
+    // ✅ Step 3: Create a download link
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (err) {
+    console.error("Download failed:", err);
+    alert("Failed to download written prescription.");
+  }
+});
+
+
+
+
+  // Function to fetch and display reports
+  async function fetchAndDisplayReports() {
+    if (isRefreshing) return;
+    
+    const refreshBtn = document.getElementById('refresh-btn');
+    const reportsList = document.getElementById('reports-list');
+    
+    try {
+        isRefreshing = true;
+        refreshBtn.classList.add('spinning');
+        
+        const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
+        console.log('🔍 Fetching reports for room:', roomID);
+        
+        if (!roomID) {
+            throw new Error('Room ID not found');
+        }
+
+        console.log('🌐 Making API request to:', `/api/reports/${roomID}`);
+        const response = await fetch(`/api/reports/${roomID}`);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('❌ API Error:', errorData);
+            throw new Error(errorData.message || 'Failed to fetch reports');
+        }
+
+        const data = await response.json();
+        console.log('📄 Received data:', data);
+        
+        reportsList.innerHTML = '';
+
+        // Add payment info header (if available from reports API)
+        if (data.paymentInfo) {
+            const paymentInfo = document.createElement('div');
+            paymentInfo.className = 'payment-info';
+            paymentInfo.innerHTML = `
+                <h4>Patient Information (from Payment)</h4>
+                <p><strong>Name:</strong> ${data.paymentInfo.name || 'N/A'}</p>
+                <p><strong>Phone:</strong> ${data.paymentInfo.phone || 'N/A'}</p>
+                <p><strong>Address:</strong> ${data.paymentInfo.address || 'N/A'}</p>
+                <p><strong>Paid Total:</strong> ₹${data.paymentInfo.total || '0'}</p>
+                <p><strong>Date:</strong> ${new Date(data.paymentInfo.createdAt).toLocaleString()}</p>
+            `;
+            reportsList.appendChild(paymentInfo);
+        }
+
+        // Add prescribed medicines header (if available from reports API)
+        if (data.prescribedItems && data.prescribedItems.length > 0) {
+            const prescribedSection = document.createElement('div');
+            prescribedSection.className = 'prescribed-items-section';
+            prescribedSection.innerHTML = `
+                <h4 style="margin-top: 20px;">Prescribed Medicines</h4>
+                <ul style="list-style: none; padding: 0;">
+                    ${data.prescribedItems.map(item => `
+                        <li style="padding: 5px 0; border-bottom: 1px dashed #eee;">
+                            <strong>${item.name}</strong> - ${item.selectedWeight.value}${item.selectedWeight.unit} x ${item.quantity} (₹${item.totalPrice})
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+            reportsList.appendChild(prescribedSection);
+        }
+
+
+        if (data.reports && data.reports.length > 0) {
+            console.log('📋 Processing', data.reports.length, 'reports');
+            
+            const reportsContainer = document.createElement('div');
+            reportsContainer.className = 'reports-container';
+            
+            data.reports.forEach((report, index) => {
+                const reportItem = document.createElement('div');
+                reportItem.className = 'report-item';
+                
+                // Ensure report.path is a string before calling toLowerCase()
+                const reportPath = String(report.path || ''); // Explicitly cast to string
+                const isImage = /\.(jpg|jpeg|png|gif)$/i.test(reportPath.toLowerCase());
+                
+                // Ensure fullPath is a string for image src and window.open
+                const fullReportPath = String(report.fullPath || '');
+
+                console.log(`📎 Processing report ${index + 1}:`, {
+                    path: reportPath,
+                    fullPath: fullReportPath,
+                    isImage: isImage
+                });
+
+                // Create the report item HTML
+                const imagePreview = isImage ? 
+                    `<img src="${fullReportPath}" class="report-preview" 
+                         onclick="window.open('${fullReportPath}', '_blank')" 
+                         alt="Report preview"
+                         onerror="this.onerror=null; this.src='placeholder.jpg'; console.error('Failed to load image:', '${fullReportPath}')">` 
+                    : '<i class="fas fa-file-medical fa-2x"></i>';
+
+                reportItem.innerHTML = `
+                    <div class="report-preview-container">
+                        ${imagePreview}
+                    </div>
+                    <div class="report-name">
+                        ${reportPath || 'N/A'} <!-- Display 'N/A' if path is missing or empty -->
+                        ${index === 0 ? '<span class="latest-report-badge">Latest</span>' : ''}
+                        <div class="report-date">${new Date(String(report.uploadDate || '')).toLocaleString()}</div>
+                    </div>
+                    <div class="report-actions">
+                        <button class="view-report-btn" onclick="window.open('${fullReportPath}', '_blank')">
+                            ${isImage ? 'View Full Image' : 'View Report'}
+                        </button>
+                    </div>
+                `;
+
+                // Add click handler for the entire item
+                reportItem.addEventListener('click', (e) => {
+                    // Only open if not clicking the button (button has its own handler)
+                    if (!e.target.closest('.view-report-btn')) {
+                        window.open(fullReportPath, '_blank');
+                    }
+                });
+
+                reportsContainer.appendChild(reportItem);
+            });
+            
+            reportsList.appendChild(reportsContainer);
+        } else {
+            console.log('⚠️ No reports found in response');
+            reportsList.innerHTML += '<p style="text-align: center; color: #7f8c8d;">No reports available</p>';
+        }
+    } catch (error) {
+        console.error('❌ Error in fetchAndDisplayReports:', error);
+        reportsList.innerHTML = `
+            <p style="text-align: center; color: #e74c3c;">
+                Error loading reports: ${error.message}<br>
+                Please try again.
+            </p>
+        `;
+    } finally {
+        isRefreshing = false;
+        refreshBtn.classList.remove('spinning');
+    }
+  }
+
+  // Function to handle prescription updates
+  function handlePrescriptionUpdate(data) {
+    console.log('Received prescription update:', data); // Debug log
+    
+    if (!data || !data.cart) {
+        console.error('Invalid prescription update data:', data);
+        return;
+    }
+
+    // Update the local cart
+    cart = data.cart;
+    
+    // Save to localStorage
+    const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
+    localStorage.setItem(`prescriptionCart_${roomID}`, JSON.stringify(cart));
+    
+    // Update UI
+    renderCart();
+    updateCartBadge();
+    // If currently viewing medicines, re-render to reflect cart quantities
+    if (currentView === 'medicines' && currentStore) {
+        renderMedicines(currentStore.medicines);
+    }
+  }
+
+  // Add utility functions at the top
+  function showMessage(message, type = 'info') {
+    const messageContainer = document.getElementById('message-container');
+    if (messageContainer) {
+        messageContainer.textContent = message;
+        messageContainer.className = `dg-toast-message dg-toast-${type}`;
+        messageContainer.style.display = 'block';
+        setTimeout(() => {
+            messageContainer.style.display = 'none';
+        }, 4000);
+    } else {
+        console.warn("Message container not found. Message:", message);
+    }
+  }
+  // Update the refresh button handler
+  // Remove this entire block
+  /*
+  document.getElementById('prescription-refresh-btn').addEventListener('click', async () => {
+    const refreshBtn = document.getElementById('prescription-refresh-btn');
+    if (refreshBtn.classList.contains('spinning')) return;
+    
+    try {
+        refreshBtn.classList.add('spinning');
+        const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
+        
+        // Request latest cart from all participants
+        if (window.__removedZego && typeof window.__removedZego.sendBroadcastMessage === 'function') {
+            window.__removedZego.sendBroadcastMessage(JSON.stringify({
+                type: 'request_cart_update',
+                roomID: roomID,
+                timestamp: Date.now()
+            }));
+        }
+        
+        // Load from localStorage (this is mostly for patient to receive doctor's changes)
+        // Doctor's cart is authoritative in this setup, or we need a server to sync
+        // For simplicity, we assume doctor's local cart is the source.
+        const savedCart = JSON.parse(localStorage.getItem(`prescriptionCart_${roomID}`)) || [];
+        cart = savedCart;
+        renderCart();
+        updateCartBadge();
+        // If currently viewing medicines, re-render to reflect cart quantities
+        if (currentView === 'medicines' && currentStore) {
+            renderMedicines(currentStore.medicines);
+        }
+        
+        showMessage('Prescription refreshed successfully', 'success');
+    } catch (error) {
+        console.error('Error refreshing prescription:', error);
+        showMessage('Failed to refresh prescription', 'error');
+    } finally {
+        refreshBtn.classList.remove('spinning');
+    }
+  });
+  */
+
+  async function loadStores() {
+    try {
+        const response = await fetch('/api/stores');
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Network response was not ok.');
+        }
+        stores = await response.json();
+
+        if (window.DgCatalogMerge) {
+            stores = DgCatalogMerge.dedupeStores(stores);
+            stores.forEach(function (store) {
+                store.medicines = DgCatalogMerge.mergeProducts(store.medicines || [], store.name);
+            });
+        }
+
+        console.log("Stores array immediately after fetch:", stores); // Keep this log
+
+        if (!Array.isArray(stores)) {
+            console.error("API response for stores is not an array:", stores);
+            showMessage('Received invalid data for stores.', 'error');
+            stores = [];
+        }
+
+        if (stores.length > 0) {
+            allMedicines = stores.flatMap(store =>
+                (store.medicines || []).map(med => ({
+                    ...med,
+                    storeId: store._id,
+                    storeName: store.name
+                }))
+            );
+            renderStoreButtons(stores);
+            displayStoresView(); // This call should now work
+
+            if (stores[0]) {
+                currentStore = stores[0];
+                console.log("Current Store set:", currentStore);
+                loadMedicines(currentStore._id);
+            }
+        } else {
+            document.getElementById('medicine-list').innerHTML = '<p style="text-align: center; color: #7f8c8d;">No stores available</p>';
+            displayStoresView(); // This call should also work
+                }
+            } catch (error) {
+        console.error('Error loading stores:', error);
+        showMessage(`Failed to load stores: ${error.message}`, 'error');
+        displayStoresView();
+        if (storeButtonsContainer) {
+            storeButtonsContainer.innerHTML = '<p style="text-align: center; color: #e74c3c; width:100%;">Error loading stores. Please check your server.</p>';
+        }
+    }
+}
+function updateMedicineListTitle() {
+    const prescriptionView = document.getElementById('prescription-view');
+    const medicineListTitle = document.getElementById('medicine-list-title');
+
+    if (storeButtonsContainer) storeButtonsContainer.style.display = 'none';
+    if (prescriptionView) prescriptionView.style.display = 'block';
+
+    if (medicineListTitle) {
+        if (currentStore && typeof currentStore.name === 'string') {
+            medicineListTitle.textContent = `Medicines at ${currentStore.name}`;
+        } else {
+            medicineListTitle.textContent = 'Medicines';
+        }
+    }
+}
+
+  // Function to display the medicines view for a selected store
+  function displayMedicinesView(store) {
+    currentView = 'medicines';
+    currentStore = store; // Set the current store
+    const prescriptionView = document.getElementById('prescription-view');
+    if (prescriptionView) prescriptionView.style.display = 'block';
+    storeNavigation.style.display = 'flex'; // Show back button and current store name
+    backToStoresBtn.style.display = 'block'; // Show the "Back to Stores" button
+    currentStoreDisplay.textContent = store.name; // Display selected store name
+    storeButtonsContainer.style.display = 'none'; // Hide store selection buttons
+    storeCategories.style.display = 'flex'; // Show categories
+    medicineList.style.display = 'block'; // Show medicine list
+    searchInput.placeholder = `Search medicines in ${store.name}...`;
+    
+    // Reset category to 'all' when entering store
+    currentCategory = 'all';
+    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.category-btn[data-category="all"]').classList.add('active');
+    
+    loadMedicines(store._id); // Load medicines for the selected store
+  }
+
+  async function loadMedicines(storeId, searchTerm = '') {
+    currentSearchTerm = searchTerm;
+
+    console.log(`loadMedicines called for Store ID: ${storeId}`);
+    console.log(`Current Category: ${currentCategory}`);
+    console.log(`Search Term: ${searchTerm}`);
+
+    const store = stores.find(s => s._id === storeId);
+    if (!store) {
+        console.warn(`Store with ID ${storeId} not found in loaded stores array.`);
+        medicineList.innerHTML = '<p style="text-align: center; color: #e74c3c;">Store not found.</p>';
+        return;
+    }
+
+    currentStore = store;
+
+    // Ensure store.medicines is an array, default to empty if not
+    let filteredMedicines = Array.isArray(store.medicines) ? store.medicines : [];
+    console.log("Medicines for current store (before filtering):", filteredMedicines);
+
+    // Apply category filter first
+    if (currentCategory && currentCategory !== 'all') {
+        const lowerCaseCategory = currentCategory.toLowerCase();
+        filteredMedicines = filteredMedicines.filter(m =>
+            m.category && m.category.toLowerCase() === lowerCaseCategory
+        );
+        console.log(`Medicines after ${currentCategory} filter:`, filteredMedicines);
+    }
+
+    // Then apply search term filter
+    if (searchTerm) {
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+        filteredMedicines = filteredMedicines.filter(medicine =>
+            (medicine.name && medicine.name.toLowerCase().includes(lowerCaseSearchTerm)) ||
+            (medicine.description && medicine.description.toLowerCase().includes(lowerCaseSearchTerm)) ||
+            (medicine.name && medicine.name.toLowerCase().split(' ').some(word => word.includes(lowerCaseSearchTerm))) ||
+            (medicine.description && medicine.description.toLowerCase().split(' ').some(word => word.includes(lowerCaseSearchTerm)))
+        );
+        console.log("Medicines after search term filter:", filteredMedicines);
+    }
+
+    renderMedicines(filteredMedicines);
+    updateMedicineListTitle();
+  }
+function renderStoreButtons(storesToRender) {
+    storeButtonsContainer.innerHTML = '';
+
+    if (!Array.isArray(storesToRender) || storesToRender.length === 0) {
+        storeButtonsContainer.innerHTML = '<p style="text-align: center; color: #7f8c8d;">No stores found matching your search.</p>';
+        return;
+    }
+
+    storesToRender.forEach((store) => {
+        const button = document.createElement('button');
+        button.className = 'store-button';
+        button.textContent = store.name;
+        button.onclick = () => {
+            displayMedicinesView(store);
+            searchInput.value = '';
+            currentCategory = 'all';
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('.category-btn[data-category="all"]').classList.add('active');
+        };
+        storeButtonsContainer.appendChild(button);
+    });
+}
+
+
+
+
+  // Unified search function
+  function performSearch(searchTerm) {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab;
+
+    if (activeTab === 'shop-prescription' || currentView === 'cart') {
+      renderCart(lowerCaseSearchTerm);
+      return;
+    }
+
+    if (currentView === 'stores') {
+      // Search stores
+      const filteredStores = stores.filter(store => 
+        store.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+        store.description.toLowerCase().includes(lowerCaseSearchTerm) ||
+        store.name.toLowerCase().split(' ').some(word => word.includes(lowerCaseSearchTerm)) // Fuzzy match
+      );
+      renderStoreButtons(filteredStores);
+    } else if (currentView === 'medicines' && currentStore) {
+      // Search medicines within the current store
+      loadMedicines(currentStore._id, searchTerm);
+    }
+  }
+//   document.getElementById('category-filter').addEventListener('change', (event) => {
+//     currentCategory = event.target.value;
+//     if (currentStore) { // Only reload medicines if a store is selected
+//         loadMedicines(currentStore._id, currentSearchTerm);
+//     } else {
+//         // If no store is selected, maybe show a message or load all medicines
+//         console.warn("Category filter changed, but no store is currently selected.");
+//     }
+// });
+
+// Search input event listener (ensure this is correctly set up)
+// document.getElementById('medicine-search').addEventListener('input', (event) => {
+//     currentSearchTerm = event.target.value;
+//     if (currentStore) { // Only reload medicines if a store is selected
+//         loadMedicines(currentStore._id, currentSearchTerm);
+//     } else {
+//         console.warn("Search term changed, but no store is currently selected.");
+//     }
+// });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const prescriptionModal = document.getElementById('prescription-modal');
+    const doctorCheckoutForm = document.getElementById('doctor-checkout-form');
+
+    if (prescriptionModal && doctorCheckoutForm) {
+        prescriptionModal.addEventListener('click', (e) => {
+            if (e.target === prescriptionModal) {
+                prescriptionModal.style.display = 'none';
+                doctorCheckoutForm.style.display = 'none';
+            }
+        });
+    }
+
+    init();
+});
+
+// Add back the category buttons event listeners
+document.querySelectorAll('.category-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentCategory = btn.dataset.category;
+        if (currentStore) {
+            loadMedicines(currentStore._id, searchInput.value);
+        }
+    });
+});
+
+    </script>
+    <script src="js/dg-responsive-nav.js"></script>
+</body>
+</html>

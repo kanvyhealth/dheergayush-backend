@@ -1,0 +1,296 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Roboto:wght@700&display=swap');
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    touch-action: manipulation;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #ffffff 0%, #f26727 18%, #fafafa 50%, #3c3c3c 100%);
+    background-attachment: fixed;
+    font-size: 14px;
+    color: #3C3C3C;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+.container {
+    background: linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(242,103,39,0.08) 50%, rgba(60,60,60,0.06) 100%);
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 5%;
+    position: relative;
+}
+
+.app-title {
+    position: absolute;
+    top: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5em;
+    font-weight: 700;
+    background: linear-gradient(45deg, #3C3C3C, #F26727, #ff8a50);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    z-index: 10;
+    letter-spacing: 0.02em;
+}
+
+.illustration {
+    width: 40%; /* Adjust as needed */
+    margin-top: 5%;
+    margin-left: 5%;
+    max-width: 600px;
+    height: auto;
+    animation: fadeInIllustration 1.5s ease-out forwards;
+    z-index: 2; /* Ensure illustration is below card but above background */
+}
+
+.card {
+    margin-top: 1.5%;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    width: 450px; /* Increased width to accommodate new buttons */
+    max-width: 90%; /* Max width for responsiveness */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+margin-right: 8%;
+    /* Positioning for cards */
+    position: absolute;
+    right: 5%; /* Position to the right of the screen */
+    top: 50%;
+    transform: translateY(-50%);
+
+    /* Transition for visibility (opacity changes smoothly, z-index changes instantly at end/start) */
+    /* Default transition for all cards */
+    transition: opacity 0.6s ease-in-out, z-index 0.001s linear;
+}
+
+.card.hidden {
+    opacity: 0;
+    pointer-events: none; /* Disable interactions when hidden */
+    z-index: -1; /* Send to back when hidden */
+    /* z-index changes *after* the opacity transition is complete */
+    transition: opacity 0.6s ease-in-out, z-index 0.001s 0.6s linear;
+}
+
+.card.visible {
+    opacity: 1;
+    pointer-events: auto; /* Enable interactions when visible */
+    z-index: 5; /* Bring to front when visible */
+    /* z-index changes *at the start* of the opacity transition (effectively instantly) */
+    transition: opacity 0.6s ease-in-out, z-index 0.001s linear;
+}
+
+.card-title {
+    color: #3C3C3C;
+    margin-bottom: 30px;
+    font-size: 1.8em;
+    font-weight: 700;
+    font-family: 'Playfair Display', serif;
+}
+
+.or-separator {
+    margin: 25px 0; /* Increased margin for better spacing */
+    color: #777;
+    font-size: 1.1em;
+}
+
+/* === BUTTON BASE (New Button Styling) === */
+.button {
+    position: relative;
+    padding: 14px 24px;
+    width: 100%;
+    max-width: 280px;
+    min-height: 56px;
+    height: auto;
+    border: none;
+    background: linear-gradient(135deg, #F26727, #ff8a50);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin: 12px 0;
+    box-shadow: 0 8px 24px rgba(242, 103, 39, 0.35);
+    overflow: hidden;
+}
+
+.button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(242, 103, 39, 0.45);
+}
+
+.button:active {
+    box-shadow: none;
+}
+
+.button:active .button__content {
+    box-shadow: none;
+}
+
+.button:active .button__text,
+.button:active .button__icon {
+    transform: translate3d(0, 0, 0);
+}
+
+/* === BUTTON CONTENT === */
+.button__content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 28px;
+    border-radius: 999px;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    transition: 0.15s ease-in-out;
+}
+
+/* === ICON === */
+.button__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: none;
+    transition: 0.15s ease-in-out;
+    flex-shrink: 0;
+}
+.button__icon svg {
+    width: 32px;
+    height: 32px;
+    fill: #3C3C3C;
+    transition: 0.15s ease-in-out;
+}
+.button:hover .button__icon svg {
+    fill: #3C3C3C;
+}
+
+/* === TEXT === */
+.button__text {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+    color: #3C3C3C;
+    transform: none;
+    text-shadow: none;
+    transition: 0.15s ease-in-out;
+}
+.button:hover .button__text {
+    color: #3C3C3C;
+}
+
+
+/* Animations */
+@keyframes fadeInIllustration {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.landing-subtitle {
+    position: absolute;
+    top: 72px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    color: #666;
+    font-size: 0.95rem;
+    margin: 0;
+    text-align: center;
+    width: min(92vw, 560px);
+}
+
+@media (max-width: 960px) {
+    .container {
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 96px 16px 40px;
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
+
+    .app-title {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        margin: 0 0 8px;
+        font-size: clamp(1.6rem, 6vw, 2.2rem);
+        text-align: center;
+    }
+
+    .landing-subtitle {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        margin-bottom: 12px;
+    }
+
+    .illustration {
+        width: min(78vw, 320px);
+        max-width: 320px;
+        margin: 8px auto 0;
+    }
+
+    .card {
+        position: relative;
+        right: auto;
+        top: auto;
+        transform: none;
+        width: 100%;
+        max-width: 420px;
+        margin: 20px auto 0;
+        padding: 28px 20px;
+    }
+
+    .allcards {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding-top: 84px;
+    }
+
+    .button {
+        max-width: 100%;
+    }
+
+    .card {
+        padding: 24px 16px;
+    }
+}

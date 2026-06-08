@@ -1,0 +1,354 @@
+﻿/* New appointment booking page */
+body.dg-appointment-page {
+  background: var(--dg-page-bg-cover, linear-gradient(135deg, #fff8e1 0%, #fafafa 45%, rgba(242, 103, 39, 0.12) 100%)) !important;
+  background-attachment: fixed !important;
+}
+
+body.dg-appointment-page::before {
+  display: none !important;
+}
+
+body.dg-appointment-page .container {
+  max-width: 1280px;
+  padding-top: 8px;
+}
+
+body.dg-appointment-page .header {
+  display: none;
+}
+
+body.dg-appointment-page #backToHomeBtn {
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: #3c3c3c !important;
+  border: 1px solid rgba(60, 60, 60, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.dg-appointment-page #doctorsSection {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  animation: none;
+}
+
+.dg-appt-hero {
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 20px;
+  padding: 28px 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 12px 40px rgba(60, 60, 60, 0.08);
+  border: 1px solid rgba(242, 103, 39, 0.15);
+}
+
+.dg-appt-hero h2 {
+  margin: 0 0 8px;
+  font-family: var(--dg-display, 'Playfair Display', serif);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: #3c3c3c;
+  border: none;
+  padding: 0;
+}
+
+.dg-appt-hero p {
+  margin: 0;
+  color: #666;
+  font-size: 0.95rem;
+  max-width: 640px;
+}
+
+.dg-appt-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.dg-appt-stat {
+  background: linear-gradient(135deg, rgba(242, 103, 39, 0.1), rgba(255, 248, 225, 0.9));
+  border: 1px solid rgba(242, 103, 39, 0.2);
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #3c3c3c;
+}
+
+.dg-appt-stat strong {
+  color: #f26727;
+}
+
+.dg-appt-panel {
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 12px 40px rgba(60, 60, 60, 0.08);
+  border: 1px solid rgba(60, 60, 60, 0.08);
+}
+
+.dg-appt-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(60, 60, 60, 0.1);
+}
+
+.dg-appt-toolbar-left,
+.dg-appt-toolbar-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.dg-appt-search {
+  min-width: min(100%, 260px);
+  flex: 1;
+  max-width: 360px;
+  padding: 10px 14px 10px 38px;
+  border: 1px solid rgba(60, 60, 60, 0.15);
+  border-radius: 999px;
+  font-size: 0.92rem;
+  background: #fafafa url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242 1.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E") no-repeat 14px center;
+}
+
+.dg-appt-search:focus {
+  outline: none;
+  border-color: #f26727;
+  box-shadow: 0 0 0 3px rgba(242, 103, 39, 0.15);
+  background-color: #fff;
+}
+
+.dg-appt-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(60, 60, 60, 0.15);
+  background: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #3c3c3c;
+}
+
+.dg-appt-toggle input {
+  accent-color: #f26727;
+}
+
+body.dg-appointment-page .filter-btn {
+  background: linear-gradient(135deg, #f26727, #ff8a50);
+  box-shadow: 0 4px 16px rgba(242, 103, 39, 0.3);
+}
+
+body.dg-appointment-page .filter-dropdown {
+  min-width: min(92vw, 340px);
+}
+
+body.dg-appointment-page .filter-section h4 {
+  border-bottom-color: #f26727;
+}
+
+body.dg-appointment-page .filter-apply-btn {
+  background: linear-gradient(135deg, #f26727, #ff8a50);
+}
+
+.dg-appt-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  min-height: 0;
+}
+
+.dg-appt-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(242, 103, 39, 0.12);
+  border: 1px solid rgba(242, 103, 39, 0.25);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #3c3c3c;
+}
+
+.dg-appt-chip button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #f26727;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.dg-appt-loading {
+  text-align: center;
+  padding: 48px 20px;
+  color: #666;
+}
+
+.dg-appt-loading-spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 12px;
+  border: 3px solid rgba(242, 103, 39, 0.2);
+  border-top-color: #f26727;
+  border-radius: 50%;
+  animation: dg-appt-spin 0.8s linear infinite;
+}
+
+@keyframes dg-appt-spin {
+  to { transform: rotate(360deg); }
+}
+
+body.dg-appointment-page .doctors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+body.dg-appointment-page .doctor-card {
+  background: #fff;
+  border: 1px solid rgba(60, 60, 60, 0.1);
+  border-radius: 18px;
+  padding: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 24px rgba(60, 60, 60, 0.06);
+}
+
+body.dg-appointment-page .doctor-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(242, 103, 39, 0.12);
+}
+
+.dg-appt-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 18px 12px;
+  background: linear-gradient(180deg, rgba(255, 248, 225, 0.5), transparent);
+}
+
+.dg-appt-card-top .doctor-avatar {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.dg-appt-card-head {
+  flex: 1;
+  min-width: 0;
+}
+
+.dg-appt-card-head h4 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  color: #3c3c3c;
+}
+
+.dg-appt-card-spec {
+  font-size: 0.85rem;
+  color: #f26727;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.dg-appt-card-body {
+  padding: 0 18px 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+}
+
+.dg-appt-meta {
+  font-size: 0.82rem;
+  color: #555;
+  line-height: 1.4;
+}
+
+.dg-appt-meta strong {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #888;
+  margin-bottom: 2px;
+}
+
+.dg-appt-card-body .dg-appt-meta-full {
+  grid-column: 1 / -1;
+}
+
+body.dg-appointment-page .doctor-card-actions {
+  padding: 12px 18px 18px;
+  margin-top: auto;
+  border-top: 1px solid rgba(60, 60, 60, 0.08);
+  flex-direction: row;
+}
+
+body.dg-appointment-page .doctor-card-actions .btn {
+  flex: 1;
+  margin: 0;
+  font-size: 0.88rem;
+  padding: 10px 12px;
+}
+
+body.dg-appointment-page .doctor-card-actions .btn-outline {
+  border-color: #f26727;
+  color: #f26727;
+}
+
+body.dg-appointment-page .doctor-card.offline-card {
+  opacity: 0.88;
+}
+
+.dg-appt-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 24px;
+  background: rgba(255, 248, 225, 0.5);
+  border-radius: 16px;
+  border: 1px dashed rgba(242, 103, 39, 0.3);
+}
+
+.dg-appt-empty h3 {
+  color: #3c3c3c;
+  margin-bottom: 10px;
+}
+
+.dg-appt-empty p {
+  color: #666;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 768px) {
+  .dg-appt-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dg-appt-toolbar-left,
+  .dg-appt-toolbar-right {
+    width: 100%;
+  }
+
+  .dg-appt-search {
+    max-width: none;
+  }
+
+  body.dg-appointment-page .doctor-card-actions {
+    flex-direction: column;
+  }
+}

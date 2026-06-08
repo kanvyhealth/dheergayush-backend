@@ -1,0 +1,173 @@
+/* DHEERGAYUSH — premium icon system (Font Awesome, site palette) */
+
+.dg-icon-badge,
+.feature-icon.dg-icon-badge,
+.medicine-icon.dg-icon-badge {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.65rem;
+  color: var(--dg-charcoal, #3C3C3C);
+  background: linear-gradient(145deg, rgba(255, 248, 225, 0.95), rgba(242, 103, 39, 0.18));
+  border: 1px solid rgba(242, 103, 39, 0.22);
+  box-shadow: 0 10px 28px rgba(242, 103, 39, 0.14);
+}
+
+.dg-icon-badge i,
+.feature-icon.dg-icon-badge i,
+.medicine-icon.dg-icon-badge i {
+  background: linear-gradient(135deg, var(--dg-charcoal, #3C3C3C), var(--dg-orange, #F26727));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dg-icon-badge--sm {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.dg-icon-badge--lg {
+  width: 88px;
+  height: 88px;
+  border-radius: 22px;
+  font-size: 2rem;
+}
+
+.dg-section-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  margin-right: 0.55rem;
+  vertical-align: middle;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: var(--dg-orange, #F26727);
+  background: linear-gradient(135deg, rgba(242, 103, 39, 0.14), rgba(255, 248, 225, 0.95));
+  border: 1px solid rgba(242, 103, 39, 0.2);
+  box-shadow: 0 4px 14px rgba(242, 103, 39, 0.12);
+}
+
+.dg-label-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  margin-right: 0.4rem;
+  color: var(--dg-orange, #F26727);
+  font-size: 0.92rem;
+}
+
+.dg-inline-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  margin-right: 0.35rem;
+  color: var(--dg-orange, #F26727);
+  font-size: 0.88rem;
+}
+
+.dg-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  color: var(--dg-orange, #F26727);
+  font-size: 0.95rem;
+}
+
+.dg-stars i {
+  filter: drop-shadow(0 1px 2px rgba(242, 103, 39, 0.25));
+}
+
+/* Floating back link on inner pages only — not landing nav (multiple links) */
+#backToHomeBtn.dg-home-link {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  text-decoration: none;
+  color: var(--dg-charcoal, #3C3C3C);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(242, 103, 39, 0.22);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+#backToHomeBtn.dg-home-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(242, 103, 39, 0.18);
+  background: #fff;
+}
+
+#backToHomeBtn.dg-home-link i {
+  color: var(--dg-orange, #F26727);
+}
+
+.dg-doctor-avatar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 2rem;
+  color: #fff;
+}
+
+.dg-doctor-avatar-icon i {
+  opacity: 0.95;
+}
+
+.dg-note-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 248, 225, 0.7), rgba(242, 103, 39, 0.08));
+  border: 1px solid rgba(242, 103, 39, 0.18);
+}
+
+.dg-note-box .dg-label-icon {
+  margin-top: 0.1rem;
+}
+
+.dg-tracking-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  margin-right: 0.45rem;
+  color: var(--dg-orange, #F26727);
+}
+
+.dg-tracking-icon--success {
+  color: #2e7d32;
+}
+
+.stores-btn .cart-icon,
+.stores-btn .dg-cart-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  margin-right: 0.35rem;
+  font-size: 0.85rem;
+}
