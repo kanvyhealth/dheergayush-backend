@@ -3,9 +3,20 @@ Render Firebase setup (manual)
 
 1. Open Render Dashboard -> your dheergayush-backend service -> Environment
 
-2. ADD or UPDATE:
-   FIREBASE_SERVICE_ACCOUNT_JSON
-   (copy the full value from ../.render-env.local in this folder — one line)
+2. ADD or UPDATE variable FIREBASE_SERVICE_ACCOUNT_JSON
+
+   KEY (name):   FIREBASE_SERVICE_ACCOUNT_JSON
+   VALUE:        {"type":"service_account","project_id":"hosp-test-app",...}
+                 ^ ONLY the JSON — one line, no quotes, no key prefix
+
+   WRONG value examples (will NOT work):
+   - FIREBASE_SERVICE_ACCOUNT_JSON={"type":"service_account",...}
+   - 'FIREBASE_SERVICE_ACCOUNT_JSON={"type":"service_account",...}'
+   - ./firebase-service-account.json
+
+   Generate locally:
+     node scripts/minify-firebase-credentials.cjs ./firebase-service-account.json
+   Or copy from .render-env.local (gitignored) in this folder.
 
 3. DELETE:
    GOOGLE_APPLICATION_CREDENTIALS

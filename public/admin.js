@@ -1145,17 +1145,36 @@ async function refreshFirebaseStatus() {
     try {
         const res = await fetch('/api/health', { cache: 'no-store' });
         const data = await res.json();
-        if (data.ok && data.db === 'connected') {
+        if (data.db === 'connected' && data.firestore) {
             el.textContent = 'Firebase connected';
             el.className = 'admin-firebase-status connected';
             el.title = 'Provider: ' + (data.provider || 'firebase');
-        } else {
-            el.textContent = 'Firebase disconnected';
-            el.className = 'admin-firebase-status disconnected';
+            return;
         }
+
+        el.className = 'admin-firebase-status disconnected';
+        if (data.credentials === 'missing' || data.db === 'no_credentials') {
+            el.textContent = 'Firebase: credentials missing';
+            el.title =
+                'Set FIREBASE_SERVICE_ACCOUNT_JSON in Render (full service account JSON on one line). ' +
+                'Remove GOOGLE_APPLICATION_CREDENTIALS, save, then Manual Deploy.';
+            return;
+        }
+        if (data.db === 'error' && data.error) {
+            el.textContent = 'Firebase: read error';
+            el.title = data.error;
+            return;
+        }
+        el.textContent = 'Firebase disconnected';
+        el.title =
+            'Check /api/health on the server. db=' +
+            (data.db || 'unknown') +
+            ', credentials=' +
+            (data.credentials || 'unknown');
     } catch (e) {
         el.textContent = 'Server unreachable';
         el.className = 'admin-firebase-status disconnected';
+        el.title = e.message || 'Could not reach /api/health';
     }
 }
 
