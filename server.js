@@ -69,6 +69,8 @@ const {
   getStoresSummaryFromFirebase,
   getMedicinesFromFirebase,
   getMedicinesPaginated,
+  getMedicinesByIds,
+  validateOrderItemsAgainstCatalog,
   getBannersFromFirebase,
   getProductCategoriesFromFirebase,
   warmCatalogCache
@@ -446,6 +448,20 @@ app.get('/api/banners', async (req, res) => {
     res.json(banners);
   } catch (err) {
     res.status(500).json({ message: 'Failed to load banners', error: err.message });
+  }
+});
+
+app.get('/api/medicines/batch', async (req, res) => {
+  try {
+    const rawIds = req.query.ids;
+    if (!rawIds) {
+      return res.status(400).json({ message: 'ids query parameter is required' });
+    }
+    res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
+    const result = await getMedicinesByIds(rawIds);
+    return res.json(result);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to load medicines', error: err.message });
   }
 });
 
@@ -3160,6 +3176,29 @@ app.post('/api/orders', upload.single('paymentProof'), async (req, res) => {
 
         if (!orderData.items || orderData.items.length === 0) {
             return res.status(400).json({ message: 'Order must contain at least one item' });
+        }
+
+        let validatedItems;
+        try {
+            validatedItems = await validateOrderItemsAgainstCatalog(orderData.items);
+        } catch (catalogErr) {
+            return res.status(catalogErr.status || 400).json({
+                success: false,
+                message: catalogErr.message || 'One or more products are unavailable'
+            });
+        }
+
+        orderData.items = validatedItems.items;
+        if (!orderData.subtotal || Number(orderData.subtotal) <= 0) {
+            orderData.subtotal = validatedItems.subtotal;
+        }
+        const deliveryFee = Number(orderData.deliveryFee || 0);
+        if (!orderData.totalAmount || Number(orderData.totalAmount) <= 0) {
+            orderData.totalAmount = validatedItems.subtotal + deliveryFee;
+        }
+
+        if (orderData.appointmentId || orderData.prescriptionId) {
+            orderData.source = orderData.source || 'prescription';
         }
 
         const orderId = buildSharedOrderId();

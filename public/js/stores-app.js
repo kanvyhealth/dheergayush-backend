@@ -15,6 +15,15 @@
   var observer = null;
   var cartToastTimer = null;
   var isDoctor = localStorage.getItem('isDoctor') === '1';
+  var consultationContext = { appointmentId: '', prescriptionId: '' };
+
+  (function readConsultationContextFromUrl() {
+    try {
+      var params = new URLSearchParams(window.location.search || '');
+      consultationContext.appointmentId = String(params.get('appointmentId') || '').trim();
+      consultationContext.prescriptionId = String(params.get('prescriptionId') || '').trim();
+    } catch (_) { /* ignore */ }
+  })();
 
   var els = {
     storesStrip: document.getElementById('storesStrip'),
@@ -747,8 +756,17 @@
       customerName: name, customerPhone: phone, customerEmail: email,
       deliveryAddress: address, notes: notes, items: cart,
       subtotal: totals.subtotal, discount: totals.discount, deliveryFee: totals.delivery,
-      totalAmount: totals.total, orderStatus: 'pending', orderDate: new Date()
+      totalAmount: totals.total, orderStatus: 'pending', orderDate: new Date(),
+      source: (consultationContext.appointmentId || consultationContext.prescriptionId)
+        ? 'prescription'
+        : 'website'
     };
+    if (consultationContext.appointmentId) {
+      orderData.appointmentId = consultationContext.appointmentId;
+    }
+    if (consultationContext.prescriptionId) {
+      orderData.prescriptionId = consultationContext.prescriptionId;
+    }
     if (els.placeOrderBtn) els.placeOrderBtn.disabled = true;
     setCheckoutStatus('Opening Razorpay…', false);
     try {
@@ -825,6 +843,15 @@
     addPrescriptionItems: addPrescriptionItemsToCart,
     openCart: function () {
       showSection('cartSection');
+    },
+    setConsultationContext: function (ctx) {
+      if (!ctx || typeof ctx !== 'object') return;
+      if (ctx.appointmentId) {
+        consultationContext.appointmentId = String(ctx.appointmentId).trim();
+      }
+      if (ctx.prescriptionId) {
+        consultationContext.prescriptionId = String(ctx.prescriptionId).trim();
+      }
     }
   };
 
