@@ -264,6 +264,7 @@ app.get('/api/health', async (req, res) => {
   const razorpayAuth = global.__razorpayAuth === true;
 
   res.json({
+    ready: true,
     ok: firestoreOk && agoraConfigured && razorpayConfigured && razorpayAuth,
     provider: getProvider(),
     db: dbStatus,

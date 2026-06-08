@@ -2,6 +2,8 @@ node_modules
 .env
 firebase-service-account.json
 *-firebase-adminsdk-*.json
+.render-env.local
+render-firebase-oneline.txt
 uploads/*
 !uploads/.gitkeep
 ayurvedic_store_dataset/

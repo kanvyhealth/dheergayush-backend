@@ -1,0 +1,31 @@
+Render Firebase setup (manual)
+=============================
+
+1. Open Render Dashboard -> your dheergayush-backend service -> Environment
+
+2. ADD or UPDATE:
+   FIREBASE_SERVICE_ACCOUNT_JSON
+   (copy the full value from ../.render-env.local in this folder — one line)
+
+3. DELETE:
+   GOOGLE_APPLICATION_CREDENTIALS
+   (file paths do not work on Render)
+
+4. Confirm these exist (from DEPLOY.md / your .env):
+   FIREBASE_PROJECT_ID=hosp-test-app
+   FIREBASE_API_KEY=...
+   FIREBASE_AUTH_DOMAIN=hosp-test-app.firebaseapp.com
+   FIREBASE_MESSAGING_SENDER_ID=183359905302
+   FIREBASE_STORAGE_BUCKET=hosp-test-app.firebasestorage.app
+   SITE_URL=https://dheergayush.net
+   RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET
+   AGORA_APP_ID / AGORA_APP_CERTIFICATE
+   ADMIN_USERNAME / ADMIN_PASSWORD
+
+5. Save Changes -> Manual Deploy
+
+6. Verify: https://dheergayush.net/api/health
+
+Automated (API key required):
+  $env:RENDER_API_KEY = "rnd_..."
+  .\scripts\sync-render-firebase-env.ps1

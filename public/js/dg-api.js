@@ -46,9 +46,21 @@
       const res = await fetch(healthUrl || DEFAULT_HEALTH_URL, { cache: 'no-store' });
       if (!res.ok) return false;
       const data = await res.json().catch(function () { return {}; });
+      // Server is awake once /api/health responds — full `ok` also needs Firestore/Razorpay.
+      if (data.ready === true || typeof data.uptime === 'number') return true;
       return data.ok !== false;
     } catch (e) {
       return false;
+    }
+  }
+
+  async function fetchHealthStatus(healthUrl) {
+    try {
+      const res = await fetch(healthUrl || DEFAULT_HEALTH_URL, { cache: 'no-store' });
+      if (!res.ok) return null;
+      return await res.json().catch(function () { return null; });
+    } catch (e) {
+      return null;
     }
   }
 
@@ -137,6 +149,7 @@
     setAdminToken,
     apiFetch,
     checkHealth,
+    fetchHealthStatus,
     waitForServer,
     showConnectingOverlay,
     hideConnectingOverlay,

@@ -1132,6 +1132,20 @@
             color: #b42318;
             border: 1px solid #f5c2c0;
         }
+        .server-health-banner {
+            display: none;
+            margin: 12px 0;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            line-height: 1.45;
+        }
+        .server-health-banner.warn {
+            display: block;
+            background: #fff3cd;
+            color: #664d03;
+            border: 1px solid #ffc107;
+        }
         #doctorRegStatus.success {
             display: block;
             background: #ecfdf3;
@@ -1386,6 +1400,7 @@
                             </label>
                         </div>
                     </div>
+                    <div id="serverHealthBanner" class="server-health-banner" role="status"></div>
                     <div id="doctorRegStatus" role="alert"></div>
                     <button type="button" class="btn" id="doctorRegisterBtn" onclick="registerDoctor()">Register Doctor</button>
                 </div>
@@ -1718,9 +1733,29 @@ let deliveryStep = 0;
         let doctorSelectedTime = { hour: null, ampm: 'AM' };
 
         // Initialize time picker on page load
+        async function refreshServerHealthBanner() {
+            const banner = document.getElementById('serverHealthBanner');
+            if (!banner || !window.DgApi || !DgApi.fetchHealthStatus) return;
+            const health = await DgApi.fetchHealthStatus();
+            if (!health) {
+                banner.className = 'server-health-banner warn';
+                banner.textContent = 'Cannot reach the server API. Registration may fail until the site reconnects.';
+                return;
+            }
+            if (health.firestore) {
+                banner.className = 'server-health-banner';
+                banner.textContent = '';
+                return;
+            }
+            banner.className = 'server-health-banner warn';
+            banner.textContent = health.error ||
+                'Firebase is not connected on the server. Add FIREBASE_SERVICE_ACCOUNT_JSON in Render environment variables, redeploy, then try again.';
+        }
+
         document.addEventListener('DOMContentLoaded', async function() {
             if (window.DgApi) {
                 await DgApi.bootstrapApp({ skipOnLocalhost: true });
+                await refreshServerHealthBanner();
             }
             initializeTimePicker();
             
@@ -2452,6 +2487,18 @@ function updateTimePickerSelection() {
 
         async function registerDoctor() {
             setDoctorRegStatus('');
+            if (window.DgApi && DgApi.fetchHealthStatus) {
+                const health = await DgApi.fetchHealthStatus();
+                if (health && !health.firestore) {
+                    setDoctorRegStatus(
+                        health.error ||
+                            'Server database is not ready (Firebase). Configure FIREBASE_SERVICE_ACCOUNT_JSON on Render and redeploy.',
+                        'error'
+                    );
+                    await refreshServerHealthBanner();
+                    return;
+                }
+            }
             const name = document.getElementById('doctorName').value.trim();
             const spec = document.getElementById('doctorSpec').value.trim();
             const license = document.getElementById('doctorLicense').value.trim();
@@ -2515,7 +2562,11 @@ function updateTimePickerSelection() {
                 const response = await fetch('/api/register-doctor', { method: 'POST', body: formData });
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) {
-                    throw new Error(data.message || 'Registration failed. Please check all fields and try again.');
+                    const msg = data.message || 'Registration failed. Please check all fields and try again.';
+                    if (response.status === 503 && /firebase|database|credentials/i.test(msg)) {
+                        await refreshServerHealthBanner();
+                    }
+                    throw new Error(msg);
                 }
                 setDoctorRegStatus('Registration submitted! Pending admin approval.', 'success');
                 alert('Registration submitted!\n\nWait for admin approval, then log in on the doctor page.');
