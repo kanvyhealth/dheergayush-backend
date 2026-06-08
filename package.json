@@ -16,6 +16,11 @@
     "catalog:sdpl-extract": "node scripts/extractSdplPdf.js",
     "catalog:sdpl-sync": "node scripts/syncSdplFromPriceList.js",
     "catalog:sdpl-images": "node scripts/downloadSdplImages.js",
+    "catalog:dabur-extract": "node scripts/extractDaburPdf.js",
+    "catalog:dabur-sync": "node scripts/syncDaburFromPriceList.js",
+    "catalog:dabur-images": "node scripts/downloadBrandImages.js Dabur",
+    "catalog:baidyanath-sync": "node scripts/syncBaidyanathFromXlsx.js",
+    "catalog:baidyanath-images": "node scripts/downloadBrandImages.js Baidyanath",
     "build:brand": "python scripts/build-brand-assets.py",
     "build": "npm install"
   },
@@ -33,15 +38,19 @@
     "firebase-admin": "^13.10.0",
     "helmet": "^8.2.0",
     "multer": "^2.0.0",
+    "pdf-parse": "^2.2.2",
     "pdfkit": "^0.17.1",
     "razorpay": "^2.9.6",
     "socket.io": "^4.8.1",
     "uuid": "^11.1.0",
-    "xlsx": "^0.18.5",
-    "pdf-parse": "^2.2.2"
+    "xlsx": "^0.18.5"
   },
   "description": "",
   "devDependencies": {
-    "mongoose": "^8.15.1"
+    "@napi-rs/canvas": "^1.0.0",
+    "mongoose": "^8.15.1",
+    "pdfjs-dist": "^6.0.227",
+    "sharp": "^0.34.5",
+    "tesseract.js": "^7.0.0"
   }
 }
