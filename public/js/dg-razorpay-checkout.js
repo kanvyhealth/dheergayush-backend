@@ -156,7 +156,7 @@
     var parts = [desc, reason, err.code, err.field].filter(Boolean);
     var msg = parts.join(' — ') || 'Payment failed';
     if (/bad request|400/i.test(msg) || err.code === 'BAD_REQUEST_ERROR') {
-      msg += ' Test mode: UPI ID success@razorpay or card 4718 6091 0820 4366.';
+      msg += '';
     }
     return msg;
   }

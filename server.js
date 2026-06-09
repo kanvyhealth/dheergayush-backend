@@ -44,7 +44,8 @@ const {
   getUserProfile,
   requireFirebaseAuth
 } = require('./lib/firebaseAuth');
-const { generateVideoRoomId, resolveFileUrl } = require('./lib/firebaseStorage');
+const { generateVideoRoomId, resolveFileUrl, uploadFile } = require('./lib/firebaseStorage');
+const { enrichDoctorPhotos, streamDoctorPhoto } = require('./lib/doctorPhotoUrl');
 const { uploadToFirebase, saveDocumentRecord } = require('./lib/uploads');
 const {
   getPublicFirebaseConfig,
@@ -835,7 +836,15 @@ app.post('/api/register-doctor', upload.fields([
         );
         const documents = docUploads.map((u) => u.downloadUrl);
 
-        const photoUp = await uploadToFirebase(photoFile, `${storagePrefix}/profile.jpg`);
+        let photoUp;
+        try {
+            photoUp = await uploadFile(photoFile.buffer, `${storagePrefix}/profile.jpg`, {
+                contentType: photoFile.mimetype
+            });
+        } catch (uploadErr) {
+            console.warn('Fixed-path profile upload failed, using fallback:', uploadErr.message);
+            photoUp = await uploadToFirebase(photoFile, `${storagePrefix}/profile`);
+        }
         const photo = photoUp.downloadUrl;
         const videoRoomId = generateVideoRoomId();
 
@@ -897,12 +906,37 @@ function enrichDoctorRow(d) {
     return enrichDoctorApiFields(d);
 }
 
+async function enrichDoctorRows(doctors) {
+    const rows = (Array.isArray(doctors) ? doctors : []).map(enrichDoctorRow);
+    return enrichDoctorPhotos(rows);
+}
+
+// 🖼️ Doctor profile photo — streams from Firebase Storage (avoids expired download URLs)
+app.get('/api/media/doctor-photo/:uid', async (req, res) => {
+    try {
+        const uid = String(req.params.uid || '').trim();
+        if (!uid) return res.status(400).end();
+        const hint = typeof req.query.url === 'string' ? req.query.url : '';
+        const result = await streamDoctorPhoto(uid, hint);
+        if (!result) return res.status(404).end();
+        res.setHeader('Content-Type', result.contentType || 'image/jpeg');
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+        result.stream.on('error', () => {
+            if (!res.headersSent) res.status(500).end();
+        });
+        result.stream.pipe(res);
+    } catch (err) {
+        console.error('doctor-photo stream failed:', err.message);
+        if (!res.headersSent) res.status(500).end();
+    }
+});
+
 // 👨‍⚕️ Get All Doctors (appointment listing — approved clinical doctors only)
 app.get('/api/doctors', async (req, res) => {
     try {
         const { bookableOnly } = req.query;
         const doctors = await listDoctors({ _webRegstatus: 'approved', _publicOnly: true }).sort({ name: 1 });
-        let result = doctors.map(enrichDoctorRow);
+        let result = await enrichDoctorRows(doctors);
 
         if (bookableOnly === '1' || bookableOnly === 'true') {
             result = result.filter((d) => d.bookable);
@@ -2036,7 +2070,7 @@ app.get('/api/admin/doctors', async (req, res) => {
             return res.status(503).json({ message: 'Database not connected. Check Firebase credentials on the server.' });
         }
         const doctors = await listDoctors();
-        res.json(doctors.map(enrichDoctorRow));
+        res.json(await enrichDoctorRows(doctors));
     } catch (error) {
         adminDbErrorResponse(res, 'doctors', error);
     }
@@ -2950,7 +2984,7 @@ app.get('/api/stores', requireDb, async (req, res) => {
 app.get('/api/doctors/all-approved', async (req, res) => {
     try {
         const doctors = await listDoctors({ role: 'Doctor', _webRegstatus: 'approved', _publicOnly: true });
-        const enriched = doctors.map(enrichDoctorRow);
+        const enriched = await enrichDoctorRows(doctors);
         res.status(200).json(enriched);
     } catch (err) {
         console.error('❌ Error fetching all approved doctors:', err);
@@ -3064,16 +3098,7 @@ app.get('/api/doctors/filtered', async (req, res) => {
         const doctors = await listDoctors(filterQuery);
         console.log('👨‍⚕️ Found doctors:', doctors.length);
 
-        const enrichedFiltered = doctors.map((d) => {
-            const doc = d.toObject ? d.toObject() : d;
-            const avail = getEffectiveStatus(doc);
-            return {
-                ...doc,
-                effectiveStatus: avail.effective,
-                scheduleStatus: avail.scheduleStatus,
-                bookable: avail.bookable
-            };
-        });
+        const enrichedFiltered = await enrichDoctorRows(doctors);
 
         enrichedFiltered.sort((a, b) => {
             if (a.bookable !== b.bookable) return a.bookable ? -1 : 1;

@@ -55,8 +55,22 @@
     return filename ? `/uploads/${filename.split('?')[0]}` : null;
   }
 
+  function getDoctorPhotoProxyUrl(doctor) {
+    if (!doctor) return null;
+    const uid = doctor.uid || doctor._id || doctor.id;
+    if (!uid) return null;
+    const stored = doctor.profileUrl || doctor.photo;
+    const base = '/api/media/doctor-photo/' + encodeURIComponent(String(uid));
+    if (stored && /^https?:\/\//i.test(String(stored))) {
+      return base + '?url=' + encodeURIComponent(String(stored));
+    }
+    return base;
+  }
+
   function getDoctorPhoto(doctor) {
     if (!doctor) return null;
+    const proxy = getDoctorPhotoProxyUrl(doctor);
+    if (proxy) return proxy;
     return getPhotoUrl(doctor.profileUrl || doctor.photo);
   }
 
@@ -173,6 +187,7 @@
     statusBadgeHtml,
     bookButtonLabel,
     getPhotoUrl,
+    getDoctorPhotoProxyUrl,
     avatarHtml,
     escapeHtml,
     updateDoctorStatus

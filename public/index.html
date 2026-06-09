@@ -2115,9 +2115,20 @@
             return true;
         }
 
+        function homeDoctorPhotoUrl(d) {
+            var uid = d.uid || d._id || d.id;
+            if (!uid) return d.profileUrl || d.photo || '';
+            var base = '/api/media/doctor-photo/' + encodeURIComponent(String(uid));
+            var stored = d.profileUrl || d.photo || '';
+            if (stored && /^https?:\/\//i.test(String(stored))) {
+                return base + '?url=' + encodeURIComponent(String(stored));
+            }
+            return base;
+        }
+
         function renderHomeDoctorCard(d) {
             var spec = doctorSpecialty(d);
-            var photo = d.profileUrl || d.photo || '';
+            var photo = homeDoctorPhotoUrl(d);
             var safeName = escapeHtml(d.name);
             var safeSpec = escapeHtml(spec);
             var bio = escapeHtml(d.about || d.bio || d.location || 'Certified Ayurvedic practitioner');
