@@ -21,6 +21,10 @@
     "catalog:dabur-images": "node scripts/downloadBrandImages.js Dabur",
     "catalog:baidyanath-sync": "node scripts/syncBaidyanathFromXlsx.js",
     "catalog:baidyanath-images": "node scripts/downloadBrandImages.js Baidyanath",
+    "catalog:images-refresh": "node scripts/refreshBrandImages.js",
+    "catalog:images-refresh:sdpl": "node scripts/refreshBrandImages.js --brand Dhootapapeshwar",
+    "catalog:images-refresh:dabur": "node scripts/refreshBrandImages.js --brand Dabur",
+    "catalog:images-refresh:baidyanath": "node scripts/refreshBrandImages.js --brand Baidyanath",
     "build:brand": "python scripts/build-brand-assets.py",
     "build": "npm install"
   },

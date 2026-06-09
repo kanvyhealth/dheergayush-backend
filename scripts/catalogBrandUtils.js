@@ -145,18 +145,233 @@ function fetchUrl(url, redirects = 0) {
   });
 }
 
+const BRAND_IMAGE_CONFIG = {
+  'Shree Dhootapapeshwar': {
+    searchBrands: ['Dhootapapeshwar', 'Shree Dhootapapeshwar'],
+    slugPrefixes: ['dhootapapeshwar', 'sdpl'],
+    manufacturers: ['DHOOTAPAPESHWAR', 'SHREE DHOOTAPAPESHWAR', 'SDL'],
+  },
+  Baidyanath: {
+    searchBrands: ['Baidyanath', 'Shree Baidyanath'],
+    slugPrefixes: ['baidyanath'],
+    manufacturers: ['BAIDYANATH', 'SHREE BAIDYANATH'],
+  },
+  Dabur: {
+    searchBrands: ['Dabur'],
+    slugPrefixes: ['dabur'],
+    manufacturers: ['DABUR'],
+  },
+};
+
+function getBrandImageConfig(brand) {
+  for (const [key, cfg] of Object.entries(BRAND_IMAGE_CONFIG)) {
+    if (new RegExp(key, 'i').test(brand || '')) return cfg;
+  }
+  return {
+    searchBrands: [brand],
+    slugPrefixes: [slugify(brand)],
+    manufacturers: [String(brand || '').toUpperCase()],
+  };
+}
+
+function isBadImageUrl(url) {
+  const u = String(url || '').toLowerCase();
+  return (
+    !u ||
+    /logo|favicon|icon|banner|sprite|placeholder|wordmark|avatar|profile|social|footer|trust|certified|badge|payment|wallet|app-store|play-store|navv|map-pin|phone\.png|mail\.png/i.test(
+      u,
+    )
+  );
+}
+
 function pickBestImage(html) {
   const candidates = [];
   const og = html.match(/property=["']og:image["']\s+content=["']([^"']+)["']/i);
   if (og) candidates.push(og[1]);
+  const pharmeasy =
+    html.match(/https:\/\/cdn\d+\.pharmeasy\.in\/dam\/products_[^"'\s>]+\.(?:jpg|jpeg|png|webp)[^"'\s>]*/gi) ||
+    [];
+  pharmeasy.forEach((u) => candidates.push(u));
   const all = html.match(/https:\/\/[^"'\s>]+\.(?:jpg|jpeg|png|webp)(?:\?[^"'\s>]*)?/gi) || [];
   all.forEach((u) => candidates.push(u));
-  return candidates.find(
-    (u) =>
-      u &&
-      !/logo|favicon|icon|banner|sprite|placeholder|wordmark|avatar|profile|social/i.test(u) &&
-      !/250x250.*Social/i.test(u),
-  );
+  return candidates
+    .map((u) => u.replace(/&amp;/g, '&').split('?')[0])
+    .find((u) => u && !isBadImageUrl(u));
+}
+
+function productMatchesBrand(product, brandCfg) {
+  const slug = String(product.slug || '').toLowerCase();
+  const mfr = String(product.manufacturer || '').toUpperCase();
+  const slugHit = brandCfg.slugPrefixes.some((p) => slug.includes(p));
+  const mfrHit = brandCfg.manufacturers.some((m) => mfr.includes(m));
+  return slugHit || mfrHit;
+}
+
+function scorePharmeasyProduct(product, brandCfg, productName) {
+  if (!productMatchesBrand(product, brandCfg)) return 0;
+  const name = String(product.name || '');
+  const slug = String(product.slug || '').toLowerCase();
+  let score = tokenOverlap(productName, name);
+  if (tokenOverlap(productName, slug.replace(/-/g, ' ')) > score) {
+    score = tokenOverlap(productName, slug.replace(/-/g, ' '));
+  }
+  const prodNorm = normalizeName(productName);
+  const nameNorm = normalizeName(name);
+  if (prodNorm && nameNorm.includes(prodNorm)) score += 0.25;
+  if (brandCfg.slugPrefixes.some((p) => slug.includes(p))) score += 0.15;
+  return score;
+}
+
+function pickPharmeasyImage(product) {
+  const dam = product.damImages || [];
+  const front = dam.find((d) => d.face === 'front') || dam[0];
+  const url = (front && front.url) || product.image;
+  if (!url || isBadImageUrl(url)) return null;
+  return String(url).replace(/&amp;/g, '&').split('?')[0];
+}
+
+async function searchPharmeasyProducts(query) {
+  const res = await fetchUrl(`https://pharmeasy.in/search/all?name=${encodeURIComponent(query)}`);
+  if (res.status !== 200) return [];
+  const html = res.body.toString('utf8');
+  const next = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/i);
+  if (!next) return [];
+  try {
+    const data = JSON.parse(next[1]);
+    return data?.props?.pageProps?.productList || [];
+  } catch (_) {
+    return [];
+  }
+}
+
+let daburShopCache = null;
+const pharmeasyBrandCache = new Map();
+
+const PHARMEASY_CATEGORY_TERMS = [
+  'arishta',
+  'asava',
+  'bhasma',
+  'guggul',
+  'vati',
+  'tablet',
+  'ras',
+  'churna',
+  'kadha',
+  'avaleha',
+  'syrup',
+  'tail',
+  'oil',
+];
+
+async function loadPharmeasyBrandCatalog(brandCfg) {
+  const cacheKey = brandCfg.searchBrands.join('|');
+  if (pharmeasyBrandCache.has(cacheKey)) return pharmeasyBrandCache.get(cacheKey);
+
+  const bySlug = new Map();
+  const queries = new Set(brandCfg.searchBrands);
+  for (const brandQuery of brandCfg.searchBrands) {
+    for (const suffix of PHARMEASY_CATEGORY_TERMS) {
+      queries.add(`${brandQuery} ${suffix}`);
+    }
+  }
+
+  for (const query of queries) {
+    const products = await searchPharmeasyProducts(query);
+    for (const product of products) {
+      if (productMatchesBrand(product, brandCfg) && product.slug) {
+        bySlug.set(product.slug, product);
+      }
+    }
+    await new Promise((r) => setTimeout(r, 250));
+  }
+
+  const list = [...bySlug.values()];
+  pharmeasyBrandCache.set(cacheKey, list);
+  return list;
+}
+
+async function searchPharmeasyCatalog(brand, name) {
+  const brandCfg = getBrandImageConfig(brand);
+  const catalog = await loadPharmeasyBrandCatalog(brandCfg);
+  let best = null;
+  let bestScore = 0.42;
+  for (const product of catalog) {
+    const score = scorePharmeasyProduct(product, brandCfg, name);
+    if (score > bestScore) {
+      const imageUrl = pickPharmeasyImage(product);
+      if (imageUrl) {
+        bestScore = score;
+        best = imageUrl;
+      }
+    }
+  }
+  return best;
+}
+
+async function searchPharmeasy(brand, name) {
+  const brandCfg = getBrandImageConfig(brand);
+  const queries = [
+    ...brandCfg.searchBrands.map((b) => `${b} ${name}`),
+    name,
+  ];
+  let best = null;
+  let bestScore = 0.42;
+
+  for (const query of queries) {
+    const products = await searchPharmeasyProducts(query);
+    for (const product of products) {
+      const score = scorePharmeasyProduct(product, brandCfg, name);
+      if (score > bestScore) {
+        const imageUrl = pickPharmeasyImage(product);
+        if (imageUrl) {
+          bestScore = score;
+          best = imageUrl;
+        }
+      }
+    }
+    if (best && bestScore >= 0.65) break;
+  }
+
+  if (best) return best;
+  return searchPharmeasyCatalog(brand, name);
+}
+
+async function loadDaburShopProducts() {
+  if (daburShopCache) return daburShopCache;
+  const products = [];
+  for (let page = 1; page <= 20; page++) {
+    const res = await fetchUrl(`https://www.daburshop.com/products.json?limit=250&page=${page}`);
+    if (res.status !== 200) break;
+    const data = JSON.parse(res.body.toString('utf8'));
+    const batch = data.products || [];
+    if (!batch.length) break;
+    products.push(...batch);
+    if (batch.length < 250) break;
+  }
+  daburShopCache = products;
+  return products;
+}
+
+async function searchDaburShop(name) {
+  const products = await loadDaburShopProducts();
+  let best = null;
+  let bestScore = 0.5;
+  for (const product of products) {
+    const title = String(product.title || '');
+    const score = tokenOverlap(name, title);
+    if (score > bestScore) {
+      const image =
+        product.images?.[0]?.src ||
+        product.image?.src ||
+        product.featured_image ||
+        product.variants?.[0]?.featured_image?.src;
+      if (image && !isBadImageUrl(image)) {
+        bestScore = score;
+        best = String(image).split('?')[0];
+      }
+    }
+  }
+  return best;
 }
 
 async function search1mg(brand, name) {
@@ -191,10 +406,14 @@ async function searchTruemeds(brand, name) {
 }
 
 async function resolveImageOnline(brand, name) {
-  for (const fn of [search1mg, searchTruemeds]) {
+  const sources = [searchPharmeasy];
+  if (/dabur/i.test(brand)) sources.push(searchDaburShop);
+  sources.push(search1mg, searchTruemeds);
+
+  for (const fn of sources) {
     try {
       const url = await fn(brand, name);
-      if (url) return url;
+      if (url && !isBadImageUrl(url)) return url;
     } catch (_) {
       /* try next */
     }
@@ -204,8 +423,15 @@ async function resolveImageOnline(brand, name) {
 
 async function downloadImage(url, destPath) {
   const res = await fetchUrl(url);
-  if (res.status !== 200 || res.body.length < 800) throw new Error(`bad response ${res.status}`);
+  if (res.status !== 200 || res.body.length < 2500) {
+    throw new Error(`bad response ${res.status}`);
+  }
+  const type = String(res.headers['content-type'] || '');
+  if (type && !type.includes('image')) {
+    throw new Error('not an image');
+  }
   fs.writeFileSync(destPath, res.body);
+  return res.body.length;
 }
 
 function copyIfExists(srcFile, destFile) {
@@ -347,4 +573,8 @@ module.exports = {
   resolveImageOnline,
   downloadImage,
   fetchUrl,
+  getBrandImageConfig,
+  searchPharmeasyProducts,
+  scorePharmeasyProduct,
+  pickPharmeasyImage,
 };
