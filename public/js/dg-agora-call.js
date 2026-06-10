@@ -8,6 +8,8 @@
   let camEnabled = true;
   let uiRefs = null;
   let autoplayResumeHandler = null;
+  let layoutSwapped = false;
+  let localPreviewHidden = false;
 
   const AUDIO_TRACK_CONFIG = {
     AEC: true,
@@ -51,6 +53,12 @@
           '<button type="button" id="dg-agora-cam" class="dg-agora-ctrl" title="Camera" aria-label="Toggle camera">' +
             '<i class="fas fa-video"></i>' +
           '</button>' +
+          '<button type="button" id="dg-agora-swap" class="dg-agora-ctrl" title="Swap video views" aria-label="Swap main and self video">' +
+            '<i class="fas fa-right-left"></i>' +
+          '</button>' +
+          '<button type="button" id="dg-agora-pip" class="dg-agora-ctrl" title="Show or hide self view" aria-label="Toggle self video preview">' +
+            '<i class="fas fa-user"></i>' +
+          '</button>' +
           '<button type="button" id="dg-agora-leave" class="dg-agora-leave">Leave call</button>' +
         '</div>' +
       '</div>';
@@ -60,9 +68,40 @@
       leaveBtn: document.getElementById('dg-agora-leave'),
       micBtn: document.getElementById('dg-agora-mic'),
       camBtn: document.getElementById('dg-agora-cam'),
+      swapBtn: document.getElementById('dg-agora-swap'),
+      pipBtn: document.getElementById('dg-agora-pip'),
+      stage: document.querySelector('.dg-agora-stage'),
       autoplayBanner: document.getElementById('dg-agora-autoplay'),
       resumeAudioBtn: document.getElementById('dg-agora-resume-audio')
     };
+  }
+
+  function updateLayoutControlButtons() {
+    if (!uiRefs) return;
+    if (uiRefs.swapBtn) {
+      uiRefs.swapBtn.classList.toggle('dg-agora-ctrl--active', layoutSwapped);
+      uiRefs.swapBtn.setAttribute('aria-pressed', layoutSwapped ? 'true' : 'false');
+    }
+    if (uiRefs.pipBtn) {
+      uiRefs.pipBtn.classList.toggle('dg-agora-ctrl--off', localPreviewHidden);
+      uiRefs.pipBtn.setAttribute('aria-pressed', localPreviewHidden ? 'true' : 'false');
+    }
+    if (uiRefs.stage) {
+      uiRefs.stage.classList.toggle('dg-agora-stage--swapped', layoutSwapped);
+      uiRefs.stage.classList.toggle('dg-agora-stage--local-hidden', localPreviewHidden);
+    }
+  }
+
+  function toggleLayoutSwap() {
+    layoutSwapped = !layoutSwapped;
+    updateLayoutControlButtons();
+    return layoutSwapped;
+  }
+
+  function toggleLocalPreview() {
+    localPreviewHidden = !localPreviewHidden;
+    updateLayoutControlButtons();
+    return localPreviewHidden;
   }
 
   function updateInCallControlButtons() {
@@ -168,8 +207,11 @@
 
     await leaveCall();
 
+    layoutSwapped = false;
+    localPreviewHidden = false;
     uiRefs = ensureLayout(rootEl);
     updateInCallControlButtons();
+    updateLayoutControlButtons();
 
     client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
 
@@ -242,6 +284,20 @@
       if (typeof options.onLeave === 'function') options.onLeave();
     });
 
+    if (uiRefs.swapBtn) {
+      uiRefs.swapBtn.onclick = () => {
+        toggleLayoutSwap();
+        if (typeof options.onLayoutSwapped === 'function') options.onLayoutSwapped(layoutSwapped);
+      };
+    }
+
+    if (uiRefs.pipBtn) {
+      uiRefs.pipBtn.onclick = () => {
+        toggleLocalPreview();
+        if (typeof options.onLocalPreviewToggled === 'function') options.onLocalPreviewToggled(localPreviewHidden);
+      };
+    }
+
     if (typeof options.onConnected === 'function') options.onConnected();
     return client;
   }
@@ -279,6 +335,8 @@
     joined = false;
     micEnabled = true;
     camEnabled = true;
+    layoutSwapped = false;
+    localPreviewHidden = false;
 
     localTracks.forEach((track) => {
       track.stop();
@@ -302,8 +360,12 @@
     leaveCall,
     setMicrophoneEnabled,
     setCameraEnabled,
+    toggleLayoutSwap,
+    toggleLocalPreview,
     isMicrophoneEnabled: () => micEnabled,
     isCameraEnabled: () => camEnabled,
+    isLayoutSwapped: () => layoutSwapped,
+    isLocalPreviewHidden: () => localPreviewHidden,
     getClient: () => client,
     isJoined: () => joined
   };

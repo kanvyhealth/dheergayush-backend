@@ -167,6 +167,23 @@ svg {
 }
 
 @media (max-width: 768px) {
+  body.auth-page:has(#loginCard.visible),
+  body.auth-page.auth-login-view {
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+    padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)) !important;
+  }
+
+  body.auth-page:has(#loginCard.visible) .card,
+  body.auth-page:has(#loginCard.visible) .card#loginCard {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    margin: 0 auto !important;
+  }
+
   body.auth-page,
   body.login-page {
     align-items: flex-start !important;
@@ -177,7 +194,13 @@ svg {
     min-height: 100dvh;
   }
 
-  .card {
+  body.auth-page:has(#loginCard.visible) {
+    align-items: center !important;
+    overflow-y: hidden !important;
+    padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .card:not(#loginCard) {
     position: relative !important;
     top: auto !important;
     left: auto !important;
@@ -361,14 +384,14 @@ header.doctor-header {
 }
 
 /* ── Video call UI ── */
+.dg-vcall-doctor-dock,
 #prescription-btn,
 #reports-btn,
 #cart-btn-floating {
   margin-left: 0 !important;
 }
 
-body.vcall-in-call #prescription-btn,
-body.vcall-in-call #reports-btn {
+body.vcall-in-call .dg-vcall-doctor-dock {
   left: max(12px, env(safe-area-inset-left)) !important;
 }
 
@@ -394,19 +417,14 @@ body.vcall-in-call #reports-btn {
     z-index: 14 !important;
   }
 
-  body.vcall-in-call #prescription-btn {
-    bottom: max(76px, calc(60px + env(safe-area-inset-bottom, 0px))) !important;
+  body.vcall-in-call .dg-vcall-doctor-dock {
+    bottom: max(80px, calc(68px + env(safe-area-inset-bottom, 0px))) !important;
     left: max(12px, env(safe-area-inset-left)) !important;
   }
 
-  body.vcall-in-call #reports-btn {
-    bottom: max(76px, calc(60px + env(safe-area-inset-bottom, 0px))) !important;
-    left: max(68px, calc(56px + env(safe-area-inset-left))) !important;
-  }
-
   body.vcall-in-call .dg-patient-rx-actions {
-    bottom: max(148px, calc(132px + env(safe-area-inset-bottom, 0px))) !important;
-    width: min(280px, calc(100vw - 24px)) !important;
+    bottom: max(80px, calc(68px + env(safe-area-inset-bottom, 0px))) !important;
+    width: min(520px, calc(100vw - 24px)) !important;
     max-width: calc(100vw - 24px) !important;
   }
 }
@@ -416,6 +434,12 @@ body.vcall-in-call #reports-btn {
   body.vcall-in-call #dg-agora-local {
     width: min(100px, 20vw) !important;
     height: min(75px, 15vw) !important;
+  }
+
+  body.vcall-in-call .dg-vcall-doctor-dock,
+  body.vcall-in-call .dg-patient-rx-actions {
+    top: max(48px, calc(36px + env(safe-area-inset-top, 0px))) !important;
+    bottom: auto !important;
   }
 }
 

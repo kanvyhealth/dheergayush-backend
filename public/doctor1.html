@@ -3,307 +3,242 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Doctor Dashboard</title>
+  <title>Doctor Dashboard — Dheergayush</title>
   <link rel="stylesheet" href="css/dheergayush-theme.css">
   <link rel="stylesheet" href="css/dg-platform.css">
+  <link rel="stylesheet" href="css/dg-doctor-dashboard.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="js/dg-doctor-status.js?v=2"></script>
   <script src="js/dg-doctor-end-calls.js"></script>
   <style>
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--dg-page-bg-cover, linear-gradient(135deg, #fff8e1 0%, #fafafa 45%, rgba(242, 103, 39, 0.1) 100%));
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+    .dg-profile-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: none;
       align-items: center;
-      animation: fadeIn 1s ease-in;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-      }
-      to {
-        opacity: 1;
-      }
-    }
-
-    header {
-      padding: 80px 20px 20px;
-      text-align: center;
-      width: 100%;
-      animation: slideDown 1s ease-out;
-    }
-
-    @keyframes slideDown {
-      from {
-        transform: translateY(-50px);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-    .doctor-info {
-      color: #333;
-      margin-bottom: 30px;
-    }
-
-    .doctor-info h1 {
-      margin: 0;
-      font-size: 2.5em;
-      color: #2563eb;
-    }
-.logout-button {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  padding: 12px 24px;
-  background-color: #dc2626;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 600;
-  font-size: 0.95rem;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  cursor: pointer;
-  box-shadow: 0 0 0 rgba(255, 0, 0, 0.7);
-  animation: pulse 1.5s infinite;
-  transition: all 0.3s ease;
-}
-
-.logout-button:hover {
-  background-color: #b91c1c;
-  transform: scale(1.05);
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-  }
-}
-
-    .doctor-info p {
-      margin: 10px 0;
-      font-size: 1.2em;
-      color: #4b5563;
-    }
-
-    .check-button {
-      padding: 15px 30px;
-      font-size: 1.1rem;
-      font-family: 'Poppins', sans-serif;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      background-color: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-      transition: all 0.3s ease;
-      text-transform: uppercase;
-    }
-
-    .check-button:hover {
-      background-color: #1d4ed8;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    .check-button:disabled {
-      background-color: #6c757d;
-      cursor: not-allowed;
-      transform: none;
-      opacity: 0.7;
-    }
-
-    .appointments-section {
-      width: 90%;
-      max-width: 1200px;
-      position: relative;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
-      padding: 20px;
-      margin-top: 30px;
-    }
-
-    .appointments-section.show {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .appointments-section h2 {
-      color: #1a365d;
-      font-size: 2em;
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    #appointmentsContainer {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 25px;
       justify-content: center;
-      align-items: start;
+      z-index: 10050;
+      padding: 16px;
     }
-
-    .appointment-card {
-      background-color: rgba(255, 255, 255, 0.95);
-      border-radius: 15px;
-      padding: 25px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
-      height: 100%; /* Ensure all cards have same height */
-      min-height: 300px; /* Set minimum height for consistency */
-    }
-
-    .appointment-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-    }
-
-    .appointment-card h3 {
-      color: #2563eb;
-      margin-bottom: 15px;
-      font-size: 1.3em;
+    .dg-profile-modal.show { display: flex; }
+    .dg-profile-card {
+      background: #fff;
+      border-radius: 16px;
+      max-width: 640px;
       width: 100%;
+      max-height: 92vh;
+      overflow-y: auto;
+      padding: 24px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
     }
-
-    .appointment-card p {
-      margin: 8px 0;
-      color: #4b5563;
-      font-size: 1em;
-      line-height: 1.4;
+    .dg-profile-card h2 { margin: 0 0 8px; color: #f26727; }
+    .dg-profile-grid { display: grid; gap: 12px; }
+    .dg-profile-grid label { font-weight: 600; font-size: 0.9rem; display: block; margin-bottom: 4px; }
+    .dg-profile-grid input,
+    .dg-profile-grid textarea {
       width: 100%;
-    }
-
-    .room-id {
-      font-size: 1.1em;
-      font-weight: bold;
-      color: #dc3545;
-      background-color: #fff3cd;
-      padding: 5px 10px;
-      border-radius: 5px;
-      display: inline-block;
-      margin: 10px 0;
-    }
-
-    .start-call-btn {
-      background-color: #28a745;
-      color: white;
-      padding: 12px 20px;
-      border: none;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
       border-radius: 8px;
-      cursor: pointer;
-      font-family: 'Poppins', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      margin-top: 20px;
-      transition: all 0.3s ease;
-      width: 100%;
-      max-width: 200px;
+      font-family: inherit;
+      box-sizing: border-box;
     }
-
-    .start-call-btn:hover {
-      background-color: #218838;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      header {
-        padding: 72px 16px 16px !important;
-      }
-
-      .doctor-info h1 {
-        font-size: 1.75rem;
-      }
-
-      .appointments-section {
-        width: 100%;
-        padding: 12px;
-      }
-
-      #appointmentsContainer {
-        grid-template-columns: 1fr;
-        gap: 15px;
-      }
-      
-      .appointment-card {
-        min-height: 250px;
-        padding: 15px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      #appointmentsContainer {
-        grid-template-columns: 1fr;
-      }
-    }
+    .dg-profile-actions { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+    .dg-profile-status { margin-top: 12px; font-size: 0.9rem; }
+    .dg-profile-status.error { color: #dc2626; }
+    .dg-profile-status.success { color: #16a34a; }
+    .dg-profile-status.info { color: #2563eb; }
+    .dg-profile-section { margin-top: 16px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
   </style>
 </head>
-<body>
-  <header>
-    <div class="doctor-info">
-      <h1 id="doctorName">Dr. </h1>
-      <p id="doctorSpecialization"></p>
-      <p id="doctorLicense"></p>
-    </div>
-    <div class="dg-doctor-status-bar" id="doctorStatusBar">
-      <span class="dg-status-pill offline" id="statusPill">Offline</span>
-      <label class="dg-online-switch" id="doctorOnlineSwitchWrap" title="When online, patients can see you and book consultations">
-        <span class="dg-online-switch-label" id="onlineSwitchLabel">Offline</span>
-        <input type="checkbox" id="doctorOnlineToggle" aria-label="Go online for patients">
-        <span class="dg-online-switch-slider"></span>
-      </label>
-    </div>
-    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-  <button class="check-button" onclick="showAppointments()">Check Patient Appointments</button>
-  <button id="startConsultBtn" class="check-button" onclick="startConsulting()">Start Consulting Patients</button>
-  <button type="button" id="endActiveCallsBtn" class="check-button" style="background-color:#dc2626;" title="Clear stuck in-call sessions before joining a new patient">
-    End Active Video Calls
-  </button>
-  <button class="check-button" onclick="goToStores()">Stores</button>
-</div>
-    <div class="dg-listening-banner" id="dgListeningBanner" role="status">
-      Listening for patients. You will hear a ring and voice alert: &ldquo;DHEERGAYUSH patient is waiting&rdquo;.
-    </div>
-  </header>
-  <button class="logout-button" onclick="logoutDoctor()">Logout</button>
+<body class="dg-doctor-dashboard">
 
-  <section id="appointments" class="appointments-section">
-    <h2>Your Patient Appointments</h2>
-    <div id="appointmentsContainer">
-      <!-- Appointments will be dynamically added here -->
-    </div>
-  </section>
+  <div class="dg-doc-shell">
 
+    <header class="dg-doc-topbar">
+      <div class="dg-doc-brand">
+        <div class="dg-doc-avatar" id="dgDocAvatarInitials" aria-hidden="true">DR</div>
+        <div class="dg-doc-brand-text">
+          <h1 id="doctorName">Dr.</h1>
+          <p id="doctorSpecialization">Ayurvedic Consultant</p>
+        </div>
+      </div>
+      <div class="dg-doc-topbar-actions">
+        <button type="button" class="dg-doc-btn dg-doc-btn--ghost" id="openDoctorProfileBtn" title="Edit profile">
+          <i class="fas fa-user-md"></i><span class="label">Profile</span>
+        </button>
+        <button type="button" class="dg-doc-btn dg-doc-btn--danger" onclick="logoutDoctor()">
+          <i class="fas fa-sign-out-alt"></i><span class="label">Logout</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="dg-doc-hero">
+      <div class="dg-doc-hero-intro">
+        <h2>Clinical workspace</h2>
+        <p>Manage video consultations, review patient history, and prescribe from the Ayurvedic store — all in one place.</p>
+        <p id="doctorLicense" style="margin-top:10px;font-size:0.82rem;color:#888;"></p>
+
+        <div class="dg-doc-stats">
+          <div class="dg-doc-stat">
+            <div class="dg-doc-stat-label">Total consultations</div>
+            <div class="dg-doc-stat-value" id="dgDocStatTotal">—</div>
+          </div>
+          <div class="dg-doc-stat">
+            <div class="dg-doc-stat-label">Completed</div>
+            <div class="dg-doc-stat-value dg-doc-stat-value--accent" id="dgDocStatCompleted">—</div>
+          </div>
+          <div class="dg-doc-stat">
+            <div class="dg-doc-stat-label">Active / waiting</div>
+            <div class="dg-doc-stat-value" id="dgDocStatActive">—</div>
+          </div>
+          <div class="dg-doc-stat">
+            <div class="dg-doc-stat-label">Consultation revenue</div>
+            <div class="dg-doc-stat-value dg-doc-stat-value--accent" id="dgDocStatRevenue">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dg-doc-status-wrap">
+        <div class="dg-doctor-status-bar" id="doctorStatusBar">
+          <span class="dg-status-pill offline" id="statusPill">Offline</span>
+          <label class="dg-online-switch" id="doctorOnlineSwitchWrap" title="When online, patients can see you and book consultations">
+            <span class="dg-online-switch-label" id="onlineSwitchLabel">Offline</span>
+            <input type="checkbox" id="doctorOnlineToggle" aria-label="Go online for patients">
+            <span class="dg-online-switch-slider"></span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section class="dg-doc-actions" aria-label="Quick actions">
+      <button type="button" class="dg-doc-action-card" id="startConsultBtn" onclick="startConsulting()">
+        <i class="fas fa-headset"></i>
+        <strong>Start consulting</strong>
+        <span>Go live and receive incoming patient calls</span>
+      </button>
+      <button type="button" class="dg-doc-action-card" onclick="goToStores()">
+        <i class="fas fa-store"></i>
+        <strong>Ayurvedic store</strong>
+        <span>Browse medicines with doctor discount</span>
+      </button>
+      <button type="button" class="dg-doc-action-card" id="endActiveCallsBtn">
+        <i class="fas fa-phone-slash"></i>
+        <strong>End stuck calls</strong>
+        <span>Clear active sessions before a new patient</span>
+      </button>
+      <button type="button" class="dg-doc-action-card" onclick="document.getElementById('dgDocConsultPanel').scrollIntoView({behavior:'smooth'})">
+        <i class="fas fa-history"></i>
+        <strong>Consultation history</strong>
+        <span>Jump to your past patient sessions</span>
+      </button>
+    </section>
+
+    <div class="dg-doc-listening-banner" id="dgListeningBanner" role="status">
+      <i class="fas fa-broadcast-tower"></i>
+      <span>Listening for patients — you will hear a ring and voice alert when someone is waiting.</span>
+    </div>
+
+    <section class="dg-doc-panel" id="dgDocConsultPanel">
+      <div class="dg-doc-panel-header">
+        <div>
+          <h3>Consultation history</h3>
+          <p>All your past and active video consultations load automatically.</p>
+        </div>
+      </div>
+
+      <div class="dg-doc-toolbar">
+        <input type="search" class="dg-doc-search" id="dgDocSearch" placeholder="Search patient, phone, room…" aria-label="Search consultations">
+        <div class="dg-doc-filters" role="tablist">
+          <button type="button" class="dg-doc-filter active" data-filter="all">All</button>
+          <button type="button" class="dg-doc-filter" data-filter="active">Active</button>
+          <button type="button" class="dg-doc-filter" data-filter="completed">Completed</button>
+          <button type="button" class="dg-doc-filter" data-filter="cancelled">Cancelled</button>
+        </div>
+        <button type="button" class="dg-doc-refresh" id="dgDocRefresh" title="Refresh list">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+
+      <div class="dg-doc-loading" id="dgDocConsultLoading">
+        <div class="dg-doc-spinner"></div>
+        <p>Loading your consultations…</p>
+      </div>
+
+      <div class="dg-doc-table-wrap" id="dgDocTableWrap" style="display:none;">
+        <table class="dg-doc-table">
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Date</th>
+              <th>Fee</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="dgDocConsultTbody"></tbody>
+        </table>
+      </div>
+
+      <div class="dg-doc-empty" id="dgDocConsultEmpty" style="display:none;">
+        <i class="fas fa-calendar-check"></i>
+        <p><strong>No consultations yet</strong></p>
+        <p style="font-size:0.85rem;color:#888;">When patients book and pay, their sessions will appear here.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- Profile modal -->
+  <div class="dg-profile-modal" id="doctorProfileEditModal" role="dialog" aria-labelledby="doctorProfileTitle">
+    <div class="dg-profile-card">
+      <h2 id="doctorProfileTitle">Edit your profile</h2>
+      <p style="color:#666;font-size:0.9rem;margin:0 0 16px;">Update your details and payout UPI/bank info (stored in Firebase, same as the app).</p>
+      <div class="dg-profile-grid">
+        <div><label for="profileName">Full name</label><input id="profileName" type="text"></div>
+        <div><label for="profileEmail">Email (login)</label><input id="profileEmail" type="email" readonly style="background:#f3f4f6;"></div>
+        <div><label for="profileSpec">Specialization</label><input id="profileSpec" type="text"></div>
+        <div><label for="profileLicense">License ID</label><input id="profileLicense" type="text"></div>
+        <div><label for="profileDegree">Degree</label><input id="profileDegree" type="text"></div>
+        <div><label for="profileLocation">Location</label><input id="profileLocation" type="text"></div>
+        <div><label for="profileAvailableTime">Consultation time slot</label><input id="profileAvailableTime" type="text" placeholder="e.g. 10:00 AM - 11:00 AM"></div>
+        <div><label for="profileLanguages">Languages (comma-separated)</label><input id="profileLanguages" type="text"></div>
+        <div><label for="profileFee">Consultation fee (₹)</label><input id="profileFee" type="number" min="0" step="1"></div>
+        <div><label for="profileExperience">Years of experience</label><input id="profileExperience" type="number" min="0" step="1"></div>
+        <div><label for="profileBio">Bio</label><textarea id="profileBio" rows="3"></textarea></div>
+        <div class="dg-profile-section">
+          <strong>Payout details</strong>
+          <div style="display:flex;gap:16px;margin:10px 0;">
+            <label><input type="radio" name="profilePaymentMode" value="upi" checked> UPI</label>
+            <label><input type="radio" name="profilePaymentMode" value="bank"> Bank account</label>
+          </div>
+          <div id="profileUpiFields">
+            <label for="profileUpiId">UPI ID</label>
+            <input id="profileUpiId" type="text" placeholder="yourname@bank">
+          </div>
+          <div id="profileBankFields" style="display:none;">
+            <div style="margin-top:8px;"><label for="profileAccountHolder">Account holder</label><input id="profileAccountHolder" type="text"></div>
+            <div style="margin-top:8px;"><label for="profileBankName">Bank name</label><input id="profileBankName" type="text"></div>
+            <div style="margin-top:8px;"><label for="profileAccountNumber">Account number</label><input id="profileAccountNumber" type="text"></div>
+            <div style="margin-top:8px;"><label for="profileIfsc">IFSC</label><input id="profileIfsc" type="text" style="text-transform:uppercase;"></div>
+          </div>
+        </div>
+        <div class="dg-profile-section">
+          <label for="profilePhoto">Update profile photo (optional)</label>
+          <input id="profilePhoto" type="file" accept=".jpg,.jpeg,.png">
+          <label for="profileDocs" style="margin-top:10px;display:block;">Add documents (optional)</label>
+          <input id="profileDocs" type="file" accept=".pdf,.jpg,.jpeg,.png" multiple>
+        </div>
+      </div>
+      <div id="doctorProfileStatus" class="dg-profile-status"></div>
+      <div class="dg-profile-actions">
+        <button type="button" class="dg-doc-btn dg-doc-btn--primary" id="saveDoctorProfileBtn">Save profile</button>
+        <button type="button" class="dg-doc-btn dg-doc-btn--ghost" id="closeDoctorProfileBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Incoming call overlay -->
   <div class="dg-ring-overlay" id="dgRingOverlay">
     <div class="dg-ring-card">
       <div class="dg-ring-icon"><i class="fas fa-phone-volume" aria-hidden="true"></i></div>
@@ -321,6 +256,8 @@
 
   <script src="js/dg-auth.js"></script>
   <script src="js/dg-api.js"></script>
+  <script src="js/dg-doctor-profile.js"></script>
+  <script src="js/dg-doctor-dashboard.js"></script>
   <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
   <script src="js/dg-realtime.js"></script>
   <script>
@@ -348,393 +285,307 @@
         window.location.href = 'doctor.html';
       }
     });
-    // Load doctor info from localStorage
-   // Load doctor info from localStorage
-document.addEventListener('DOMContentLoaded', () => {
-  const doctorName = localStorage.getItem('doctorName');
-  const doctorSpecialization = localStorage.getItem('doctorSpecialization');
-  const doctorLicense = localStorage.getItem('doctorLicense');
 
-  document.getElementById('doctorName').textContent = `Dr. ${doctorName || ''}`;
-  document.getElementById('doctorSpecialization').textContent = `Specialization: ${doctorSpecialization || ''}`;
-  document.getElementById('doctorLicense').textContent = `License: ${doctorLicense || ''}`;
+    document.addEventListener('DOMContentLoaded', () => {
+      checkDoctorStatus();
+      initDoctorRealtime();
+    });
 
-  // Call status check here inside DOMContentLoaded
-  checkDoctorStatus();
-  initDoctorRealtime();
-});
+    var activeRingConsultation = null;
 
-var activeRingConsultation = null;
+    function initDoctorRealtime() {
+      var doctorName = localStorage.getItem('doctorName');
+      if (!doctorName || !window.DgRealtime) return;
 
-function initDoctorRealtime() {
-  var doctorName = localStorage.getItem('doctorName');
-  if (!doctorName || !window.DgRealtime) return;
+      DgRealtime.registerDoctor(doctorName);
 
-  DgRealtime.registerDoctor(doctorName);
-
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.getVoices();
-    window.speechSynthesis.onvoiceschanged = function () {
-      window.speechSynthesis.getVoices();
-    };
-  }
-
-  DgRealtime.onConsultationRequested(function (data) {
-    if (!data || !data.consultationId) return;
-    if (activeRingConsultation && activeRingConsultation.consultationId === data.consultationId) return;
-    activeRingConsultation = data;
-    document.getElementById('dgRingPatientName').textContent = data.patientName || 'Patient';
-    document.getElementById('dgRingPatientPhone').textContent = 'Phone: ' + (data.patientPhone || '—');
-    document.getElementById('dgRingAmount').textContent = data.amount ? 'Paid: ₹' + data.amount : '';
-    document.getElementById('dgRingOverlay').classList.add('show');
-    DgRealtime.startRing();
-  });
-
-  document.getElementById('dgEnableSoundBtn').addEventListener('click', function () {
-    DgRealtime.startRing();
-    this.style.display = 'none';
-  });
-
-  document.getElementById('dgAcceptConsultBtn').addEventListener('click', async function () {
-    if (!activeRingConsultation) return;
-    DgRealtime.stopRing();
-    document.getElementById('dgRingOverlay').classList.remove('show');
-    try {
-      const res = await fetch('/api/consultations/' + activeRingConsultation.consultationId + '/accept', {
-        method: 'POST',
-        headers: doctorAuthHeaders({ 'Content-Type': 'application/json' })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Accept failed');
-      const roomId = data.roomId || activeRingConsultation.roomId;
-      const doctorName = localStorage.getItem('doctorName');
-      if (doctorName && window.DgDoctorEndCalls) {
-        try {
-          await DgDoctorEndCalls.endActiveCalls(doctorName, { exceptRoomId: roomId });
-        } catch (e) { console.warn('end other calls:', e); }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.getVoices();
+        window.speechSynthesis.onvoiceschanged = function () {
+          window.speechSynthesis.getVoices();
+        };
       }
-      localStorage.setItem('userRole', 'doctor');
-      localStorage.setItem('videoRoomId', roomId);
-      window.location.href = '/video-call.html?roomID=' + encodeURIComponent(roomId) + '&role=doctor';
-    } catch (err) {
-      alert(err.message || 'Could not accept consultation');
-      activeRingConsultation = null;
-    }
-  });
 
-  document.getElementById('dgRejectConsultBtn').addEventListener('click', async function () {
-    if (!activeRingConsultation) return;
-    DgRealtime.stopRing();
-    document.getElementById('dgRingOverlay').classList.remove('show');
-    try {
-      await fetch('/api/consultations/' + activeRingConsultation.consultationId + '/reject', {
-        method: 'POST',
-        headers: doctorAuthHeaders({ 'Content-Type': 'application/json' })
+      DgRealtime.onConsultationRequested(function (data) {
+        if (!data || !data.consultationId) return;
+        if (activeRingConsultation && activeRingConsultation.consultationId === data.consultationId) return;
+        activeRingConsultation = data;
+        document.getElementById('dgRingPatientName').textContent = data.patientName || 'Patient';
+        document.getElementById('dgRingPatientPhone').textContent = 'Phone: ' + (data.patientPhone || '—');
+        document.getElementById('dgRingAmount').textContent = data.amount ? 'Paid: ₹' + data.amount : '';
+        document.getElementById('dgRingOverlay').classList.add('show');
+        DgRealtime.startRing();
       });
-    } catch (e) { /* ignore */ }
-    activeRingConsultation = null;
-  });
 
-  if (window.DgRealtime.onDoctorStatus) {
-    DgRealtime.onDoctorStatus(function (payload) {
-      if (!payload || payload.doctorName !== doctorName) return;
-      applyDoctorStatusUI(payload.effectiveStatus || payload.working || payload.dbStatus, {
-        dbStatus: payload.dbStatus || payload.working || payload.presenceStatus
+      document.getElementById('dgEnableSoundBtn').addEventListener('click', function () {
+        DgRealtime.startRing();
+        this.style.display = 'none';
       });
-    });
-  }
 
-  setInterval(function () {
-    if (doctorName && Date.now() > doctorStatusPollPausedUntil) checkDoctorStatus();
-  }, 30000);
-
-  async function pollRingingConsultations() {
-    try {
-      const res = await fetch('/api/doctors/' + encodeURIComponent(doctorName) + '/ringing-consultations');
-      if (!res.ok) return;
-      const list = await res.json();
-      if (!Array.isArray(list) || !list.length) return;
-      const data = list[0];
-      if (activeRingConsultation && activeRingConsultation.consultationId === (data._id || data.id)) return;
-      document.getElementById('dgRingPatientName').textContent = data.patientName || 'Patient';
-      document.getElementById('dgRingPatientPhone').textContent = 'Phone: ' + (data.patientPhone || '—');
-      document.getElementById('dgRingAmount').textContent = data.amount ? 'Paid: ₹' + data.amount : '';
-      activeRingConsultation = {
-        consultationId: data._id || data.id,
-        patientName: data.patientName,
-        patientPhone: data.patientPhone,
-        roomId: data.roomId || data.videoRoomId,
-        amount: data.amount
-      };
-      document.getElementById('dgRingOverlay').classList.add('show');
-      DgRealtime.startRing();
-    } catch (e) { /* ignore */ }
-  }
-
-  pollRingingConsultations();
-  setInterval(pollRingingConsultations, 8000);
-}
-
-var doctorStatusPollPausedUntil = 0;
-
-function applyDoctorStatusUI(status, opts) {
-  const startConsultBtn = document.getElementById('startConsultBtn');
-  const pill = document.getElementById('statusPill');
-  const toggle = document.getElementById('doctorOnlineToggle');
-  const switchWrap = document.getElementById('doctorOnlineSwitchWrap');
-  const switchLabel = document.getElementById('onlineSwitchLabel');
-  const normalized = (window.DgDoctorStatus && DgDoctorStatus.normalizeDbStatus(status)) || status || 'Offline';
-  const toggleSource = (opts && opts.dbStatus) != null ? opts.dbStatus : status;
-  const toggleNorm = (window.DgDoctorStatus && DgDoctorStatus.normalizeDbStatus(toggleSource)) || toggleSource || 'Offline';
-  pill.textContent = normalized;
-  pill.className = 'dg-status-pill ' + normalized.toLowerCase();
-
-  if (toggle) {
-    toggle.checked = toggleNorm === 'Available';
-    toggle.disabled = toggleNorm === 'Busy';
-  }
-  if (switchWrap) {
-    switchWrap.classList.toggle('is-busy', toggleNorm === 'Busy');
-    switchWrap.classList.remove('is-loading');
-  }
-  if (switchLabel) {
-    switchLabel.textContent = toggleNorm === 'Busy' ? 'Busy (in call)' : (toggleNorm === 'Available' ? 'Online' : 'Offline');
-  }
-
-  if (normalized === 'Offline') {
-    startConsultBtn.disabled = true;
-    startConsultBtn.textContent = 'You are Offline — Go Online first';
-    startConsultBtn.style.backgroundColor = '#6c757d';
-    startConsultBtn.style.cursor = 'not-allowed';
-    var banner = document.getElementById('dgListeningBanner');
-    if (banner) banner.classList.remove('show');
-  } else if (normalized === 'Busy') {
-    startConsultBtn.disabled = false;
-    startConsultBtn.textContent = 'Resume Consulting (Busy)';
-    startConsultBtn.style.backgroundColor = '#ffc107';
-    startConsultBtn.style.cursor = 'pointer';
-  } else {
-    startConsultBtn.disabled = false;
-    startConsultBtn.textContent = 'Start Consulting Patients';
-    startConsultBtn.style.backgroundColor = '';
-    startConsultBtn.style.cursor = 'pointer';
-  }
-}
-
-async function checkDoctorStatus() {
-  const doctorName = localStorage.getItem('doctorName');
-  if (!doctorName) return;
-  try {
-    const response = await fetch(`/api/doctors/status/${encodeURIComponent(doctorName)}`);
-    const data = await response.json();
-    applyDoctorStatusUI(data.effectiveStatus || data.working || data.dbStatus, {
-      dbStatus: data.dbStatus || data.working || data.presenceStatus
-    });
-  } catch (err) {
-    console.error('Error fetching doctor status:', err);
-  }
-}
-
-async function setDoctorAvailability(status) {
-  const doctorName = localStorage.getItem('doctorName');
-  if (!doctorName) return alert('Doctor name not found.');
-  const switchWrap = document.getElementById('doctorOnlineSwitchWrap');
-  if (switchWrap) switchWrap.classList.add('is-loading');
-  doctorStatusPollPausedUntil = Date.now() + 8000;
-  try {
-    const data = await DgDoctorStatus.updateDoctorStatus(doctorName, status);
-    applyDoctorStatusUI(data.effectiveStatus || status, {
-      dbStatus: data.dbStatus || data.working || data.presenceStatus || status
-    });
-    if (status === 'Available' && window.DgRealtime) {
-      DgRealtime.registerDoctor(doctorName);
-    }
-  } catch (e) {
-    alert(e.message || 'Could not update status');
-    await checkDoctorStatus();
-  } finally {
-    if (switchWrap) switchWrap.classList.remove('is-loading');
-  }
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-  var toggle = document.getElementById('doctorOnlineToggle');
-  if (!toggle) return;
-  toggle.addEventListener('change', function () {
-    setDoctorAvailability(toggle.checked ? 'Available' : 'Offline');
-  });
-});
-
-document.getElementById('endActiveCallsBtn').addEventListener('click', async function () {
-  const doctorName = localStorage.getItem('doctorName');
-  if (!doctorName) {
-    alert('Doctor name not found.');
-    return;
-  }
-  if (!confirm('End all active video consultations? Use this if you are stuck in a previous call before accepting or joining a new patient.')) {
-    return;
-  }
-  const btn = document.getElementById('endActiveCallsBtn');
-  btn.disabled = true;
-  try {
-    const data = await DgDoctorEndCalls.endActiveCalls(doctorName);
-    alert(data.message || 'Active calls ended.');
-    await checkDoctorStatus();
-  } catch (err) {
-    alert(err.message || 'Could not end active calls.');
-  } finally {
-    btn.disabled = false;
-  }
-});
-
-async function showAppointments() {
-  const section = document.getElementById('appointments');
-  const container = document.getElementById('appointmentsContainer');
-  const doctorName = localStorage.getItem('doctorName');
-
-  try {
-    const response = await fetch(`/api/payments/doctor/${encodeURIComponent(doctorName)}`, {
-      headers: doctorAuthHeaders()
-    });
-    const appointments = await response.json();
-
-    container.innerHTML = '';
-
-    if (!response.ok || appointments.length === 0) {
-      container.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #666;">No appointments found.</p>';
-    } else {
-      appointments.forEach(appointment => {
-        const appointmentCard = document.createElement('div');
-        appointmentCard.className = 'appointment-card';
-        const room = appointment.roomName || appointment.videoRoomId || '';
-        const consultStatus = appointment.consultationStatus || appointment.status || '—';
-        appointmentCard.innerHTML = `
-          <div style="width: 100%; text-align: center;">
-            <h3>Patient Details</h3>
-            <p><strong>Name:</strong> ${appointment.name || appointment.patientName || '—'}</p>
-            <p><strong>Phone:</strong> ${appointment.phone || appointment.patientPhone || '—'}</p>
-            <p><strong>Date:</strong> ${appointment.createdAt ? new Date(appointment.createdAt).toLocaleString() : '—'}</p>
-            <p><strong>Amount Paid:</strong> ₹${appointment.amount || appointment.selectedDoctorFee || '—'}</p>
-            <p><strong>Status:</strong> ${consultStatus}</p>
-            ${room ? `<p><strong>Room:</strong> <code>${room}</code></p>` : ''}
-            ${room ? `<button type="button" class="check-button" style="margin-top:10px" data-room="${room.replace(/"/g, '&quot;')}">Join Video Call</button>` : ''}
-          </div>
-        `;
-        const joinBtn = appointmentCard.querySelector('button[data-room]');
-        if (joinBtn) {
-          joinBtn.addEventListener('click', () => {
-            localStorage.setItem('userRole', 'doctor');
-            localStorage.setItem('videoRoomId', joinBtn.dataset.room);
-            window.location.href = '/video-call.html?roomID=' + encodeURIComponent(joinBtn.dataset.room) + '&role=doctor';
+      document.getElementById('dgAcceptConsultBtn').addEventListener('click', async function () {
+        if (!activeRingConsultation) return;
+        DgRealtime.stopRing();
+        document.getElementById('dgRingOverlay').classList.remove('show');
+        try {
+          const res = await fetch('/api/consultations/' + activeRingConsultation.consultationId + '/accept', {
+            method: 'POST',
+            headers: doctorAuthHeaders({ 'Content-Type': 'application/json' })
           });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || 'Accept failed');
+          const roomId = data.roomId || activeRingConsultation.roomId;
+          const doctorName = localStorage.getItem('doctorName');
+          if (doctorName && window.DgDoctorEndCalls) {
+            try {
+              await DgDoctorEndCalls.endActiveCalls(doctorName, { exceptRoomId: roomId });
+            } catch (e) { console.warn('end other calls:', e); }
+          }
+          localStorage.setItem('userRole', 'doctor');
+          localStorage.setItem('videoRoomId', roomId);
+          window.location.href = '/video-call.html?roomID=' + encodeURIComponent(roomId) + '&role=doctor';
+        } catch (err) {
+          alert(err.message || 'Could not accept consultation');
+          activeRingConsultation = null;
         }
-        container.appendChild(appointmentCard);
       });
+
+      document.getElementById('dgRejectConsultBtn').addEventListener('click', async function () {
+        if (!activeRingConsultation) return;
+        DgRealtime.stopRing();
+        document.getElementById('dgRingOverlay').classList.remove('show');
+        try {
+          await fetch('/api/consultations/' + activeRingConsultation.consultationId + '/reject', {
+            method: 'POST',
+            headers: doctorAuthHeaders({ 'Content-Type': 'application/json' })
+          });
+        } catch (e) { /* ignore */ }
+        activeRingConsultation = null;
+        if (window.DgDoctorDashboard) DgDoctorDashboard.refresh(true);
+      });
+
+      if (window.DgRealtime.onDoctorStatus) {
+        DgRealtime.onDoctorStatus(function (payload) {
+          if (!payload || payload.doctorName !== doctorName) return;
+          applyDoctorStatusUI(payload.effectiveStatus || payload.working || payload.dbStatus, {
+            dbStatus: payload.dbStatus || payload.working || payload.presenceStatus
+          });
+        });
+      }
+
+      setInterval(function () {
+        if (doctorName && Date.now() > doctorStatusPollPausedUntil) checkDoctorStatus();
+      }, 30000);
+
+      async function pollRingingConsultations() {
+        try {
+          const res = await fetch('/api/doctors/' + encodeURIComponent(doctorName) + '/ringing-consultations');
+          if (!res.ok) return;
+          const list = await res.json();
+          if (!Array.isArray(list) || !list.length) return;
+          const data = list[0];
+          if (activeRingConsultation && activeRingConsultation.consultationId === (data._id || data.id)) return;
+          document.getElementById('dgRingPatientName').textContent = data.patientName || 'Patient';
+          document.getElementById('dgRingPatientPhone').textContent = 'Phone: ' + (data.patientPhone || '—');
+          document.getElementById('dgRingAmount').textContent = data.amount ? 'Paid: ₹' + data.amount : '';
+          activeRingConsultation = {
+            consultationId: data._id || data.id,
+            patientName: data.patientName,
+            patientPhone: data.patientPhone,
+            roomId: data.roomId || data.videoRoomId,
+            amount: data.amount
+          };
+          document.getElementById('dgRingOverlay').classList.add('show');
+          DgRealtime.startRing();
+        } catch (e) { /* ignore */ }
+      }
+
+      pollRingingConsultations();
+      setInterval(pollRingingConsultations, 8000);
     }
 
-    section.classList.add('show');
-  } catch (error) {
-    console.error('Error fetching appointments:', error);
-    container.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #dc3545;">Error loading appointments. Please try again.</p>';
-  }
-}
+    var doctorStatusPollPausedUntil = 0;
 
-async function startConsulting() {
-  const doctorName = localStorage.getItem('doctorName');
+    function applyDoctorStatusUI(status, opts) {
+      const startConsultBtn = document.getElementById('startConsultBtn');
+      const pill = document.getElementById('statusPill');
+      const toggle = document.getElementById('doctorOnlineToggle');
+      const switchWrap = document.getElementById('doctorOnlineSwitchWrap');
+      const switchLabel = document.getElementById('onlineSwitchLabel');
+      const normalized = (window.DgDoctorStatus && DgDoctorStatus.normalizeDbStatus(status)) || status || 'Offline';
+      const toggleSource = (opts && opts.dbStatus) != null ? opts.dbStatus : status;
+      const toggleNorm = (window.DgDoctorStatus && DgDoctorStatus.normalizeDbStatus(toggleSource)) || toggleSource || 'Offline';
+      pill.textContent = normalized;
+      pill.className = 'dg-status-pill ' + normalized.toLowerCase();
 
-  if (!doctorName) {
-    alert("Doctor name not found in localStorage.");
-    return;
-  }
+      if (toggle) {
+        toggle.checked = toggleNorm === 'Available';
+        toggle.disabled = toggleNorm === 'Busy';
+      }
+      if (switchWrap) {
+        switchWrap.classList.toggle('is-busy', toggleNorm === 'Busy');
+        switchWrap.classList.remove('is-loading');
+      }
+      if (switchLabel) {
+        switchLabel.textContent = toggleNorm === 'Busy' ? 'Busy (in call)' : (toggleNorm === 'Available' ? 'Online' : 'Offline');
+      }
 
-  try {
-    const statusRes = await fetch(`/api/doctors/status/${encodeURIComponent(doctorName)}`);
-    const statusData = await statusRes.json();
-    const effective = statusData.effectiveStatus || statusData.status;
-    if (effective === 'Offline') {
-      alert('You are offline. Tap Go Online first.');
-      return;
+      if (!startConsultBtn) return;
+
+      if (normalized === 'Offline') {
+        startConsultBtn.disabled = true;
+        startConsultBtn.querySelector('strong').textContent = 'Go online first';
+        startConsultBtn.querySelector('span').textContent = 'Turn on the online switch to receive patients';
+        var banner = document.getElementById('dgListeningBanner');
+        if (banner) banner.classList.remove('show');
+      } else if (normalized === 'Busy') {
+        startConsultBtn.disabled = false;
+        startConsultBtn.querySelector('strong').textContent = 'Resume consulting';
+        startConsultBtn.querySelector('span').textContent = 'You are busy — tap to listen for new patients';
+      } else {
+        startConsultBtn.disabled = false;
+        startConsultBtn.querySelector('strong').textContent = 'Start consulting';
+        startConsultBtn.querySelector('span').textContent = 'Go live and receive incoming patient calls';
+      }
     }
 
-    const dbStatus = statusData.dbStatus || statusData.status;
-    if (dbStatus !== 'Busy' && effective !== 'Busy') {
-      await DgDoctorStatus.updateDoctorStatus(doctorName, 'Available');
-      applyDoctorStatusUI('Available');
+    async function checkDoctorStatus() {
+      const doctorName = localStorage.getItem('doctorName');
+      if (!doctorName) return;
+      try {
+        const response = await fetch(`/api/doctors/status/${encodeURIComponent(doctorName)}`);
+        const data = await response.json();
+        applyDoctorStatusUI(data.effectiveStatus || data.working || data.dbStatus, {
+          dbStatus: data.dbStatus || data.working || data.presenceStatus
+        });
+      } catch (err) {
+        console.error('Error fetching doctor status:', err);
+      }
     }
 
-    const banner = document.getElementById('dgListeningBanner');
-    if (banner) banner.classList.add('show');
-
-    const btn = document.getElementById('startConsultBtn');
-    btn.textContent = 'Listening for patients…';
-    btn.disabled = true;
-    btn.style.backgroundColor = '#2d6a4f';
-    btn.style.cursor = 'default';
-
-    if (window.DgRealtime) {
-      DgRealtime.registerDoctor(doctorName);
+    async function setDoctorAvailability(status) {
+      const doctorName = localStorage.getItem('doctorName');
+      if (!doctorName) return alert('Doctor name not found.');
+      const switchWrap = document.getElementById('doctorOnlineSwitchWrap');
+      if (switchWrap) switchWrap.classList.add('is-loading');
+      doctorStatusPollPausedUntil = Date.now() + 8000;
+      try {
+        const data = await DgDoctorStatus.updateDoctorStatus(doctorName, status);
+        applyDoctorStatusUI(data.effectiveStatus || status, {
+          dbStatus: data.dbStatus || data.working || data.presenceStatus || status
+        });
+        if (status === 'Available' && window.DgRealtime) {
+          DgRealtime.registerDoctor(doctorName);
+        }
+      } catch (e) {
+        alert(e.message || 'Could not update status');
+        await checkDoctorStatus();
+      } finally {
+        if (switchWrap) switchWrap.classList.remove('is-loading');
+      }
     }
-  } catch (error) {
-    console.error("Error during startConsulting:", error);
-    alert("An error occurred. Please try again.");
-  }
-}
-async function logoutDoctor() {
-  const doctorName = localStorage.getItem('doctorName');
 
-  if (!doctorName) {
-    alert('Doctor name not found.');
-    return;
-  }
-
-  try {
-    const response = await fetch('/api/doctors/updateStatus', {
-      method: 'POST',
-      headers: doctorAuthHeaders({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({
-        doctorName,
-        status: 'Offline'
-      })
+    document.addEventListener('DOMContentLoaded', function () {
+      var toggle = document.getElementById('doctorOnlineToggle');
+      if (!toggle) return;
+      toggle.addEventListener('change', function () {
+        setDoctorAvailability(toggle.checked ? 'Available' : 'Offline');
+      });
     });
 
-    if (response.ok) {
-      localStorage.removeItem('isDoctor');
-      localStorage.clear(); // optional: only remove specific doctor items if needed
-      window.location.href = '/';
-    } else {
-      alert('Failed to logout. Try again.');
+    document.getElementById('endActiveCallsBtn').addEventListener('click', async function () {
+      const doctorName = localStorage.getItem('doctorName');
+      if (!doctorName) {
+        alert('Doctor name not found.');
+        return;
+      }
+      if (!confirm('End all active video consultations? Use this if you are stuck in a previous call before accepting or joining a new patient.')) {
+        return;
+      }
+      const btn = document.getElementById('endActiveCallsBtn');
+      btn.disabled = true;
+      try {
+        const data = await DgDoctorEndCalls.endActiveCalls(doctorName);
+        alert(data.message || 'Active calls ended.');
+        await checkDoctorStatus();
+        if (window.DgDoctorDashboard) DgDoctorDashboard.refresh(true);
+      } catch (err) {
+        alert(err.message || 'Could not end active calls.');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    async function startConsulting() {
+      const doctorName = localStorage.getItem('doctorName');
+      if (!doctorName) {
+        alert('Doctor name not found in localStorage.');
+        return;
+      }
+
+      try {
+        const statusRes = await fetch(`/api/doctors/status/${encodeURIComponent(doctorName)}`);
+        const statusData = await statusRes.json();
+        const effective = statusData.effectiveStatus || statusData.status;
+        if (effective === 'Offline') {
+          alert('You are offline. Turn on the online switch first.');
+          return;
+        }
+
+        const dbStatus = statusData.dbStatus || statusData.status;
+        if (dbStatus !== 'Busy' && effective !== 'Busy') {
+          await DgDoctorStatus.updateDoctorStatus(doctorName, 'Available');
+          applyDoctorStatusUI('Available');
+        }
+
+        const banner = document.getElementById('dgListeningBanner');
+        if (banner) banner.classList.add('show');
+
+        const btn = document.getElementById('startConsultBtn');
+        btn.querySelector('strong').textContent = 'Listening for patients…';
+        btn.querySelector('span').textContent = 'Keep this tab open — incoming calls will ring here';
+        btn.disabled = true;
+
+        if (window.DgRealtime) {
+          DgRealtime.registerDoctor(doctorName);
+        }
+      } catch (error) {
+        console.error('Error during startConsulting:', error);
+        alert('An error occurred. Please try again.');
+      }
     }
-  } catch (error) {
-    console.error('Logout error:', error);
-    alert('An error occurred during logout.');
-  }
-}
 
-function goToStores() {
-  localStorage.setItem('isDoctor', '1');
-  window.location.href = 'stores.html';
-}
+    async function logoutDoctor() {
+      const doctorName = localStorage.getItem('doctorName');
+      if (!doctorName) {
+        alert('Doctor name not found.');
+        return;
+      }
 
-// function startCall(roomName) {
-//   // Store the room name and redirect to video call page
-//   localStorage.setItem('currentRoom', roomName);
-//   window.location.href = '/videocall';
-// }
+      try {
+        const response = await fetch('/api/doctors/updateStatus', {
+          method: 'POST',
+          headers: doctorAuthHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ doctorName, status: 'Offline' })
+        });
 
-// --- Doctor Discount Logic ---
-let isDoctor = false;
-if (localStorage.getItem('isDoctor') === '1') {
-  isDoctor = true;
-  // Show a banner
-  const banner = document.createElement('div');
-  banner.textContent = 'Doctor Discount: 10% applied to your total bill!';
-  banner.style = 'background:#28a745;color:#fff;padding:12px;text-align:center;font-weight:600;font-size:1.1em;margin-bottom:18px;border-radius:8px;';
-  document.querySelector('.main-container').prepend(banner);
-}
+        if (response.ok) {
+          localStorage.removeItem('isDoctor');
+          localStorage.clear();
+          window.location.href = '/';
+        } else {
+          alert('Failed to logout. Try again.');
+        }
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('An error occurred during logout.');
+      }
+    }
 
-if (isDoctor) localStorage.removeItem('isDoctor');
-
+    function goToStores() {
+      localStorage.setItem('isDoctor', '1');
+      window.location.href = 'stores.html';
+    }
   </script>
-    <script src="js/dg-responsive-nav.js"></script>
+  <script src="js/dg-responsive-nav.js"></script>
 </body>
 </html>

@@ -88,14 +88,23 @@ const { generateAgoraToken } = require('./lib/agoraToken');
 const {
   listPaymentsForPatient,
   listPaymentsForDoctor,
+  listConsultationHistoryForDoctor,
   listRoomIdsForDoctor,
   normalizePhone
 } = require('./lib/paymentLookup');
 const {
   requirePatientPhoneAccess,
   requireDoctorNameAccess,
-  requireConsultationDoctor
+  requireConsultationDoctor,
+  requireDoctorSession
 } = require('./lib/workflowAuth');
+const {
+  extractDoctorPaymentDetails,
+  validatePaymentDetailsInput,
+  buildPaymentDetailsPatch,
+  parseDoctorSelfServiceProfile,
+  mergePaymentBodyWithExisting
+} = require('./lib/doctorPaymentDetails');
 const { findCustomerByPhone, findCustomerByUid, listCustomers, findDoctorByUid, findDoctorById, findDoctorByEmail, listDoctors } = require('./lib/userQueries');
 const {
   getPublicKeyId,
@@ -481,7 +490,7 @@ app.get('/api/medicines', async (req, res) => {
   }
 });
 
-app.get('/api/stores/summary', requireDb, async (req, res) => {
+app.get('/api/stores/summary', async (req, res) => {
   try {
     res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
     const summary = await getStoresSummaryFromFirebase();
@@ -787,6 +796,11 @@ app.post('/api/register-doctor', upload.fields([
         if (!trimmedEmail) missing.push('email');
         if (!password) missing.push('password');
 
+        const paymentCheck = validatePaymentDetailsInput(req.body);
+        if (!paymentCheck.ok) {
+            return res.status(400).json({ message: paymentCheck.error });
+        }
+
         if (missing.length) {
             return res.status(400).json({
                 message: `Please complete: ${missing.join(', ')}.`
@@ -848,6 +862,11 @@ app.post('/api/register-doctor', upload.fields([
         const photo = photoUp.downloadUrl;
         const videoRoomId = generateVideoRoomId();
 
+        const paymentPatchResult = buildPaymentDetailsPatch(req.body, null);
+        if (!paymentPatchResult.ok) {
+            return res.status(400).json({ message: paymentPatchResult.error });
+        }
+
         const doctorPayload = {
             name: trimmedName,
             specialization: trimmedSpec,
@@ -873,6 +892,7 @@ app.post('/api/register-doctor', upload.fields([
             videoRoomId,
             uid,
             role: 'Doctor',
+            ...paymentPatchResult.patch,
             ...require('./lib/doctorFields').buildApprovalFirestorePatch('pending'),
             ...require('./lib/doctorFields').buildWorkingFirestorePatch('offline'),
             workingHours: parseAvailableTimeToWorkingHours(trimmedTime),
@@ -903,8 +923,116 @@ app.post('/api/register-doctor', upload.fields([
 
 function enrichDoctorRow(d) {
     const { enrichDoctorApiFields } = require('./lib/doctorFields');
-    return enrichDoctorApiFields(d);
+    const row = enrichDoctorApiFields(d);
+    const payment = extractDoctorPaymentDetails(row);
+    return {
+        ...row,
+        paymentDetails: payment,
+        upiId: payment.upiId || row.upiId || '',
+        bankName: payment.bankName || row.bankName || '',
+        accountNumber: payment.accountNumber || row.accountNumber || '',
+        ifscCode: payment.ifsc || row.ifscCode || row.ifsc || '',
+        accountHolderName: payment.accountHolderName || row.accountHolderName || '',
+        paymentMethod: payment.paymentMethod || row.paymentMethod || ''
+    };
 }
+
+app.get('/api/doctor/profile', requireDoctorSession(), async (req, res) => {
+    try {
+        const id = req.doctor._id || req.doctor.id;
+        const fresh = id ? await Doctor.findById(id) : req.doctor;
+        if (!fresh) {
+            return res.status(404).json({ message: 'Doctor profile not found.' });
+        }
+        const rows = await enrichDoctorPhotos([enrichDoctorRow(fresh)]);
+        return res.json({ doctor: rows[0] || enrichDoctorRow(fresh) });
+    } catch (err) {
+        console.error('GET /api/doctor/profile failed:', err);
+        return res.status(500).json({ message: 'Failed to load profile.', error: err.message });
+    }
+});
+
+app.put(
+    '/api/doctor/profile',
+    requireDoctorSession(),
+    upload.fields([
+        { name: 'documents', maxCount: 5 },
+        { name: 'photo', maxCount: 1 }
+    ]),
+    async (req, res) => {
+        try {
+            const id = req.doctor._id || req.doctor.id;
+            let doctor = id ? await Doctor.findById(id) : req.doctor;
+            if (!doctor) {
+                return res.status(404).json({ message: 'Doctor profile not found.' });
+            }
+
+            const profile = parseDoctorSelfServiceProfile(req.body);
+            const trimmedTime = String(profile.availableTime || profile.slotTime || '').trim();
+            if (trimmedTime && !trimmedTime.includes('Select a time')) {
+                profile.availableTime = trimmedTime;
+                profile.slotTime = trimmedTime;
+                profile.workingHours = parseAvailableTimeToWorkingHours(trimmedTime);
+            }
+
+            if (profile.specialization) {
+                profile.specializations = [String(profile.specialization).trim()];
+            }
+
+            const paymentBody = mergePaymentBodyWithExisting(req.body, doctor);
+            const paymentPatchResult = buildPaymentDetailsPatch(paymentBody, doctor);
+            if (!paymentPatchResult.ok) {
+                return res.status(400).json({ message: paymentPatchResult.error });
+            }
+
+            const docFiles = (req.files && req.files.documents) ? req.files.documents : [];
+            const photoFile = (req.files && req.files.photo && req.files.photo[0]) ? req.files.photo[0] : null;
+            const uid = String(doctor.uid || req.firebaseUid || id || '').trim();
+            const storagePrefix = uid ? `Doctor/${uid}` : `Doctor/${id}`;
+
+            if (docFiles.length) {
+                const docUploads = await Promise.all(
+                    docFiles.map((file, i) => uploadToFirebase(file, `${storagePrefix}/doc_${Date.now()}_${i}`))
+                );
+                const newDocs = docUploads.map((u) => u.downloadUrl);
+                const existing = Array.isArray(doctor.documents) ? doctor.documents : [];
+                profile.documents = [...existing, ...newDocs];
+            }
+
+            if (photoFile) {
+                let photoUp;
+                try {
+                    photoUp = await uploadFile(photoFile.buffer, `${storagePrefix}/profile.jpg`, {
+                        contentType: photoFile.mimetype
+                    });
+                } catch (uploadErr) {
+                    console.warn('Profile photo upload fallback:', uploadErr.message);
+                    photoUp = await uploadToFirebase(photoFile, `${storagePrefix}/profile`);
+                }
+                profile.photo = photoUp.downloadUrl;
+                profile.profileUrl = photoUp.downloadUrl;
+            }
+
+            const updates = {
+                ...profile,
+                ...paymentPatchResult.patch,
+                updatedAt: new Date()
+            };
+
+            doctor = await Doctor.findByIdAndUpdate(id, { $set: updates }, { new: true });
+            await mirrorDoctorToAuthUid(doctor);
+
+            const rows = await enrichDoctorPhotos([enrichDoctorRow(doctor)]);
+            return res.json({
+                message: 'Profile updated successfully.',
+                doctor: rows[0] || enrichDoctorRow(doctor)
+            });
+        } catch (err) {
+            console.error('PUT /api/doctor/profile failed:', err);
+            return res.status(500).json({ message: 'Failed to update profile.', error: err.message });
+        }
+    }
+);
 
 async function enrichDoctorRows(doctors) {
     const rows = (Array.isArray(doctors) ? doctors : []).map(enrichDoctorRow);
@@ -1681,6 +1809,21 @@ app.get('/api/payments/doctor/:doctorName', requireDoctorNameAccess('doctorName'
     } catch (err) {
         console.error('❌ Error fetching doctor payments:', err);
         res.status(500).json({ message: 'Failed to fetch appointments.', error: err.message });
+    }
+});
+
+// 👨‍⚕️ Merged consultation history (payments + appointments)
+app.get('/api/doctors/:doctorName/consultation-history', requireDoctorNameAccess('doctorName'), async (req, res) => {
+    try {
+        const { doctorName } = req.params;
+        if (!doctorName) {
+            return res.status(400).json({ message: 'Doctor name is required.' });
+        }
+        const history = await listConsultationHistoryForDoctor(doctorName);
+        res.status(200).json(history);
+    } catch (err) {
+        console.error('❌ Error fetching consultation history:', err);
+        res.status(500).json({ message: 'Failed to fetch consultation history.', error: err.message });
     }
 });
 
@@ -2967,7 +3110,7 @@ app.post('/api/prescriptions', async (req, res) => {
 });
 
 
-app.get('/api/stores', requireDb, async (req, res) => {
+app.get('/api/stores', async (req, res) => {
     try {
         const stores = await getStoresFromFirebase();
         if (stores.length) return res.json(stores);
@@ -3340,6 +3483,46 @@ if (isProductionSite) {
     });
   });
 }
+
+/* -------------------------------------------------------------------
+   📄 Legal pages — clean URLs (not modals)
+--------------------------------------------------------------------*/
+const LEGAL_PAGE_ROUTES = {
+  '/privacy-policy': 'privacy-policy.html',
+  '/terms-and-conditions': 'terms-and-conditions.html',
+  '/refund-policy': 'refund-policy.html',
+  '/account-deletion': 'account-deletion.html',
+  '/contact-us': 'contact-us.html',
+};
+
+function serveLegalPage(req, res, fileName) {
+  const filePath = path.join(__dirname, 'public', fileName);
+  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    return res.status(404).send('Page not found');
+  }
+  try {
+    const html = fs.readFileSync(filePath, 'utf8');
+    const out = injectPageSeo(html, { path: req.path });
+    res.type('html').charset('utf-8').send(out);
+  } catch (err) {
+    console.warn('Legal page SEO inject failed for', fileName, err.message);
+    res.sendFile(filePath);
+  }
+}
+
+Object.entries(LEGAL_PAGE_ROUTES).forEach(([route, file]) => {
+  app.get(route, (req, res) => serveLegalPage(req, res, file));
+});
+
+const LEGACY_LEGAL_REDIRECTS = {
+  '/PrivacyPage.html': '/privacy-policy',
+  '/terms.html': '/terms-and-conditions',
+  '/delete-account.html': '/account-deletion',
+};
+
+Object.entries(LEGACY_LEGAL_REDIRECTS).forEach(([legacyPath, target]) => {
+  app.get(legacyPath, (req, res) => res.redirect(301, target));
+});
 
 /* -------------------------------------------------------------------
    🌐 Static File Serving (placed after API routes)

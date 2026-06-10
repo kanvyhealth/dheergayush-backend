@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="prescription.css">
   <link rel="stylesheet" href="css/dg-assets.css">
+  <link rel="stylesheet" href="css/dg-responsive.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js"></script>
   <script src="js/dg-auth.js"></script>
@@ -92,7 +93,10 @@ html, body {
       bottom: 0;
       z-index: 20;
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
+      align-items: center;
+      gap: 8px;
       padding: max(12px, env(safe-area-inset-bottom, 0px)) 12px 12px;
       background: linear-gradient(transparent, rgba(0, 0, 0, 0.55));
       pointer-events: none;
@@ -119,10 +123,49 @@ html, body {
       color: #fff;
       font-size: 1.1rem;
       cursor: pointer;
-      margin-right: 10px;
+      flex-shrink: 0;
     }
     .dg-agora-ctrl--off {
       background: #c0392b;
+    }
+    .dg-agora-ctrl--active {
+      background: #2d6a4f;
+    }
+    .dg-agora-stage--swapped .dg-agora-remote {
+      inset: auto;
+      top: max(52px, calc(8px + env(safe-area-inset-top, 0px)));
+      bottom: auto;
+      right: max(12px, env(safe-area-inset-right, 0px));
+      left: auto;
+      width: min(180px, 32vw);
+      height: min(135px, 24vw);
+      min-width: 100px;
+      min-height: 75px;
+      z-index: 15;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    .dg-agora-stage--swapped .dg-agora-local,
+    .dg-agora-stage--swapped #dg-agora-local {
+      inset: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      min-width: 0;
+      min-height: 0;
+      border-radius: 0;
+      box-shadow: none;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .dg-agora-stage--local-hidden .dg-agora-local,
+    .dg-agora-stage--local-hidden #dg-agora-local {
+      display: none !important;
     }
     .dg-agora-autoplay {
       position: absolute;
@@ -152,19 +195,22 @@ html, body {
     }
     body.vcall-in-call #prescription-btn,
     body.vcall-in-call #reports-btn {
-      z-index: 18;
+      z-index: auto;
     }
 
     .dg-patient-rx-actions {
       display: none;
       position: fixed;
-      z-index: 9999;
-      left: max(12px, env(safe-area-inset-left, 0px));
-      bottom: max(132px, calc(116px + env(safe-area-inset-bottom, 0px)));
-      flex-direction: column;
-      gap: 10px;
+      z-index: 18;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: max(88px, calc(72px + env(safe-area-inset-bottom, 0px)));
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
       align-items: stretch;
-      width: min(280px, calc(100vw - 24px));
+      width: min(520px, calc(100vw - 24px));
       max-width: calc(100vw - 24px);
       pointer-events: none;
     }
@@ -174,19 +220,63 @@ html, body {
     }
     .dg-patient-rx-btn {
       position: static;
-      width: 100%;
+      flex: 1 1 0;
+      min-width: min(140px, calc(33% - 8px));
       margin: 0;
-      padding: 12px 16px;
+      padding: 10px 12px;
       border: none;
       border-radius: 8px;
       color: #fff;
       font-weight: 700;
-      font-size: 0.9rem;
+      font-size: 0.78rem;
       line-height: 1.25;
       cursor: pointer;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
       text-align: center;
       white-space: normal;
+    }
+    .dg-vcall-doctor-dock {
+      display: none;
+      position: fixed;
+      z-index: 18;
+      left: max(12px, env(safe-area-inset-left, 0px));
+      bottom: max(88px, calc(72px + env(safe-area-inset-bottom, 0px)));
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    body.vcall-in-call .dg-vcall-doctor-dock.dg-vcall-doctor-dock--visible {
+      display: flex;
+      pointer-events: auto;
+    }
+    .dg-vcall-dock-btn {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      position: relative;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .dg-vcall-dock-btn:hover {
+      transform: scale(1.05);
+    }
+    .dg-vcall-dock-btn--store {
+      background: #2ecc71;
+    }
+    .dg-vcall-dock-btn--reports {
+      background: #3498db;
+    }
+    .dg-vcall-dock-btn .cart-badge {
+      top: -4px;
+      right: -4px;
+      left: auto;
     }
     #view-prescription-btn.dg-rx-ready::after {
       content: '';
@@ -244,18 +334,24 @@ html, body {
         height: min(90px, 21vw);
         z-index: 14;
       }
-      #prescription-btn {
-        left: max(12px, env(safe-area-inset-left)) !important;
-        margin-left: 0 !important;
-        bottom: max(76px, calc(60px + env(safe-area-inset-bottom, 0px))) !important;
-      }
-      #reports-btn {
-        left: max(68px, calc(56px + env(safe-area-inset-left))) !important;
-        bottom: max(76px, calc(60px + env(safe-area-inset-bottom, 0px))) !important;
-      }
       .dg-patient-rx-actions {
-        bottom: max(148px, calc(132px + env(safe-area-inset-bottom, 0px))) !important;
-        max-width: calc(100vw - 24px);
+        bottom: max(80px, calc(68px + env(safe-area-inset-bottom, 0px))) !important;
+        width: calc(100vw - 16px) !important;
+      }
+      .dg-patient-rx-btn {
+        min-width: calc(50% - 4px);
+        font-size: 0.72rem;
+        padding: 9px 8px;
+      }
+      .dg-vcall-doctor-dock {
+        flex-direction: row;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: max(80px, calc(68px + env(safe-area-inset-bottom, 0px)));
+      }
+      .dg-vcall-dock-btn {
+        width: 48px;
+        height: 48px;
       }
       .dg-agora-leave {
         width: min(100%, 280px);
@@ -285,9 +381,42 @@ html, body {
         height: min(75px, 16vw);
         top: max(8px, env(safe-area-inset-top, 0px));
       }
-      #prescription-btn,
-      #reports-btn {
-        bottom: max(12px, env(safe-area-inset-bottom, 0px)) !important;
+      .dg-patient-rx-actions {
+        top: max(48px, calc(36px + env(safe-area-inset-top, 0px)));
+        bottom: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        width: auto;
+        max-width: calc(100vw - 120px);
+      }
+      .dg-patient-rx-btn {
+        min-width: 0;
+        flex: 0 1 auto;
+        padding: 8px 10px;
+        font-size: 0.7rem;
+      }
+      .dg-vcall-doctor-dock {
+        top: max(48px, calc(36px + env(safe-area-inset-top, 0px)));
+        bottom: auto;
+        flex-direction: row;
+      }
+      .dg-agora-toolbar {
+        padding-left: max(8px, env(safe-area-inset-left));
+        padding-right: max(8px, env(safe-area-inset-right));
+      }
+      .dg-agora-leave {
+        min-width: 100px;
+        padding: 10px 16px;
+        font-size: 0.85rem;
+      }
+      body.vcall-in-call .prescription-modal {
+        top: 8px;
+        bottom: 8px;
+        left: 8px;
+        right: 8px;
+        width: auto;
+        height: auto;
+        max-height: none;
       }
     }
     .dg-end-active-calls-btn {
@@ -392,29 +521,24 @@ html, body {
       background: #2980b9;
     }
 
-    #prescription-btn {
-      display: none; /* Hide by default */
-      position: fixed;
-      left: 20px;
-      margin-left: 0;
-      bottom: 20px;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: #2ecc71; /* Changed to green */
-            color: white;
-      border: none;
-            cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-      transition: background 0.3s;
+    #prescription-btn,
+    #reports-btn {
+      display: none !important;
     }
 
-    #prescription-btn:hover {
-      background: #27ae60; /* Darker green on hover */
+    body.vcall-in-call .prescription-modal {
+      z-index: 10060;
+    }
+
+    @media (max-width: 768px) {
+      body.vcall-in-call .prescription-modal {
+        inset: max(8px, env(safe-area-inset-top)) 8px max(72px, calc(56px + env(safe-area-inset-bottom))) 8px;
+        width: auto;
+        height: auto;
+        max-height: none;
+        right: auto;
+        bottom: auto;
+      }
     }
 
     .cart-badge {
@@ -432,29 +556,9 @@ html, body {
       justify-content: center;
     }
 
-    /* Add these styles to your existing styles */
+    /* Reports button — legacy hidden; use doctor dock */
     #reports-btn {
-      display: none; /* Hide by default */
-      position: fixed;
-      left: 80px; /* Position it next to prescription button */
-      bottom: 20px;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: #3498db; /* Blue color for reports */
-            color: white;
-            border: none;
-            cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      transition: background 0.3s;
-    }
-
-    #reports-btn:hover {
-      background: #2980b9;
+      display: none !important;
     }
 
     /* Reports Modal Styles */
@@ -466,7 +570,7 @@ html, body {
             width: 100%;
             height: 100%;
       background-color: rgba(0, 0, 0, 0.5);
-      z-index: 1001;
+      z-index: 10060;
     }
 
     .reports-modal-content {
@@ -821,11 +925,13 @@ html, body {
         right: 20px;
         width: 420px;
         height: 600px;
+        max-height: min(600px, calc(100dvh - 100px));
         background: #fff;
         border-radius: 15px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-        z-index: 1000;
+        z-index: 10055;
         overflow: hidden;
+        pointer-events: auto;
     }
 
     .modal-content {
@@ -1251,7 +1357,20 @@ html, body {
             display: flex;
             gap: 1rem;
             justify-content: center;
-            margin-top: 1rem; /* Space below video */
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 896px) and (orientation: landscape) {
+            .toggle-buttons {
+                margin-top: 0.5rem;
+                gap: 0.75rem;
+            }
+            .toggle-buttons button {
+                width: 44px;
+                height: 44px;
+                font-size: 1.1rem;
+            }
         }
 
         .toggle-buttons button {
@@ -1486,8 +1605,19 @@ html, body {
 <body class="vcall-prejoin">
   
   <div id="dg-patient-rx-actions" class="dg-patient-rx-actions" aria-label="Prescription actions">
-    <button type="button" id="view-prescription-btn" class="dg-patient-rx-btn">View Prescription</button>
-    <button type="button" id="download-written-btn" class="dg-patient-rx-btn">Download Prescription</button>
+    <button type="button" id="browse-store-btn" class="dg-patient-rx-btn" style="background-color: #3498db;"><i class="fas fa-store"></i> Store</button>
+    <button type="button" id="view-prescription-btn" class="dg-patient-rx-btn"><i class="fas fa-prescription"></i> Prescription</button>
+    <button type="button" id="download-written-btn" class="dg-patient-rx-btn"><i class="fas fa-download"></i> Download</button>
+  </div>
+
+  <div id="dg-vcall-doctor-dock" class="dg-vcall-doctor-dock" aria-label="Doctor tools">
+    <button type="button" id="prescription-btn" class="dg-vcall-dock-btn dg-vcall-dock-btn--store" title="Open store & prescribe" aria-label="Open store and prescription cart">
+      <i class="fas fa-shopping-cart"></i>
+      <span class="cart-badge" id="cart-badge">0</span>
+    </button>
+    <button type="button" id="reports-btn" class="dg-vcall-dock-btn dg-vcall-dock-btn--reports" title="View patient reports" aria-label="View patient reports">
+      <i class="fas fa-file-medical"></i>
+    </button>
   </div>
 
   <!-- Agora container (shown after join) -->
@@ -1522,11 +1652,11 @@ html, body {
             </div>
 
             <div class="toggle-buttons">
-                <button id="toggle-camera">
+                <button type="button" id="toggle-camera" title="Toggle camera" aria-label="Toggle camera">
                     <i class="fas fa-video"></i>
                     <span class="line-through"></span>
                 </button>
-                <button id="toggle-mic">
+                <button type="button" id="toggle-mic" title="Toggle microphone" aria-label="Toggle microphone">
                     <i class="fas fa-microphone"></i>
                     <span class="line-through"></span>
                 </button>
@@ -1549,15 +1679,8 @@ html, body {
 
     <div id="root"></div>
 
-  <button id="prescription-btn" style="display: none;">
-    <i class="fas fa-shopping-cart"></i>
-    <span class="cart-badge" id="cart-badge">0</span>
-  </button>
-
-  <button id="reports-btn" style="display: none;">
-    <i class="fas fa-file-medical"></i>
-  </button>
-<div id="prescription-card" style="display: none; position: fixed; bottom: 20px; right: 20px; width: 400px; max-height: 600px; background: linear-gradient(135deg, #ffffff, #f8f9fa); border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.35); overflow-y: auto; padding: 20px; z-index: 10000; transition: transform 0.4s ease, opacity 0.4s ease;">
+  <!-- Legacy hidden buttons kept for JS compatibility -->
+  <div id="prescription-card" style="display: none; position: fixed; bottom: 20px; right: 20px; width: 400px; max-height: 600px; background: linear-gradient(135deg, #ffffff, #f8f9fa); border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.35); overflow-y: auto; padding: 20px; z-index: 10000; transition: transform 0.4s ease, opacity 0.4s ease;">
 
   <!-- Close Button -->
   <div onclick="document.getElementById('prescription-card').style.display='none'" 
@@ -1938,6 +2061,11 @@ html, body {
             if (bar) bar.classList.toggle('dg-patient-rx-actions--visible', !!visible);
         }
 
+        function setDoctorDockVisible(visible) {
+            const dock = document.getElementById('dg-vcall-doctor-dock');
+            if (dock) dock.classList.toggle('dg-vcall-doctor-dock--visible', !!visible);
+        }
+
         function getFirebaseAuthHeaders(extra) {
             const headers = Object.assign({ 'Content-Type': 'application/json' }, extra || {});
             const token = (window.DgAuth && DgAuth.getToken && DgAuth.getToken()) ||
@@ -2073,8 +2201,7 @@ html, body {
             async function handleLeaveCall() {
                 setCallStatus('Call ended', 'ended');
                 console.log(`Left Agora channel ${roomID}`);
-                prescriptionBtn.style.display = 'none';
-                reportsBtn.style.display = 'none';
+                setDoctorDockVisible(false);
                 setPatientRxActionsVisible(false);
 
                 if (roomID) {
@@ -2155,12 +2282,10 @@ html, body {
                             }
                         }
                         if (currentRole === "doctor") {
-                            prescriptionBtn.style.display = 'flex';
-                            reportsBtn.style.display = 'flex';
+                            setDoctorDockVisible(true);
                             setPatientRxActionsVisible(false);
                         } else {
-                            prescriptionBtn.style.display = 'none';
-                            reportsBtn.style.display = 'none';
+                            setDoctorDockVisible(false);
                             setPatientRxActionsVisible(true);
                         }
                         if (typeof initPrescription === 'function') initPrescription();
@@ -2227,15 +2352,41 @@ html, body {
 
   // Add these variables
   
-  // let searchTimeout;
-  // let currentView = 'stores'; // 'stores' or 'medicines'
+  let currentView = 'stores'; // 'stores', 'medicines', or 'cart'
+  let isBrowseOnlyMode = false;
   let stores = [];
-let allMedicines = [];
-let currentStore = null;
-let currentCategory = 'all';
-let currentSearchTerm = '';
-let searchTimeout = null;
-let storesLoaded = false;
+  let allMedicines = [];
+  let currentStore = null;
+  let currentCategory = 'all';
+  let currentSearchTerm = '';
+  let searchTimeout = null;
+  let storesLoaded = false;
+  let storesLoading = false;
+
+  function isVisibleStoreMedicine(med) {
+    if (!med || !med.name) return false;
+    if (med.storeVisible === false || med.isStoreListed === false) return false;
+    const weights = Array.isArray(med.weights) ? med.weights : [];
+    if (weights.length) {
+      return weights.some(function (w) { return parseFloat(w.price) > 0; });
+    }
+    return parseFloat(med.price || med.mrp || 0) > 0 || med.orderable === true;
+  }
+
+  function filterVisibleMedicines(medicines) {
+    return (medicines || []).filter(isVisibleStoreMedicine);
+  }
+
+  function applyVisibleStoreCatalog(rawStores) {
+    if (!Array.isArray(rawStores)) return [];
+    return rawStores
+      .map(function (store) {
+        return Object.assign({}, store, {
+          medicines: filterVisibleMedicines(store.medicines || [])
+        });
+      })
+      .filter(function (store) { return store.medicines.length > 0; });
+  }
 
   // DOM elements for store navigation and search
   const storeNavigation = document.querySelector('.store-navigation');
@@ -2248,6 +2399,10 @@ document.getElementById('view-prescription-btn').addEventListener('click', () =>
   document.getElementById('prescription-card').style.display = 'block';
   loadPatientPrescription(false);
   startPatientPrescriptionPolling();
+});
+
+document.getElementById('browse-store-btn').addEventListener('click', () => {
+  openPrescriptionModal(true);
 });
 let latestPrescription = null;
 let totalAmount = 0;
@@ -2288,7 +2443,11 @@ async function loadPatientPrescription(silent) {
 
     if (!res.ok || !data || !data.cartItems || !data.cartItems.length) {
       if (!silent) {
-        listContainer.innerHTML = '<p style="text-align:center;color:#666;padding:12px;">No prescription yet. Your doctor will prescribe medicines during the call.</p>';
+        if (res.status === 403) {
+          listContainer.innerHTML = '<p style="text-align:center;color:#c0392b;padding:12px;">Could not verify this consultation room. Rejoin from your appointment link.</p>';
+        } else {
+          listContainer.innerHTML = '<p style="text-align:center;color:#666;padding:12px;">No prescription yet. Your doctor will prescribe medicines during the call.</p>';
+        }
         document.getElementById('fetch-prescription-btn').style.display = 'block';
         document.getElementById('pay-now-btn').style.display = 'none';
       }
@@ -2535,6 +2694,57 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   }
 
+  function updateCartDisplay() {
+    const roomID = getActiveRoomId();
+    localStorage.setItem(`prescriptionCart_${roomID}`, JSON.stringify(cart));
+    renderCart();
+    updateCartBadge();
+  }
+
+  function configurePrescriptionModalForRole(browseOnly) {
+    const isDoctorUser = localStorage.getItem('userRole') === 'doctor';
+    isBrowseOnlyMode = browseOnly || !isDoctorUser;
+    const cartTab = document.querySelector('.tab-btn[data-tab="shop-prescription"]');
+    const manualUpload = document.querySelector('.manual-report-upload');
+    const modalTitle = prescriptionModal.querySelector('.modal-header h3');
+    if (cartTab) cartTab.style.display = isBrowseOnlyMode ? 'none' : '';
+    if (manualUpload) manualUpload.style.display = (isDoctorUser && !isBrowseOnlyMode) ? '' : 'none';
+    if (modalTitle) {
+      modalTitle.textContent = isBrowseOnlyMode ? 'Ayurvedic Store' : 'Medical Prescription';
+    }
+    if (isBrowseOnlyMode) {
+      document.querySelector('.tab-btn[data-tab="stores"]')?.click();
+    }
+  }
+
+  function openPrescriptionModal(browseOnly) {
+    if (!prescriptionModal) return;
+    configurePrescriptionModalForRole(browseOnly);
+    const isOpen = prescriptionModal.style.display === 'block';
+    prescriptionModal.style.display = isOpen ? 'none' : 'block';
+    if (prescriptionModal.style.display !== 'block') return;
+
+    const roomID = getActiveRoomId();
+    if (!isBrowseOnlyMode) {
+      cart = JSON.parse(localStorage.getItem(`prescriptionCart_${roomID}`)) || [];
+      renderCart();
+      updateCartBadge();
+    }
+
+    currentView = 'stores';
+    displayStoresView();
+    searchInput.value = '';
+    searchInput.placeholder = 'Search stores...';
+
+    if (storeButtonsContainer) {
+      storeButtonsContainer.innerHTML = '<p style="text-align:center;color:#7f8c8d;width:100%;padding:16px;"><i class="fas fa-spinner fa-spin"></i> Loading store catalog…</p>';
+    }
+
+    loadStores().then(function () {
+      renderStoreButtons(stores);
+    });
+  }
+
   // Initialize the app
   function init() {
     // Clear cart on page load/refresh (only for dev, remove in production if cart should persist across sessions)
@@ -2636,67 +2846,6 @@ function handleWeightSelection(event) {
     });
 }
 
-// Function to handle adding/updating items in the cart
-function handleAddToCart(event) {
-    const button = event.currentTarget;
-    const medicineId = button.dataset.id;
-    const medicineItem = button.closest('.medicine-item');
-
-    const quantitySpan = medicineItem.querySelector(`.medicine-qty[data-id="${medicineId}"]`);
-    const quantity = parseInt(quantitySpan.textContent);
-
-    const activeWeightBtn = medicineItem.querySelector('.weight-btn.active');
-
-    if (quantity === 0 || !activeWeightBtn) {
-        showMessage('Please select a quantity and a weight.', 'warning');
-        return;
-    }
-
-    // Find the full medicine object from the `currentStore`'s medicines
-    const medicine = currentStore.medicines.find(m => m._id === medicineId);
-
-    if (!medicine) {
-        console.error("Medicine not found in current store's data:", medicineId);
-        showMessage('Error: Medicine details not found.', 'error');
-        return;
-    }
-
-    const weightValue = parseFloat(activeWeightBtn.dataset.value);
-    const weightUnit = activeWeightBtn.dataset.unit;
-    const weightPrice = parseFloat(activeWeightBtn.dataset.price);
-
-    const existingCartItemIndex = cart.findIndex(item =>
-        item.id === medicineId &&
-        item.weightValue === weightValue &&
-        item.weightUnit === weightUnit
-    );
-
-    if (existingCartItemIndex > -1) {
-        // Update existing item in cart
-        cart[existingCartItemIndex].quantity = quantity;
-        showMessage('Item updated in cart!', 'success');
-    } else {
-        // Add new item to cart
-        const newItem = {
-            id: medicineId,
-            name: medicine.name,
-            description: medicine.description,
-            category: medicine.category,
-            quantity: quantity,
-            weightValue: weightValue,
-            weightUnit: weightUnit,
-            price: weightPrice,
-            storeId: currentStore._id, // Add store info
-            storeName: currentStore.name
-        };
-        cart.push(newItem);
-        showMessage('Item added to cart!', 'success');
-    }
-
-    console.log("Current Cart:", cart); // Log the cart to see its content
-    // You would typically update a visual cart display here
-    updateCartDisplay(); // Call a function to update the cart UI (you'll need to define this)
-}
 
 
   // Render medicine list
@@ -2757,27 +2906,22 @@ function handleAddToCart(event) {
         </div>
       `;
       
+      if (isBrowseOnlyMode) {
+        medicineItem.querySelectorAll('.add-to-cart-btn, .quantity-btn').forEach((el) => {
+          el.disabled = true;
+          el.style.opacity = '0.45';
+          el.style.pointerEvents = 'none';
+        });
+      }
+
       medicineList.appendChild(medicineItem);
-        updateMedicineState(medicine._id, initialQty, initialWeight); // Assuming this function is defined
-    });
-
-    // CRITICAL: Attach event listeners AFTER elements are added to the DOM
-    document.querySelectorAll('.quantity-btn').forEach(button => {
-        button.addEventListener('click', handleQuantityChange);
-    });
-
-    document.querySelectorAll('.weight-btn').forEach(button => {
-        button.addEventListener('click', handleWeightSelection);
-    });
-
-    document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-        button.addEventListener('click', handleAddToCart);
+      updateMedicineState(medicine._id, initialQty, initialWeight);
     });
 }
   // Render cart
   function renderCart(filterTerm) {
     cartItemsContainer.innerHTML = '';
-    const isDoctor = localStorage.getItem('userRole') === 'doctor';
+    const isDoctor = localStorage.getItem('userRole') === 'doctor' && !isBrowseOnlyMode;
     const term = (filterTerm || '').toLowerCase().trim();
     const visibleCart = term
       ? cart.filter(item => (item.name || '').toLowerCase().includes(term))
@@ -2842,32 +2986,9 @@ function handleAddToCart(event) {
 
   // Setup event listeners
   function setupEventListeners() {
-    // Toggle prescription modal
+    // Toggle prescription modal (doctor: prescribe from store)
     prescriptionBtn.addEventListener('click', () => {
-      const prescriptionModal = document.getElementById('prescription-modal');
-      if (!prescriptionModal) {
-          console.error('Prescription modal not found');
-          return;
-      }
-      
-      prescriptionModal.style.display = prescriptionModal.style.display === 'block' ? 'none' : 'block';
-      
-      if (prescriptionModal.style.display === 'block') {
-          const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
-          cart = JSON.parse(localStorage.getItem(`prescriptionCart_${roomID}`)) || [];
-          renderCart();
-          updateCartBadge();
-            
-            // Reset view to stores
-            currentView = 'stores';
-            displayStoresView();
-            loadStores().then(() => {
-                renderStoreButtons(stores);
-            });
-            
-            searchInput.value = '';
-            searchInput.placeholder = 'Search stores...';
-      }
+      openPrescriptionModal(false);
     });
     
     // Close modal
@@ -2920,49 +3041,64 @@ function handleAddToCart(event) {
     medicineList.addEventListener('click', (e) => {
       const medicineItemDiv = e.target.closest('.medicine-item');
       if (!medicineItemDiv) return;
-      
+
       const medicineId = medicineItemDiv.dataset.id;
-      const medicine = currentStore.medicines.find(m => m._id === medicineId);
+      const medicine = currentStore && currentStore.medicines
+        ? currentStore.medicines.find(m => m._id === medicineId)
+        : null;
       if (!medicine) return;
 
       const qtyElement = medicineItemDiv.querySelector(`.medicine-qty[data-id="${medicineId}"]`);
-      let qty = parseInt(qtyElement.textContent);
-      
+      let qty = parseInt(qtyElement.textContent, 10) || 0;
+
       const selectedWeightBtn = medicineItemDiv.querySelector('.weight-btn.active');
       let selectedWeight = null;
       let pricePerUnit = 0;
 
       if (selectedWeightBtn) {
         selectedWeight = {
-            value: parseFloat(selectedWeightBtn.dataset.value),
-            unit: selectedWeightBtn.dataset.unit
+          value: parseFloat(selectedWeightBtn.dataset.value),
+          unit: selectedWeightBtn.dataset.unit
         };
-        pricePerUnit = parseInt(selectedWeightBtn.dataset.price);
+        pricePerUnit = parseFloat(selectedWeightBtn.dataset.price);
       }
-      
-     
-      
-      // Weight button selection
+
+      if (e.target.closest('.increment-btn')) {
+        qty++;
+        qtyElement.textContent = qty;
+        updateMedicineState(medicineId, qty, selectedWeight);
+        return;
+      }
+
+      if (e.target.closest('.decrement-btn')) {
+        if (qty > 0) qty--;
+        qtyElement.textContent = qty;
+        updateMedicineState(medicineId, qty, selectedWeight);
+        return;
+      }
+
       if (e.target.closest('.weight-btn')) {
         medicineItemDiv.querySelectorAll('.weight-btn').forEach(btn => btn.classList.remove('active'));
         e.target.closest('.weight-btn').classList.add('active');
         selectedWeight = {
-            value: parseFloat(e.target.closest('.weight-btn').dataset.value),
-            unit: e.target.closest('.weight-btn').dataset.unit
+          value: parseFloat(e.target.closest('.weight-btn').dataset.value),
+          unit: e.target.closest('.weight-btn').dataset.unit
         };
-        pricePerUnit = parseInt(e.target.closest('.weight-btn').dataset.price);
-        updateMedicineState(medicineId, qty, selectedWeight); // Update button state
+        pricePerUnit = parseFloat(e.target.closest('.weight-btn').dataset.price);
+        updateMedicineState(medicineId, qty, selectedWeight);
+        return;
       }
-      
-      // Add to cart button
+
+      if (isBrowseOnlyMode) return;
+
       if (e.target.closest('.add-to-cart-btn')) {
         if (qty > 0 && selectedWeight) {
           addToCart(medicineId, currentStore._id, medicine.name, selectedWeight, pricePerUnit, qty);
-          qtyElement.textContent = '0'; // Reset quantity after adding to cart
-          medicineItemDiv.querySelectorAll('.weight-btn').forEach(btn => btn.classList.remove('active')); // Deselect weight
-          updateMedicineState(medicineId, 0, null); // Disable button
+          qtyElement.textContent = '0';
+          medicineItemDiv.querySelectorAll('.weight-btn').forEach(btn => btn.classList.remove('active'));
+          updateMedicineState(medicineId, 0, null);
         } else {
-            showMessage('Please select a weight and quantity greater than 0', 'warning');
+          showMessage('Please select a weight and quantity greater than 0', 'warning');
         }
       }
     });
@@ -3485,22 +3621,25 @@ function handleAddToCart(event) {
   */
 
   async function loadStores() {
+    if (storesLoading) return;
+    storesLoading = true;
     try {
         const response = await fetch('/api/stores');
         if (!response.ok) {
-            const errorData = await response.json();
+            const errorData = await response.json().catch(function () { return {}; });
             throw new Error(errorData.message || 'Network response was not ok.');
         }
-        stores = await response.json();
+        let fetched = await response.json();
 
         if (window.DgCatalogMerge) {
-            stores = DgCatalogMerge.dedupeStores(stores);
-            stores.forEach(function (store) {
+            fetched = DgCatalogMerge.dedupeStores(fetched);
+            fetched.forEach(function (store) {
                 store.medicines = DgCatalogMerge.mergeProducts(store.medicines || [], store.name);
             });
         }
 
-        console.log("Stores array immediately after fetch:", stores); // Keep this log
+        stores = applyVisibleStoreCatalog(fetched);
+        storesLoaded = true;
 
         if (!Array.isArray(stores)) {
             console.error("API response for stores is not an array:", stores);
@@ -3509,32 +3648,31 @@ function handleAddToCart(event) {
         }
 
         if (stores.length > 0) {
-            allMedicines = stores.flatMap(store =>
-                (store.medicines || []).map(med => ({
-                    ...med,
-                    storeId: store._id,
-                    storeName: store.name
-                }))
-            );
+            allMedicines = stores.flatMap(function (store) {
+                return (store.medicines || []).map(function (med) {
+                    return Object.assign({}, med, {
+                        storeId: store._id,
+                        storeName: store.name
+                    });
+                });
+            });
             renderStoreButtons(stores);
-            displayStoresView(); // This call should now work
-
-            if (stores[0]) {
-                currentStore = stores[0];
-                console.log("Current Store set:", currentStore);
-                loadMedicines(currentStore._id);
-            }
+            displayStoresView();
         } else {
-            document.getElementById('medicine-list').innerHTML = '<p style="text-align: center; color: #7f8c8d;">No stores available</p>';
-            displayStoresView(); // This call should also work
-                }
-            } catch (error) {
+            if (storeButtonsContainer) {
+                storeButtonsContainer.innerHTML = '<p style="text-align: center; color: #7f8c8d;">No store products available right now. Items appear here once listed in the Ayurvedic store.</p>';
+            }
+            displayStoresView();
+        }
+    } catch (error) {
         console.error('Error loading stores:', error);
-        showMessage(`Failed to load stores: ${error.message}`, 'error');
+        showMessage('Failed to load stores: ' + error.message, 'error');
         displayStoresView();
         if (storeButtonsContainer) {
-            storeButtonsContainer.innerHTML = '<p style="text-align: center; color: #e74c3c; width:100%;">Error loading stores. Please check your server.</p>';
+            storeButtonsContainer.innerHTML = '<p style="text-align: center; color: #e74c3c; width:100%;">Could not load store. Check your connection and tap the store button to retry.</p>';
         }
+    } finally {
+        storesLoading = false;
     }
 }
 function updateMedicineListTitle() {
@@ -3592,7 +3730,7 @@ function updateMedicineListTitle() {
     currentStore = store;
 
     // Ensure store.medicines is an array, default to empty if not
-    let filteredMedicines = Array.isArray(store.medicines) ? store.medicines : [];
+    let filteredMedicines = filterVisibleMedicines(Array.isArray(store.medicines) ? store.medicines : []);
     console.log("Medicines for current store (before filtering):", filteredMedicines);
 
     // Apply category filter first
@@ -3657,11 +3795,13 @@ function renderStoreButtons(storesToRender) {
 
     if (currentView === 'stores') {
       // Search stores
-      const filteredStores = stores.filter(store => 
-        store.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-        store.description.toLowerCase().includes(lowerCaseSearchTerm) ||
-        store.name.toLowerCase().split(' ').some(word => word.includes(lowerCaseSearchTerm)) // Fuzzy match
-      );
+      const filteredStores = stores.filter(store => {
+        const name = (store.name || '').toLowerCase();
+        const desc = (store.description || '').toLowerCase();
+        return name.includes(lowerCaseSearchTerm) ||
+          desc.includes(lowerCaseSearchTerm) ||
+          name.split(' ').some(word => word.includes(lowerCaseSearchTerm));
+      });
       renderStoreButtons(filteredStores);
     } else if (currentView === 'medicines' && currentStore) {
       // Search medicines within the current store
