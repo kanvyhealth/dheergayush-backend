@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Delete Account - Dheergayush</title>
+  <meta name="description" content="Request permanent deletion of your DHEERGAYUSH account and personal data.">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/dheergayush-theme.css">
+  <link rel="stylesheet" href="css/dg-landing.css">
+  <link rel="stylesheet" href="css/dheergayush-legal.css">
+</head>
+<body class="dg-page dg-legal-page" data-legal-title="Delete Account" data-legal-icon="fa-user-xmark" data-legal-meta="Request permanent removal of your account and personal data.">
+  <main class="dg-legal-shell">
+    <div class="dg-legal-wrap">
+      <article class="dg-legal-card">
+        <h1>Delete Account</h1>
+        <p>You may request permanent deletion of your DHEERGAYUSH account and associated personal data. This action cannot be undone once processed.</p>
+        <h2>What we remove</h2>
+        <ul>
+          <li>Profile details and authentication records</li>
+          <li>Consultation history and uploaded medical reports</li>
+          <li>Preferences and notification settings</li>
+        </ul>
+        <h2>What we may retain</h2>
+        <ul>
+          <li>Records required for legal, fraud prevention, or financial compliance</li>
+        </ul>
+        <h2>Other ways to delete</h2>
+        <p><strong>Mobile app:</strong> Profile → Settings → Delete Account</p>
+        <p><strong>Email:</strong> Write to <a href="mailto:contact@dheergayush.net">contact@dheergayush.net</a> from your registered email with your mobile number.</p>
+        <div class="dg-delete-form">
+          <label for="dgDeleteEmail">Registered email</label>
+          <input type="email" id="dgDeleteEmail" class="dg-input" placeholder="your@email.com" required autocomplete="email">
+          <label for="dgDeletePhone">Registered mobile</label>
+          <input type="tel" id="dgDeletePhone" class="dg-input" placeholder="10-digit mobile" maxlength="10" autocomplete="tel">
+          <label for="dgDeleteReason">Reason (optional)</label>
+          <textarea id="dgDeleteReason" class="dg-textarea" rows="3" placeholder="Tell us why you're leaving (optional)"></textarea>
+          <button type="button" class="dg-btn-primary" id="dgDeleteSubmit">Send deletion request</button>
+          <p id="dgDeleteStatus" role="status"></p>
+        </div>
+      </article>
+    </div>
+  </main>
+  <script src="js/dg-site-contact.js"></script>
+  <script src="js/dg-legal-page.js"></script>
+  <script src="js/dg-delete-account.js"></script>
+  <script src="js/dg-responsive-nav.js"></script>
+</body>
+</html>

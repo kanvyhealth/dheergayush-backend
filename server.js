@@ -3889,6 +3889,7 @@ const LEGAL_PAGE_ROUTES = {
   '/refund-policy': 'refund-policy.html',
   '/account-deletion': 'account-deletion.html',
   '/contact-us': 'contact-us.html',
+  '/support': 'support.html',
 };
 
 function serveLegalPage(req, res, fileName) {
@@ -3914,6 +3915,8 @@ const LEGACY_LEGAL_REDIRECTS = {
   '/PrivacyPage.html': '/privacy-policy',
   '/terms.html': '/terms-and-conditions',
   '/delete-account.html': '/account-deletion',
+  '/refund-policy.html': '/refund-policy',
+  '/support.html': '/support'
 };
 
 Object.entries(LEGACY_LEGAL_REDIRECTS).forEach(([legacyPath, target]) => {
