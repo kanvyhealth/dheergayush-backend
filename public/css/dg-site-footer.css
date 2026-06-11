@@ -24,7 +24,7 @@
 
 .dg-footer-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
   gap: 20px;
   margin-bottom: 24px;
 }
@@ -36,6 +36,8 @@
   padding: 22px 20px;
   text-align: center;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .dg-footer-card h3 {
@@ -56,12 +58,18 @@
   color: rgba(255, 255, 255, 0.82);
   font-size: 0.88rem;
   line-height: 1.65;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .dg-footer-card a {
   color: #ffcba4;
   text-decoration: none;
   font-weight: 500;
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .dg-footer-card a:hover {
@@ -163,12 +171,12 @@
   text-align: center;
   margin: 0;
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.78);
   line-height: 1.6;
 }
 
 .dg-site-footer-copy a {
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
 }
 

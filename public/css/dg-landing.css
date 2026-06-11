@@ -241,7 +241,7 @@
 .dg-landing-stat span {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #666;
+  color: var(--dg-text-muted, #575757);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -316,7 +316,7 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #888;
+  color: var(--dg-text-faint, #656565);
   text-align: center;
 }
 
@@ -369,7 +369,7 @@
 }
 
 .dg-landing-panel-sub {
-  color: #666;
+  color: var(--dg-text-muted, #575757);
   font-size: 0.92rem;
   margin: 0 0 1.5rem;
 }
@@ -408,7 +408,7 @@
   align-items: center;
   gap: 0.75rem;
   margin: 1.1rem 0;
-  color: #888;
+  color: var(--dg-text-faint, #656565);
   font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -472,12 +472,12 @@
 
 .dg-landing-role-copy span {
   font-size: 0.84rem;
-  color: #666;
+  color: var(--dg-text-muted, #575757);
 }
 
 .dg-landing-chevron {
   margin-left: auto;
-  color: #bbb;
+  color: var(--dg-text-faint, #757575);
   font-size: 0.85rem;
   flex-shrink: 0;
 }
@@ -516,7 +516,7 @@
 
 .dg-landing-action-btn span {
   font-size: 0.78rem;
-  color: #666;
+  color: var(--dg-text-muted, #575757);
 }
 
 .dg-landing-action-btn--register {
@@ -746,7 +746,7 @@
 .dg-doctor-auth-note {
   margin: 1rem 0 0;
   font-size: 0.82rem;
-  color: #777;
+  color: var(--dg-text-faint, #656565);
   line-height: 1.5;
 }
 

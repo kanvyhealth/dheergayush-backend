@@ -68,7 +68,7 @@ body.dg-doctor-dashboard {
 .dg-doc-brand-text p {
   margin: 2px 0 0;
   font-size: 0.78rem;
-  color: #666;
+  color: var(--dg-text-muted, #575757);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -160,7 +160,7 @@ body.dg-doctor-dashboard {
 
 .dg-doc-hero-intro p {
   margin: 0;
-  color: #666;
+  color: var(--dg-text-muted, #575757);
   font-size: 0.92rem;
   max-width: 520px;
   line-height: 1.55;
@@ -192,7 +192,7 @@ body.dg-doctor-dashboard {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #888;
+  color: var(--dg-text-faint, #656565);
   margin-bottom: 6px;
 }
 
@@ -247,7 +247,7 @@ body.dg-doctor-dashboard {
 
 .dg-doc-action-card span {
   font-size: 0.78rem;
-  color: #777;
+  color: var(--dg-text-faint, #656565);
   line-height: 1.4;
 }
 
@@ -280,7 +280,7 @@ body.dg-doctor-dashboard {
 .dg-doc-panel-header p {
   margin: 4px 0 0;
   font-size: 0.82rem;
-  color: #888;
+  color: var(--dg-text-faint, #656565);
   width: 100%;
 }
 
@@ -341,7 +341,7 @@ body.dg-doctor-dashboard {
   border: 1px solid rgba(60, 60, 60, 0.12);
   background: #fff;
   cursor: pointer;
-  color: #666;
+  color: var(--dg-text-muted, #575757);
   font-size: 0.85rem;
 }
 
@@ -368,7 +368,7 @@ body.dg-doctor-dashboard {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #888;
+  color: var(--dg-text-faint, #656565);
   border-bottom: 2px solid rgba(60, 60, 60, 0.08);
   white-space: nowrap;
 }
@@ -391,7 +391,7 @@ body.dg-doctor-dashboard {
 
 .dg-doc-patient-cell span {
   font-size: 0.78rem;
-  color: #888;
+  color: var(--dg-text-faint, #656565);
 }
 
 .dg-doc-status {
@@ -459,7 +459,7 @@ body.dg-doctor-dashboard {
 .dg-doc-empty {
   text-align: center;
   padding: 48px 20px;
-  color: #666;
+  color: var(--dg-text-muted, #575757);
 }
 
 .dg-doc-spinner {
@@ -571,7 +571,7 @@ body.dg-doctor-dashboard {
     font-size: 0.72rem;
     font-weight: 600;
     text-transform: uppercase;
-    color: #999;
+    color: var(--dg-text-faint, #757575);
     flex-shrink: 0;
   }
 

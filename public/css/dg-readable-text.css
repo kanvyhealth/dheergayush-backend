@@ -1,0 +1,188 @@
+/* DHEERGAYUSH — site-wide text contrast (premium-safe readability layer) */
+
+:root {
+  --dg-text-primary: #2a2a2a;
+  --dg-text-secondary: #454545;
+  --dg-text-muted: #575757;
+  --dg-text-faint: #656565;
+  --dg-text-on-dark: rgba(255, 255, 255, 0.95);
+  --dg-text-on-dark-muted: rgba(255, 255, 255, 0.86);
+  --dg-page-bg-cover: linear-gradient(
+    160deg,
+    #fffdf8 0%,
+    #fafafa 42%,
+    #fff5ee 78%,
+    #f7f3ee 100%
+  );
+}
+
+/* Softer page canvas — warm brand tint without harsh orange/charcoal bands */
+body {
+  color: var(--dg-text-primary);
+}
+
+.dg-page,
+body.dg-page {
+  color: var(--dg-text-primary);
+  background: var(--dg-page-bg-cover) !important;
+  background-attachment: fixed;
+}
+
+/* Gradient headlines: solid fallback, gradient when clip is supported */
+.dg-section-title,
+.dg-landing-title,
+.dg-landing-panel-title,
+.dg-legal-hero h1,
+.logo-text {
+  color: var(--dg-charcoal, #3c3c3c);
+}
+
+.hero h1 {
+  color: var(--dg-charcoal, #3c3c3c);
+}
+
+@supports (-webkit-background-clip: text) {
+  .dg-section-title,
+  .dg-landing-title,
+  .hero h1,
+  .logo-text {
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+/* Shared muted copy — darker but still refined */
+.dg-form-panel .dg-subtitle,
+.dg-landing-lead,
+.dg-landing-panel-sub,
+.dg-landing-stat span,
+.dg-landing-progress-label,
+.dg-doc-brand-text p,
+.dg-doc-hero-intro p,
+.dg-doc-stat-label,
+.dg-doc-empty p,
+.dg-doc-patient-cell span,
+.dg-patient-sub,
+.dg-patient-meta,
+.dg-record-meta,
+.dg-legal-meta,
+.dg-wait-sub,
+.dg-trust-strip,
+.header p,
+.auth-form .reg-subtitle,
+.dg-legal-body .dg-muted {
+  color: var(--dg-text-muted);
+}
+
+.dg-legal-hero .dg-legal-meta,
+.dg-legal-card .dg-legal-updated,
+.auth-form .required-hint,
+.dg-doc-filter:not(.active) {
+  color: var(--dg-text-faint);
+}
+
+/* Placeholders & hints */
+.dg-input::placeholder,
+.dg-select::placeholder,
+.dg-textarea::placeholder,
+.form-group input::placeholder,
+.form-group textarea::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: var(--dg-text-faint);
+  opacity: 1;
+}
+
+/* Inline styles used across pages — lift contrast without editing every template */
+[style*="color:#666"],
+[style*="color: #666"],
+[style*="color:#777"],
+[style*="color: #777"] {
+  color: var(--dg-text-muted) !important;
+}
+
+[style*="color:#888"],
+[style*="color: #888"],
+[style*="color:#999"],
+[style*="color: #999"] {
+  color: var(--dg-text-faint) !important;
+}
+
+[style*="color:#aaa"],
+[style*="color: #aaa"],
+[style*="color:#bbb"],
+[style*="color: #bbb"] {
+  color: #757575 !important;
+}
+
+/* Footer on dark band */
+.dg-site-footer .dg-footer-copy,
+.dg-site-footer .dg-footer-tagline {
+  color: var(--dg-text-on-dark-muted);
+}
+
+.dg-site-footer .dg-footer-heading {
+  color: var(--dg-text-on-dark);
+}
+
+/* Doctor status bar on white clinical cards */
+.dg-doc-hero .dg-doctor-status-bar,
+.dg-doc-status-wrap .dg-doctor-status-bar {
+  background: linear-gradient(135deg, rgba(242, 103, 39, 0.07), rgba(255, 248, 243, 0.95));
+  border: 1px solid rgba(242, 103, 39, 0.16);
+}
+
+.dg-doc-hero .dg-online-switch-label,
+.dg-doc-status-wrap .dg-online-switch-label {
+  color: var(--dg-text-secondary);
+}
+
+/* Cards & panels always carry readable body copy */
+.dg-card,
+.dg-form-panel,
+.dg-legal-card,
+.dg-doc-panel,
+.dg-doc-hero,
+.section,
+.header,
+.auth-form,
+.form-container,
+.doctor-card,
+.review-card,
+.store-card,
+.medicine-card {
+  color: var(--dg-text-primary);
+}
+
+.dg-card p,
+.dg-form-panel p,
+.section p,
+.header p {
+  color: var(--dg-text-secondary);
+}
+
+/* Dark CTA bands keep light copy */
+.dg-landing-doctor-cta,
+.dg-landing-doctor-cta-title,
+.dg-landing-doctor-cta-text,
+.feature-card,
+[class*="cta-dark"] {
+  color: var(--dg-text-on-dark);
+}
+
+/* Stores page — secondary copy on light backgrounds */
+.stores-strip-wrap h2,
+#productCount,
+.price-note,
+.cart-row-info span,
+.empty-grid,
+.empty-cart {
+  color: var(--dg-text-muted, #575757);
+}
+
+.breadcrumb span {
+  color: var(--dg-text-faint, #757575);
+}
+
+.dg-landing-doctor-cta-text {
+  color: var(--dg-text-on-dark-muted);
+}

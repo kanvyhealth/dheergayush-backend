@@ -113,7 +113,7 @@ form label:not(:has(input[type='checkbox'])):not(:has(input[type='radio'])),
   text-transform: none;
   letter-spacing: 0;
   font-size: 0.75rem;
-  color: #666;
+  color: var(--dg-text-muted, #575757);
 }
 
 /* ── Text inputs, selects, textareas ── */
@@ -166,7 +166,7 @@ form input::placeholder,
 form textarea::placeholder,
 .dg-input::placeholder,
 .dg-textarea::placeholder {
-  color: rgba(60, 60, 60, 0.45);
+  color: rgba(60, 60, 60, 0.62);
   font-weight: 400;
 }
 

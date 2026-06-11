@@ -97,7 +97,7 @@ body.patient-portal .card h2 {
 }
 
 .portal-login-sub {
-  color: #666;
+  color: var(--dg-text-muted, #575757);
   font-size: 0.9rem;
   margin: 0 0 24px;
   line-height: 1.5;
@@ -244,7 +244,7 @@ body.patient-portal .form-group label {
 .dg-pat-brand-text p {
   margin: 2px 0 0;
   font-size: 0.78rem;
-  color: #666;
+  color: var(--dg-text-muted, #575757);
 }
 
 .dg-pat-actions {
@@ -312,7 +312,7 @@ body.patient-portal .form-group label {
 
 .dg-dash-stat span {
   font-size: 0.82rem;
-  color: #666;
+  color: var(--dg-text-muted, #575757);
 }
 
 .dg-dash-tabs {
@@ -436,7 +436,7 @@ body.patient-portal .form-group label {
 
 .dg-dash-empty {
   text-align: center;
-  color: #666;
+  color: var(--dg-text-muted, #575757);
   padding: 32px 16px;
   background: rgba(255, 255, 255, 0.7);
   border-radius: 14px;

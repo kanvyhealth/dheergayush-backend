@@ -94,7 +94,7 @@
 }
 
 .dg-legal-meta {
-  color: #777;
+  color: var(--dg-text-faint, #656565);
   font-size: 0.9rem;
   margin-bottom: 24px;
   line-height: 1.5;
@@ -319,7 +319,7 @@
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #888;
+  color: var(--dg-text-faint, #656565);
   margin-bottom: 4px;
 }
 

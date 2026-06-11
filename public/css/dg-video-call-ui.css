@@ -583,3 +583,31 @@ body.vcall-in-call .dg-vcall-doctor-dock.dg-vcall-doctor-dock--visible,
     transform: translateX(-50%) !important;
   }
 }
+
+/* Muted labels — readable on white panels */
+.vcall-product-count,
+.vcall-browse-only-tag,
+.vcall-permission-note,
+.refresh-indicator {
+  color: var(--dg-text-muted, #575757) !important;
+}
+
+.vcall-product-desc,
+.vcall-product-rating,
+.vcall-price-note,
+.vcall-profile-label {
+  color: var(--dg-text-faint, #656565) !important;
+}
+
+.vcall-empty-catalog {
+  color: var(--dg-text-muted, #575757) !important;
+}
+
+.close-btn {
+  color: #757575 !important;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+  color: var(--dg-charcoal, #3c3c3c) !important;
+}

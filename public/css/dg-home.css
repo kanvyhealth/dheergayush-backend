@@ -417,3 +417,51 @@
     padding: 1.25rem 1.25rem;
   }
 }
+
+/* Homepage — contrast fixes (overrides inline index styles, keeps premium look) */
+body {
+  background: var(--dg-page-bg-cover) !important;
+}
+
+.hero .subtitle {
+  color: var(--dg-text-secondary) !important;
+}
+
+.about-text {
+  color: var(--dg-text-secondary) !important;
+}
+
+.doctor-specialty,
+.review-text,
+.footer-bottom {
+  color: var(--dg-text-muted) !important;
+}
+
+.feature-card {
+  background: linear-gradient(145deg, #f26727 0%, #e05a1c 48%, #3c3c3c 100%) !important;
+  color: #fff !important;
+}
+
+.feature-card h3,
+.feature-card p {
+  color: rgba(255, 255, 255, 0.96) !important;
+}
+
+.feature-card .feature-icon,
+.feature-card .dg-icon-badge {
+  color: #fff !important;
+}
+
+.dg-disclaimer-box {
+  color: var(--dg-text-secondary);
+}
+
+.section-title {
+  color: var(--dg-charcoal, #3c3c3c);
+}
+
+@supports (-webkit-background-clip: text) {
+  .section-title {
+    -webkit-text-fill-color: transparent;
+  }
+}

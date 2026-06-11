@@ -4,13 +4,19 @@
 @import url('dg-premium-icons.css');
 @import url('dg-doctor-fab.css');
 @import url('dg-site-footer.css');
+@import url('dg-readable-text.css');
 
 :root {
   --dg-orange: #F26727;
   --dg-orange-light: #ff8a50;
   --dg-charcoal: #3C3C3C;
   --dg-cream: #fff8e1;
-  --dg-bg: linear-gradient(135deg, #ffffff 0%, #f26727 14%, #fafafa 48%, #3c3c3c 100%);
+  --dg-bg: linear-gradient(160deg, #fffdf8 0%, #fafafa 42%, #fff5ee 78%, #f7f3ee 100%);
+  --dg-page-bg-cover: linear-gradient(160deg, #fffdf8 0%, #fafafa 42%, #fff5ee 78%, #f7f3ee 100%);
+  --dg-text-primary: #2a2a2a;
+  --dg-text-secondary: #454545;
+  --dg-text-muted: #575757;
+  --dg-text-faint: #656565;
   --dg-card: #ffffff;
   --dg-border: rgba(60, 60, 60, 0.12);
   --dg-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
@@ -147,7 +153,7 @@
 }
 
 .dg-form-panel .dg-subtitle {
-  color: #666;
+  color: var(--dg-text-muted);
   font-size: 0.9rem;
   margin-bottom: 24px;
 }

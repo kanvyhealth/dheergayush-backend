@@ -2,7 +2,7 @@
 body {
   margin: 0;
   padding: 0;
-  background: var(--dg-page-bg-cover, linear-gradient(135deg, #fff8e1 0%, #fafafa 45%, rgba(242, 103, 39, 0.1) 100%));
+  background: var(--dg-page-bg-cover, linear-gradient(160deg, #fffdf8 0%, #fafafa 42%, #fff5ee 78%, #f7f3ee 100%));
   background-size: cover;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   display: flex;
