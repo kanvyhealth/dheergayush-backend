@@ -34,7 +34,7 @@
       registerBtn.addEventListener('click', function () {
         localStorage.setItem('userRole', 'doctor');
         localStorage.setItem('regRole', 'doctor');
-        window.location.href = 'telemedicine_platform.html?role=doctor';
+        window.location.href = 'telemedicine_platform.html?role=doctor#regdocsec';
       });
     }
 
@@ -47,7 +47,7 @@
       fetch('/api/auth/me', { headers: DgAuth.authHeaders() })
         .then(function (res) { return res.ok ? res.json() : null; })
         .then(function (data) {
-          if (data && data.portal === 'doctor' && data.redirectTo) {
+          if (data && data.redirectTo) {
             window.location.replace(data.redirectTo);
           }
         })

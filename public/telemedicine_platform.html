@@ -1691,8 +1691,8 @@
                 <div style="background: white; padding: 15px; border-radius: 10px; margin: 15px 0;">
                     <p><strong>Address:</strong> 123 Main Street, Apartment 4B</p>
                     <p><strong>City:</strong> New York, NY 10001</p>
-                    <p><strong>Phone:</strong> <a href="tel:+917842736777">+91 7842736777</a></p>
-                    <p><strong>Email:</strong> <a href="mailto:contact@dheergayush.net">contact@dheergayush.net</a></p>
+                    <p><strong>Phone:</strong> <a href="tel:+919908797474">+91 9908797474</a></p>
+                    <p><strong>Email:</strong> <a href="mailto:shaikmasthanjavidvali@gmail.com">shaikmasthanjavidvali@gmail.com</a></p>
                 </div>
                 
                 <h3>Delivery Status</h3>
@@ -1788,6 +1788,15 @@ let deliveryStep = 0;
 
             const regRole = localStorage.getItem('regRole') || 'patient';
             showRegistrationForm(regRole);
+
+            if (window.location.hash === '#regdocsec') {
+                var regSec = document.getElementById('regdocsec');
+                if (regSec) {
+                    setTimeout(function () {
+                        regSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 300);
+                }
+            }
 
             document.querySelectorAll('.reg-role-tab').forEach(function (tab) {
                 tab.addEventListener('click', function () {
@@ -2917,5 +2926,9 @@ window.removePhoto = function() {
         <script src="js/dg-api.js"></script>
         <script src="js/dg-responsive-nav.js"></script>
     <script src="js/dg-site-contact.js"></script>
+    <link rel="stylesheet" href="css/dg-site-footer.css">
+    <div id="dg-site-footer"></div>
+    <script src="js/dg-site-footer.js"></script>
+    <script src="js/dg-doctor-fab.js"></script>
 </body>
 </html>

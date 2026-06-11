@@ -53,7 +53,7 @@
             position: fixed;
             top: 50%;
             transform: translateY(-50%);
-            z-index: 2000;
+            z-index: 1200;
             display: none;
         }
 
@@ -869,7 +869,7 @@
             position: fixed;
             top: 50%;
             transform: translateY(-50%);
-            z-index: 2000;
+            z-index: 1200;
             display: none;
         }
 
@@ -1678,21 +1678,6 @@
       <video id="rightAdVideo" src="./advideo.mp4" autoplay loop muted playsinline></video>
     </a>
 
-    <!-- Floating Consultation Icon (smaller) -->
-    <div id="consultationIcon" style="position:fixed;bottom:32px;right:32px;z-index:3000;background:linear-gradient(135deg,#F26727,#ff8a50);width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(242,103,39,0.4);cursor:pointer;transition:transform 0.2s;">
-        <i class="fas fa-stethoscope" style="font-size:1.35rem;color:#3C3C3C;"></i>
-    </div>
-    <!-- Consultation Card (hidden by default) -->
-    <div id="consultationCardOverlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3100;background:rgba(60,60,60,0.35);backdrop-filter:blur(4px);">
-        <div id="consultationCard" style="position:fixed;bottom:100px;right:40px;max-width:380px;width:90vw;background:#fff;border-radius:18px;box-shadow:0 16px 48px rgba(242,103,39,0.2);padding:28px 24px 22px;border:1px solid rgba(242,103,39,0.2);display:flex;flex-direction:column;align-items:stretch;gap:14px;animation:fadeInCard 0.3s;">
-            <button id="closeConsultationCard" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.3rem;color:#888;cursor:pointer;"><i class="fas fa-times"></i></button>
-            <h3 style="font-family:'Playfair Display',serif;font-weight:700;font-size:1.35rem;color:#3C3C3C;margin:0 0 4px;text-align:center;">How consultation works</h3>
-            <p style="font-size:0.88rem;color:#666;text-align:center;margin:0 0 8px;">Book a Vaidya · Pay securely · Join video call · Receive medicines</p>
-            <a href="landingpage.html" style="width:100%;background:linear-gradient(135deg,#F26727,#ff8a50);color:#3C3C3C;font-weight:700;padding:14px 0;border:none;border-radius:50px;font-size:1rem;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;text-decoration:none;box-shadow:0 6px 20px rgba(242,103,39,0.35);"><i class="fas fa-calendar-check"></i> Book consultation</a>
-            <button onclick="downloadFile('consultation.pdf')" style="width:100%;background:transparent;color:#3C3C3C;font-weight:600;padding:12px 0;border:2px solid #F26727;border-radius:50px;font-size:0.95rem;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;"><i class='fas fa-file-pdf'></i> Download guide (PDF)</button>
-            <button onclick="downloadFile('consultation.mp4')" style="width:100%;background:#3C3C3C;color:#fff;font-weight:600;padding:12px 0;border:none;border-radius:50px;font-size:0.95rem;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;"><i class='fas fa-video'></i> Watch process video</button>
-        </div>
-    </div>
     <script>
     function showSideAdsIfDesktop() {
         var isDesktop = window.matchMedia('(min-width: 1025px)').matches;
@@ -1716,29 +1701,6 @@
     }
     showSideAdsIfDesktop();
     window.addEventListener('resize', showSideAdsIfDesktop);
-    // Floating consultation icon logic
-    const consultationIcon = document.getElementById('consultationIcon');
-    const consultationCardOverlay = document.getElementById('consultationCardOverlay');
-    const consultationCard = document.getElementById('consultationCard');
-    consultationIcon.onclick = function() {
-        consultationCardOverlay.style.display = 'block';
-    };
-    document.getElementById('closeConsultationCard').onclick = function(e) {
-        e.stopPropagation();
-        consultationCardOverlay.style.display = 'none';
-    };
-    consultationCardOverlay.onclick = function(e) {
-        if (e.target === consultationCardOverlay) consultationCardOverlay.style.display = 'none';
-    };
-    function downloadFile(filename) {
-        const a = document.createElement('a');
-        a.href = filename;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    }
-
     </script>
     <!-- Navigation -->
     <nav class="navbar" id="navbar">
@@ -1752,7 +1714,7 @@
             </button>
             <ul class="nav-links" id="navLinks">
                 <li><a href="#home">Home</a></li>
-                <li><a href="#about">About</a></li>
+                <li><a href="/about-us">About</a></li>
                 <li><a href="/support">Support</a></li>
                 <li><a href="#services">Services</a></li>
                 <li><a href="#doctors">Doctors</a></li>
@@ -1904,54 +1866,7 @@
         </div>
     </section>
 
-    <!-- Footer Section -->
-    <footer class="footer dg-site-footer">
-        <div class="dg-footer-grid">
-            <div class="footer-section">
-                <h3>DHEERGAYUSH INDIA PRIVATE LIMITED</h3>
-                <p>21-8-89, Revenue Ward 46,<br>Satyanarayanapuram,<br>Vijayawada Urban,<br>Krishna District – 520011,<br>Andhra Pradesh, India</p>
-                <p style="margin-top:12px;"><strong>Support Email:</strong><br><a href="mailto:contact@dheergayush.net">contact@dheergayush.net</a></p>
-                <p><strong>Support Phone:</strong><br><a href="tel:+917842736777">+91 7842736777</a></p>
-                <p style="margin-top:8px;"><a href="https://dheergayush.net" target="_blank" rel="noopener">https://dheergayush.net</a></p>
-            </div>
-
-            <div class="footer-section">
-                <h3>Quick Links</h3>
-                <ul class="dg-footer-links footer-links">
-                    <li><a href="/privacy-policy">Privacy Policy</a></li>
-                    <li><a href="/terms-and-conditions">Terms &amp; Conditions</a></li>
-                    <li><a href="/refund-policy">Refund Policy</a></li>
-                    <li><a href="/account-deletion">Delete Account</a></li>
-                    <li><a href="/support">Support</a></li>
-                    <li><a href="/contact-us">Contact Us</a></li>
-                    <li><a href="#about">About Us</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-section">
-                <h3>Platform</h3>
-                <ul class="dg-footer-links footer-links">
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#services">Our Services</a></li>
-                    <li><a href="#doctors">Doctors</a></li>
-                    <li><a href="landingpage.html">Book Consultation</a></li>
-                    <li><a href="stores.html">Stores</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="dg-footer-bottom footer-bottom">
-            <p>&copy; 2026 DHEERGAYUSH INDIA PRIVATE LIMITED. All rights reserved.</p>
-            <div class="dg-footer-legal">
-                <a href="/privacy-policy">Privacy Policy</a>
-                <a href="/terms-and-conditions">Terms &amp; Conditions</a>
-                <a href="/refund-policy">Refund Policy</a>
-                <a href="/account-deletion">Delete Account</a>
-                <a href="/support">Support</a>
-                <a href="/contact-us">Contact Us</a>
-            </div>
-        </div>
-    </footer>
+    <div id="dg-site-footer"></div>
 
     <!-- 1. Add modal for store medicines and cart -->
     <div id="storeModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center;">
@@ -2039,7 +1954,7 @@
 
         // Observe elements for animation
         document.addEventListener('DOMContentLoaded', function() {
-            const animatedElements = document.querySelectorAll('.section-title, .feature-card, .doctor-card, .review-card, .medicine-card');
+            const animatedElements = document.querySelectorAll('.section-title, .feature-card, .dg-service-item, .doctor-card, .review-card, .medicine-card');
             animatedElements.forEach(el => observer.observe(el));
         });
 
@@ -2059,7 +1974,7 @@
 
         // Add staggered animation delays
         document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.feature-card, .doctor-card, .review-card, .medicine-card');
+            const cards = document.querySelectorAll('.feature-card, .dg-service-item, .doctor-card, .review-card, .medicine-card');
             cards.forEach((card, index) => {
                 card.style.transitionDelay = `${index * 0.1}s`;
             });
@@ -2400,5 +2315,6 @@
     <script src="js/dg-home-nav.js"></script>
     <script src="js/dg-site-contact.js"></script>
     <script src="js/dg-contact-strip.js"></script>
+    <script src="js/dg-site-footer.js"></script>
 </body>
 </html>

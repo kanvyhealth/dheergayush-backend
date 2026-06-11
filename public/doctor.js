@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const passwordInput = document.getElementById('doctorPassword');
     const messageDiv = document.getElementById('message');
 
+    if (!doctorLoginForm) return;
+
     doctorLoginForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
@@ -15,63 +17,54 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        showMessage('Logging in...', 'info');
+        showMessage('Signing in…', 'info');
 
         try {
             const data = window.DgAuth
-                ? await DgAuth.loginDoctor({ email, password })
-                : await fetch('/api/auth/login-doctor', {
+                ? await DgAuth.login({ email, password })
+                : await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 }).then(async (r) => {
                     const body = await r.json();
                     if (!r.ok) throw new Error(body.message || 'Login failed');
-                    if (body.idToken && window.DgAuth) {
-                        DgAuth.setSession({
-                            idToken: body.idToken,
-                            refreshToken: body.refreshToken,
-                            user: body.user,
-                            doctor: body.doctor
-                        });
-                    } else if (body.idToken) {
-                        localStorage.setItem('firebaseIdToken', body.idToken);
-                        if (body.refreshToken) localStorage.setItem('firebaseRefreshToken', body.refreshToken);
-                    }
+                    if (window.DgAuth) DgAuth.setSession(body);
                     return body;
                 });
 
-            if (data.idToken && window.DgAuth) {
-                DgAuth.setSession({
-                    idToken: data.idToken,
-                    refreshToken: data.refreshToken,
-                    user: data.user,
-                    doctor: data.doctor
-                });
-            }
             if (!data.idToken) {
                 showMessage('Login failed — no session token received.', 'error');
                 return;
             }
 
-            showMessage('Login successful!', 'success');
-            localStorage.setItem('isLoggedInDoctor', 'true');
-            localStorage.setItem('userRole', 'doctor');
-            if (data.doctor) {
-                localStorage.setItem('doctorName', data.doctor.name);
-                localStorage.setItem('doctorLicense', data.doctor.doctorId || data.doctor.license || '');
-                localStorage.setItem('doctorSpecialization', data.doctor.specialization || (data.doctor.specializations && data.doctor.specializations[0]) || '');
-                localStorage.setItem('doctorUid', data.doctor.uid || '');
+            if (data.portal === 'doctor' && data.redirectTo) {
+                showMessage('Redirecting to doctor dashboard…', 'success');
+                setTimeout(() => window.location.replace(data.redirectTo), 600);
+                return;
             }
-            var redirectTo = data.redirectTo || '/doctor1.html';
-            setTimeout(function () { window.location.href = redirectTo; }, 1000);
+
+            if (data.portal !== 'doctor') {
+                showMessage('This account is registered as a patient. Redirecting…', 'info');
+                setTimeout(() => window.location.replace(data.redirectTo || '/patient.html'), 1000);
+                return;
+            }
+
+            showMessage('Login successful!', 'success');
+            setTimeout(() => window.location.replace(data.redirectTo || '/doctor1.html'), 800);
         } catch (error) {
             console.error('Doctor login error:', error);
-            showMessage(error.message || 'Invalid email or password.', 'error');
+            const msg = error.message || 'Invalid email or password.';
+            if (/pending admin approval/i.test(msg)) {
+                showMessage(msg, 'error');
+            } else {
+                showMessage(msg, 'error');
+            }
         }
     });
 
     function showMessage(msg, type) {
+        if (!messageDiv) return;
         messageDiv.textContent = msg;
         messageDiv.className = `message ${type}`;
         messageDiv.style.display = 'block';

@@ -7,35 +7,107 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mainOptionsCard = document.getElementById('mainOptionsCard');
     const appointmentsSection = document.getElementById('appointmentsSection');
     const patientLoginForm = document.getElementById('patientLoginForm');
-    const messageDiv = document.getElementById('message');
+    const loginMessageDiv = document.getElementById('message');
+    const dashboardMessageDiv = document.getElementById('dashboardMessage');
     const yourAppointmentsBtn = document.getElementById('yourAppointmentsBtn');
     const newAppointmentBtn = document.getElementById('newAppointmentBtn');
+    const dashNewAppointmentBtn = document.getElementById('dashNewAppointmentBtn');
+    const backToMenuBtn = document.getElementById('backToMenuBtn');
+    const menuLogoutBtn = document.getElementById('menuLogoutBtn');
+    const patientLogoutBtn = document.getElementById('patientLogoutBtn');
     const noAppointmentsMessage = document.getElementById('noAppointmentsMessage');
+    const welcomeTitle = document.getElementById('welcomeTitle');
+    const welcomeSub = document.getElementById('welcomeSub');
+    const patientAvatar = document.getElementById('patientAvatar');
+    const patientDashGreeting = document.getElementById('patientDashGreeting');
 
-    const transitionDuration = 600;
+    const transitionDuration = 500;
+    let dashboardTabsReady = false;
 
-    async function verifySession() {
+    function setPortalLayout(mode) {
+        document.body.classList.toggle('dashboard-view', mode === 'dashboard');
+        document.body.classList.toggle('auth-login-view', mode === 'login');
+    }
+
+    function getDisplayName() {
+        const user = window.DgAuth && DgAuth.getUser ? DgAuth.getUser() : null;
+        return localStorage.getItem('patientId') || user?.name || 'Patient';
+    }
+
+    function updateWelcomeUi() {
+        const name = getDisplayName();
+        const initial = (name.charAt(0) || 'P').toUpperCase();
+        if (welcomeTitle) welcomeTitle.textContent = 'Welcome, ' + name + '!';
+        if (welcomeSub) welcomeSub.textContent = 'Book consultations or open your health dashboard.';
+        if (patientAvatar) patientAvatar.textContent = initial;
+        if (patientDashGreeting) patientDashGreeting.textContent = 'Signed in as ' + name;
+    }
+
+    function showMessage(msg, type, scope) {
+        const useDashboard = scope === 'dashboard' ||
+            (appointmentsSection && appointmentsSection.classList.contains('visible'));
+        const el = useDashboard ? dashboardMessageDiv : loginMessageDiv;
+        if (!el) return;
+        el.textContent = msg;
+        el.className = (useDashboard ? 'dg-portal-toast' : 'portal-message') + ' ' + (type || '');
+        el.style.display = msg ? 'block' : 'none';
+        if (type === 'success' && msg) {
+            setTimeout(() => {
+                if (el.textContent === msg) {
+                    el.style.display = 'none';
+                    el.textContent = '';
+                }
+            }, 4000);
+        }
+    }
+
+    async function fetchSession() {
         const token = window.DgAuth && DgAuth.getToken();
-        if (!token) return false;
+        if (!token) return null;
         try {
             const res = await fetch('/api/auth/me', {
                 headers: { Authorization: 'Bearer ' + token }
             });
             if (!res.ok) {
                 if (window.DgAuth) DgAuth.clearSession();
-                return false;
+                return null;
             }
-            return true;
+            return await res.json();
         } catch (_) {
-            return false;
+            return null;
         }
     }
 
-    if (await verifySession()) {
+    function redirectDoctorIfNeeded(session) {
+        if (!session) return false;
+        if (session.portal === 'doctor' && session.redirectTo) {
+            window.location.replace(session.redirectTo);
+            return true;
+        }
+        return false;
+    }
+
+    function showPatientMenu() {
         loginCard.classList.remove('visible');
         loginCard.classList.add('hidden');
         mainOptionsCard.classList.remove('hidden');
         mainOptionsCard.classList.add('visible');
+        appointmentsSection.classList.remove('visible');
+        setPortalLayout('menu');
+        updateWelcomeUi();
+    }
+
+    function logout() {
+        if (window.DgAuth) DgAuth.clearSession();
+        window.location.reload();
+    }
+
+    const session = await fetchSession();
+    if (session) {
+        if (redirectDoctorIfNeeded(session)) return;
+        showPatientMenu();
+    } else {
+        setPortalLayout('login');
     }
 
     patientLoginForm.addEventListener('submit', async (event) => {
@@ -44,11 +116,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const password = document.getElementById('patientPassword').value;
 
         if (!email || !password) {
-            showMessage('Email and password are required.', 'error');
+            showMessage('Email and password are required.', 'error', 'login');
             return;
         }
 
-        showMessage('Logging in...', 'info');
+        showMessage('Signing in…', 'info', 'login');
         try {
             const data = window.DgAuth
                 ? await DgAuth.login({ email, password })
@@ -59,40 +131,35 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }).then(async (r) => {
                     const body = await r.json();
                     if (!r.ok) throw new Error(body.message || 'Login failed');
-                    if (body.idToken && window.DgAuth) {
-                        DgAuth.setSession({ idToken: body.idToken, refreshToken: body.refreshToken, user: body.user });
-                    } else if (body.idToken) {
-                        localStorage.setItem('firebaseIdToken', body.idToken);
-                        if (body.refreshToken) localStorage.setItem('firebaseRefreshToken', body.refreshToken);
-                    }
+                    if (window.DgAuth) DgAuth.setSession(body);
                     return body;
                 });
 
-            if (data.idToken && window.DgAuth) {
-                DgAuth.setSession({ idToken: data.idToken, refreshToken: data.refreshToken, user: data.user });
+            if (data.portal === 'doctor' && data.redirectTo) {
+                showMessage('Redirecting to doctor dashboard…', 'success', 'login');
+                setTimeout(() => window.location.replace(data.redirectTo), 600);
+                return;
             }
+
             localStorage.setItem('patientPhoneNumber', data.user?.phone || localStorage.getItem('patientPhoneNumber') || '');
-            localStorage.setItem('patientId', data.user?.name || data.patientId || email.split('@')[0]);
+            localStorage.setItem('patientId', data.user?.name || localStorage.getItem('patientId') || email.split('@')[0]);
             localStorage.setItem('userEmail', email);
             if (data.user?.uid) localStorage.setItem('firebaseUid', data.user.uid);
-            else if (data.uid) localStorage.setItem('firebaseUid', data.uid);
-            showMessage('Login successful!', 'success');
 
+            showMessage('Login successful!', 'success', 'login');
             setTimeout(() => {
                 loginCard.classList.remove('visible');
                 loginCard.classList.add('hidden');
-                setTimeout(() => {
-                    mainOptionsCard.classList.remove('hidden');
-                    mainOptionsCard.classList.add('visible');
-                }, transitionDuration);
-            }, 800);
+                setTimeout(showPatientMenu, transitionDuration);
+            }, 500);
         } catch (error) {
             console.error('Login error:', error);
-            showMessage(error.message || 'Invalid email or password.', 'error');
+            showMessage(error.message || 'Invalid email or password.', 'error', 'login');
         }
     });
 
     function initDashboardTabs() {
+        if (dashboardTabsReady) return;
         document.querySelectorAll('.dg-dash-tab').forEach((tab) => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('.dg-dash-tab').forEach((t) => t.classList.remove('active'));
@@ -102,6 +169,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (panel) panel.classList.add('active');
             });
         });
+        dashboardTabsReady = true;
     }
 
     function renderDashStats(statsEl, data) {
@@ -128,10 +196,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const name = localStorage.getItem('patientId') || '';
         const phone = localStorage.getItem('patientPhoneNumber') || '';
         if (!name || !phone) {
-            showMessage('Profile details missing. Please log in again.', 'error');
+            showMessage('Profile details missing. Please log in again.', 'error', 'dashboard');
             return;
         }
-        showMessage('Starting free follow-up call…', 'info');
+        showMessage('Starting free follow-up call…', 'info', 'dashboard');
         const formData = new FormData();
         formData.append('name', name);
         formData.append('phone', phone);
@@ -141,7 +209,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const res = await fetchFn('/api/consultations/start-followup', { method: 'POST', body: formData });
         const data = await res.json();
         if (!res.ok) {
-            showMessage(data.message || 'Could not start follow-up call.', 'error');
+            showMessage(data.message || 'Could not start follow-up call.', 'error', 'dashboard');
             if (data.requiresPayment) {
                 localStorage.setItem('selectedDoctorName', doctorName);
                 window.location.href = 'telemedicine_platform.html?mode=new-appointment';
@@ -151,14 +219,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const roomId = data.videoRoomId || data.roomId;
         localStorage.setItem('videoRoomId', roomId);
         localStorage.setItem('userRole', 'patient');
-        showMessage('Follow-up started! Waiting for doctor to accept…', 'success');
+        showMessage('Follow-up started! Waiting for doctor…', 'success', 'dashboard');
         setTimeout(() => {
             window.location.href = `video-call.html?roomID=${encodeURIComponent(roomId)}&role=patient`;
         }, 1200);
     }
 
     function bindStartCallButtons(container, accessPlans) {
-        container.querySelectorAll('.start-call-btn').forEach((button) => {
+        container.querySelectorAll('.dg-action-btn--call').forEach((button) => {
             button.addEventListener('click', async (e) => {
                 const roomName = e.currentTarget.dataset.roomName;
                 const doctorName = e.currentTarget.dataset.doctorName;
@@ -174,7 +242,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
                 if (effective !== 'Available') {
-                    showMessage(`Doctor is currently ${effective}. Try again during their available hours.`, 'error');
+                    showMessage(`Doctor is currently ${effective}. Try again later.`, 'error', 'dashboard');
                     return;
                 }
                 try {
@@ -212,12 +280,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                         } else if (accessData.refunded) {
                             accessMsg += ' Your refund has already been processed.';
                         }
-                        showMessage(accessMsg, 'error');
+                        showMessage(accessMsg, 'error', 'dashboard');
                         return;
                     }
                 } catch (err) {
                     console.warn('Room access check failed', err);
-                    showMessage('Could not verify consultation status. Please try again.', 'error');
+                    showMessage('Could not verify consultation status. Please try again.', 'error', 'dashboard');
                     return;
                 }
                 localStorage.setItem('videoRoomId', roomName);
@@ -225,7 +293,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 window.location.href = `/video-call.html?roomID=${encodeURIComponent(roomName)}&role=patient`;
             });
         });
-        container.querySelectorAll('.dg-followup-btn').forEach((btn) => {
+        container.querySelectorAll('.dg-action-btn--followup').forEach((btn) => {
             btn.addEventListener('click', () => startFreeFollowUp(btn.dataset.doctorName));
         });
     }
@@ -233,37 +301,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderAppointmentsPanel(panel, appointments, accessPlans) {
         panel.innerHTML = '';
         if (!appointments.length) {
-            panel.innerHTML = '<p style="text-align:center;color:#666;">No active appointments.</p>';
+            panel.innerHTML = '<p class="dg-dash-empty">No active appointments.</p>';
             return;
         }
         appointments.forEach((appointment, index) => {
-            const appointmentCard = document.createElement('div');
-            appointmentCard.classList.add('appointment-card');
+            const card = document.createElement('div');
+            card.classList.add('dg-record-card');
             const createdAtDate = new Date(appointment.createdAt);
             const consultationFee = appointment.selectedDoctorFee || `₹${appointment.amount}`;
             const daysRemaining = Math.ceil((15 - (new Date() - createdAtDate) / (1000 * 60 * 60 * 24)));
             const isExpired = daysRemaining <= 0;
             const doctorName = appointment.selectedDoctorName || appointment.doctorName || '';
             const hasAccess = doctorHasActiveAccess(doctorName, accessPlans);
-            if (isExpired) appointmentCard.classList.add('expired');
-            appointmentCard.innerHTML = `
+            if (isExpired) card.classList.add('expired');
+            const safeDoctor = doctorName.replace(/"/g, '&quot;');
+            card.innerHTML = `
                 <div class="timer">${isExpired ? 'Expired' : `${daysRemaining} days left`}</div>
                 <h3>Appointment ${index + 1}</h3>
                 <p><strong>Doctor:</strong> ${doctorName}</p>
                 <p><strong>Date:</strong> ${createdAtDate.toLocaleDateString()}</p>
-                <p><strong>Amount Paid:</strong> ${consultationFee}</p>
-                <p><strong>Time Slot:</strong> ${appointment.doctorAvailableTime || 'Not Available'}</p>
+                <p><strong>Amount:</strong> ${consultationFee}</p>
+                <p><strong>Time Slot:</strong> ${appointment.doctorAvailableTime || 'Not set'}</p>
                 <p><strong>Room ID:</strong> <span class="room-id">${appointment.roomName}</span></p>
                 ${hasAccess ? '<p style="color:#16a34a;font-weight:600;">Free follow-up calls available</p>' : ''}
                 ${isExpired
                     ? (hasAccess
-                        ? `<button class="dg-followup-btn" data-doctor-name="${doctorName.replace(/"/g, '&quot;')}">Call doctor free (15-day plan)</button>`
-                        : '<button class="expired-btn">Consultation Expired</button>')
-                    : `<button class="start-call-btn" data-room-name="${appointment.roomName}" data-doctor-name="${doctorName.replace(/"/g, '&quot;')}">Start Video Call</button>
-                       ${hasAccess ? `<button class="dg-followup-btn" data-doctor-name="${doctorName.replace(/"/g, '&quot;')}">New free follow-up call</button>` : ''}`
+                        ? `<button type="button" class="dg-action-btn dg-action-btn--followup" data-doctor-name="${safeDoctor}">Call doctor free (15-day plan)</button>`
+                        : '<button type="button" class="dg-action-btn dg-action-btn--expired" disabled>Consultation Expired</button>')
+                    : `<button type="button" class="dg-action-btn dg-action-btn--call" data-room-name="${appointment.roomName}" data-doctor-name="${safeDoctor}">Start Video Call</button>
+                       ${hasAccess ? `<button type="button" class="dg-action-btn dg-action-btn--followup" data-doctor-name="${safeDoctor}">New free follow-up call</button>` : ''}`
                 }
             `;
-            panel.appendChild(appointmentCard);
+            panel.appendChild(card);
         });
         bindStartCallButtons(panel, accessPlans);
     }
@@ -271,12 +340,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderConsultationsPanel(panel, history) {
         panel.innerHTML = '';
         if (!history.length) {
-            panel.innerHTML = '<p style="text-align:center;color:#666;">No consultation history yet.</p>';
+            panel.innerHTML = '<p class="dg-dash-empty">No consultation history yet.</p>';
             return;
         }
         history.forEach((row, index) => {
             const card = document.createElement('div');
-            card.className = 'appointment-card';
+            card.className = 'dg-record-card';
             card.innerHTML = `
                 <h3>Consultation ${index + 1}</h3>
                 <p><strong>Doctor:</strong> ${row.doctorName || '—'}</p>
@@ -292,14 +361,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderPrescriptionsPanel(panel, prescriptions) {
         panel.innerHTML = '';
         if (!prescriptions.length) {
-            panel.innerHTML = '<p style="text-align:center;color:#666;">No prescriptions yet.</p>';
+            panel.innerHTML = '<p class="dg-dash-empty">No prescriptions yet.</p>';
             return;
         }
         prescriptions.forEach((rx, index) => {
             const items = Array.isArray(rx.items) ? rx.items : [];
             const itemSummary = items.slice(0, 4).map((i) => i.name || 'Medicine').join(', ');
             const card = document.createElement('div');
-            card.className = 'appointment-card';
+            card.className = 'dg-record-card';
             card.innerHTML = `
                 <h3>Prescription ${index + 1}</h3>
                 <p><strong>Room:</strong> ${rx.roomID || '—'}</p>
@@ -316,13 +385,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderOrdersPanel(panel, orders) {
         panel.innerHTML = '';
         if (!orders.length) {
-            panel.innerHTML = '<p style="text-align:center;color:#666;">No store orders yet.</p>';
+            panel.innerHTML = '<p class="dg-dash-empty">No store orders yet.</p>';
             return;
         }
         orders.forEach((order, index) => {
             const items = Array.isArray(order.items) ? order.items : [];
             const card = document.createElement('div');
-            card.className = 'appointment-card';
+            card.className = 'dg-record-card';
             card.innerHTML = `
                 <h3>Order ${index + 1}</h3>
                 <p><strong>Items:</strong> ${order.itemCount || items.length}</p>
@@ -336,87 +405,101 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    yourAppointmentsBtn.addEventListener('click', async () => {
-        if (!(await verifySession())) {
-            showMessage('Session expired. Please log in again.', 'error');
+    async function openDashboard() {
+        const activeSession = await fetchSession();
+        if (!activeSession) {
+            showMessage('Session expired. Please sign in again.', 'error', 'dashboard');
             setTimeout(() => window.location.reload(), 1200);
             return;
         }
+        if (redirectDoctorIfNeeded(activeSession)) return;
 
         mainOptionsCard.classList.remove('visible');
         mainOptionsCard.classList.add('hidden');
+        setPortalLayout('dashboard');
         initDashboardTabs();
+        updateWelcomeUi();
 
-        setTimeout(async () => {
-            noAppointmentsMessage.style.display = 'none';
-            const patientPhoneNumber = localStorage.getItem('patientPhoneNumber');
-            if (!patientPhoneNumber) {
-                showMessage('Phone number not found on your profile. Update it during registration.', 'error');
-                return;
+        noAppointmentsMessage.style.display = 'none';
+        showMessage('Loading your health dashboard…', 'info', 'dashboard');
+
+        const patientPhoneNumber = localStorage.getItem('patientPhoneNumber');
+        if (!patientPhoneNumber) {
+            showMessage('Phone number not found on your profile. Update it during registration.', 'error', 'dashboard');
+            appointmentsSection.classList.add('visible');
+            return;
+        }
+
+        try {
+            const fetchFn = window.DgAuth && DgAuth.authFetch ? DgAuth.authFetch.bind(DgAuth) : fetch;
+            const uid = localStorage.getItem('firebaseUid');
+            let dashboard = { consultations: [], prescriptions: [], orders: [], accessPlans: [] };
+            let appointments = [];
+
+            const dashId = uid || patientPhoneNumber;
+            const dashRes = await fetchFn(`/api/patient/dashboard/${encodeURIComponent(dashId)}`);
+            if (dashRes.ok) dashboard = await dashRes.json();
+
+            if (uid) {
+                const response = await fetchFn(`/api/payments/patient/${encodeURIComponent(uid)}`);
+                if (response.ok) appointments = await response.json();
             }
-
-            showMessage('Loading your health dashboard…', 'info');
-            try {
-                const fetchFn = window.DgAuth && DgAuth.authFetch ? DgAuth.authFetch.bind(DgAuth) : fetch;
-                const uid = localStorage.getItem('firebaseUid');
-                let dashboard = { consultations: [], prescriptions: [], orders: [], accessPlans: [] };
-                let appointments = [];
-
-                const dashId = uid || patientPhoneNumber;
-                const dashRes = await fetchFn(`/api/patient/dashboard/${encodeURIComponent(dashId)}`);
-                if (dashRes.ok) {
-                    dashboard = await dashRes.json();
-                }
-
-                if (uid) {
-                    const response = await fetchFn(`/api/payments/patient/${encodeURIComponent(uid)}`);
-                    if (response.ok) appointments = await response.json();
-                }
-                if (!appointments.length) {
-                    const response = await fetchFn(`/api/payments/patient/${encodeURIComponent(patientPhoneNumber)}`);
-                    if (response.ok) appointments = await response.json();
-                }
-                appointments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-                renderDashStats(document.getElementById('patientDashStats'), dashboard);
-                renderAppointmentsPanel(
-                    document.getElementById('tab-appointments'),
-                    appointments,
-                    dashboard.accessPlans || []
-                );
-                renderConsultationsPanel(
-                    document.getElementById('tab-consultations'),
-                    dashboard.consultations || []
-                );
-                renderPrescriptionsPanel(
-                    document.getElementById('tab-prescriptions'),
-                    dashboard.prescriptions || []
-                );
-                renderOrdersPanel(
-                    document.getElementById('tab-orders'),
-                    dashboard.orders || []
-                );
-
-                if (!appointments.length && !(dashboard.consultations || []).length) {
-                    noAppointmentsMessage.style.display = 'block';
-                }
-
-                showMessage('Dashboard loaded.', 'success');
-                appointmentsSection.classList.add('visible');
-            } catch (error) {
-                console.error('Error fetching dashboard:', error);
-                showMessage('Failed to load dashboard. Please try again.', 'error');
+            if (!appointments.length) {
+                const response = await fetchFn(`/api/payments/patient/${encodeURIComponent(patientPhoneNumber)}`);
+                if (response.ok) appointments = await response.json();
             }
-        }, transitionDuration);
-    });
+            appointments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    newAppointmentBtn.addEventListener('click', () => {
-        window.location.href = 'telemedicine_platform.html?mode=new-appointment';
-    });
+            renderDashStats(document.getElementById('patientDashStats'), dashboard);
+            renderAppointmentsPanel(
+                document.getElementById('tab-appointments'),
+                appointments,
+                dashboard.accessPlans || []
+            );
+            renderConsultationsPanel(
+                document.getElementById('tab-consultations'),
+                dashboard.consultations || []
+            );
+            renderPrescriptionsPanel(
+                document.getElementById('tab-prescriptions'),
+                dashboard.prescriptions || []
+            );
+            renderOrdersPanel(
+                document.getElementById('tab-orders'),
+                dashboard.orders || []
+            );
 
-    function showMessage(msg, type) {
-        messageDiv.textContent = msg;
-        messageDiv.className = `message ${type}`;
-        messageDiv.style.display = 'block';
+            const hasAnyData = appointments.length ||
+                (dashboard.consultations || []).length ||
+                (dashboard.prescriptions || []).length ||
+                (dashboard.orders || []).length;
+            noAppointmentsMessage.style.display = hasAnyData ? 'none' : 'block';
+
+            showMessage('Dashboard loaded.', 'success', 'dashboard');
+            appointmentsSection.classList.add('visible');
+        } catch (error) {
+            console.error('Error fetching dashboard:', error);
+            showMessage('Failed to load dashboard. Please try again.', 'error', 'dashboard');
+            appointmentsSection.classList.add('visible');
+        }
     }
+
+    yourAppointmentsBtn.addEventListener('click', () => openDashboard());
+
+    function goNewAppointment() {
+        window.location.href = 'telemedicine_platform.html?mode=new-appointment';
+    }
+
+    newAppointmentBtn.addEventListener('click', goNewAppointment);
+    if (dashNewAppointmentBtn) dashNewAppointmentBtn.addEventListener('click', goNewAppointment);
+
+    if (backToMenuBtn) {
+        backToMenuBtn.addEventListener('click', () => {
+            appointmentsSection.classList.remove('visible');
+            showPatientMenu();
+        });
+    }
+
+    if (menuLogoutBtn) menuLogoutBtn.addEventListener('click', logout);
+    if (patientLogoutBtn) patientLogoutBtn.addEventListener('click', logout);
 });

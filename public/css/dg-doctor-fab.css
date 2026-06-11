@@ -1,0 +1,45 @@
+/* Fixed stethoscope — doctor registration (site-wide) */
+.dg-doctor-fab {
+  position: fixed;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  right: max(24px, env(safe-area-inset-right));
+  z-index: 2200;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f26727, #ff8a50);
+  color: #3c3c3c;
+  box-shadow: 0 8px 28px rgba(242, 103, 39, 0.45);
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+}
+
+.dg-doctor-fab i {
+  font-size: 1.4rem;
+  pointer-events: none;
+}
+
+.dg-doctor-fab:hover,
+.dg-doctor-fab:focus-visible {
+  transform: scale(1.06) translateY(-2px);
+  box-shadow: 0 12px 32px rgba(242, 103, 39, 0.55);
+  outline: none;
+}
+
+@media (max-width: 600px) {
+  .dg-doctor-fab {
+    width: 50px;
+    height: 50px;
+    bottom: max(18px, env(safe-area-inset-bottom));
+    right: max(16px, env(safe-area-inset-right));
+  }
+
+  .dg-doctor-fab i {
+    font-size: 1.25rem;
+  }
+}

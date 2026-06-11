@@ -166,6 +166,19 @@ svg {
   padding: clamp(20px, 4vw, 40px) !important;
 }
 
+body.patient-portal .patient-portal-shell > .card {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  margin: 0 !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+body.patient-portal:not(.dashboard-view) .patient-portal-shell {
+  min-height: min(560px, calc(100dvh - 140px));
+}
+
 @media (max-width: 768px) {
   body.auth-page:has(#loginCard.visible),
   body.auth-page.auth-login-view {
@@ -184,7 +197,7 @@ svg {
     margin: 0 auto !important;
   }
 
-  body.auth-page,
+  body.auth-page:not(.patient-portal),
   body.login-page {
     align-items: flex-start !important;
     padding: 16px 0 32px !important;
@@ -192,6 +205,25 @@ svg {
     overflow-y: auto !important;
     min-height: 100vh;
     min-height: 100dvh;
+  }
+
+  body.patient-portal {
+    align-items: center !important;
+    justify-content: center !important;
+    padding: max(72px, calc(56px + env(safe-area-inset-top))) 16px max(24px, env(safe-area-inset-bottom)) !important;
+  }
+
+  body.patient-portal.dashboard-view {
+    justify-content: flex-start !important;
+  }
+
+  body.patient-portal .patient-portal-shell > .card {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
   }
 
   body.auth-page:has(#loginCard.visible) {

@@ -5,9 +5,9 @@
   function contact() {
     var c = window.DgSiteContact || {};
     return {
-      email: c.email || 'contact@dheergayush.net',
-      phoneDisplay: c.phoneDisplay || '7842736777',
-      phoneTel: c.phoneTel || '+917842736777'
+      email: c.email || 'shaikmasthanjavidvali@gmail.com',
+      phoneDisplay: c.phoneDisplay || '9908797474',
+      phoneTel: c.phoneTel || '+919908797474'
     };
   }
 

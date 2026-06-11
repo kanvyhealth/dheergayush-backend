@@ -11,7 +11,7 @@
     'delete-account': '/account-deletion',
     support: '/support',
     contact: '/contact-us',
-    about: '/about-us.html'
+    about: '/about-us'
   };
 
   function routeForKey(key) {

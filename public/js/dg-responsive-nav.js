@@ -117,4 +117,16 @@
       appendScript('dg-contact-strip.js');
     });
   })();
+
+  (function loadDoctorFab() {
+    if (window.__dgDoctorFabRequested) return;
+    window.__dgDoctorFabRequested = true;
+    var base = document.currentScript && document.currentScript.src
+      ? document.currentScript.src.replace(/[^/]+$/, '')
+      : 'js/';
+    var script = document.createElement('script');
+    script.src = base + 'dg-doctor-fab.js';
+    script.defer = true;
+    document.body.appendChild(script);
+  })();
 })();

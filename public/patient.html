@@ -3,441 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Patient Portal - Dheergayush</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Roboto:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <title>Sign In — DHEERGAYUSH</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/dheergayush-theme.css">
     <link rel="stylesheet" href="css/dheergayush-forms.css">
-    <style>
-
-        /* General body styling */
-
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: var(--dg-page-bg-cover, linear-gradient(135deg, #fff8e1 0%, #fafafa 45%, rgba(242, 103, 39, 0.1) 100%));
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            overflow-x: hidden;
-            overflow-y: auto;
-        }
-
-        /* Card base styles (reused from previous steps) */
-        .card {
-            background-color: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            width: 450px;
-            max-width: 90%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            right: auto;
-            margin-right: 0;
-            transform: translate(-50%, -50%);
-            transition: opacity 0.6s ease-in-out, z-index 0.001s linear;
-        }
-
-        .card.hidden {
-            opacity: 0;
-            pointer-events: none;
-            z-index: -1;
-            transition: opacity 0.6s ease-in-out, z-index 0.001s 0.6s linear;
-        }
-
-        .card.visible {
-            opacity: 1;
-            pointer-events: auto;
-            z-index: 5;
-            transition: opacity 0.6s ease-in-out, z-index 0.001s linear;
-        }
-
-        /* Login Card Specifics */
-        .login-card h2 {
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 2em;
-            font-weight: 700;
-        }
-        .form-group {
-            margin-bottom: 20px;
-            width: 100%;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: 600;
-            text-align: left;
-        }
-        /* Form fields styled via css/dheergayush-forms.css */
-        .message {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: 600;
-            display: none;
-        }
-        .message.success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
-        .message.error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
-        .message.info { background-color: #d1ecf1; color: #0c5460; border-color: #bee5eb; }
-
-        /* Main Options Card */
-        #mainOptionsCard .button {
-            margin: 15px 0;
-        }
-
-        /* Appointments Display Section */
-        #appointmentsSection {
-            width: 90%; /* Wider to accommodate multiple cards */
-            max-width: 1000px; /* Max width for the grid */
-            position: relative; /* To allow absolute positioning for cards */
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
-            padding: 20px;
-            margin-top: 50px; /* Space from top */
-            display: grid; /* Use grid for layout */
-            grid-template-columns: repeat(3, 1fr);
-            gap: 25px; /* Space between cards */
-            justify-content: center;
-            align-items: start;
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-        #appointmentsSection.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-        #appointmentsSection h2 {
-            grid-column: 1 / -1; /* Span across all columns */
-            color: #fff;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            margin-bottom: 30px;
-        }
-        .appointment-card {
-            background-color: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            text-align: left;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: auto;
-            position: relative;
-        }
-        .appointment-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        }
-        .appointment-card h3 {
-            text-align: center;
-            color: #007bff;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
-        .appointment-card p {
-            margin: 8px 0;
-            color: #444;
-            font-size: 1em;
-            line-height: 1.4;
-        }
-        .appointment-card p strong {
-            color: #333;
-        }
-        .appointment-card .room-id {
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #dc3545; /* Highlighted in red */
-            background-color: #fff3cd; /* Light background for highlight */
-            padding: 5px 10px;
-            border-radius: 5px;
-            display: inline-block;
-            margin-top: 10px;
-        }
-        .appointment-card .start-call-btn {
-            background-color: #28a745;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: bold;
-            margin-top: 20px;
-            transition: background-color 0.3s ease;
-            width: 100%;
-        }
-        .appointment-card .start-call-btn:hover {
-            background-color: #218838;
-        }
-        .appointment-card .expired-btn {
-            background-color: #dc3545;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: bold;
-            margin-top: 20px;
-            width: 100%;
-            cursor: default;
-            opacity: 0.8;
-        }
-        .appointment-card .timer {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.9em;
-            font-weight: bold;
-        }
-        .appointment-card.expired {
-            border: 2px solid #dc3545;
-            background-color: rgba(255, 255, 255, 0.9);
-        }
-        .appointment-card.expired .timer {
-            background-color: #dc3545;
-            color: white;
-        }
-        .appointment-card.expired .start-call-btn {
-            background-color: #6c757d;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        .appointment-card.expired .room-id {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        /* Reusing the .button styles from your main style.css or embedded here */
-        .button {
-            position: relative;
-            padding: 0;
-            width: 280px;
-            height: 80px;
-            border: 4px solid #007BFF;
-            background-color: #007BFF;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.15s ease-in-out;
-            margin: 15px 0;
-
-            box-shadow:
-                -6px -6px 15px #ffffff,
-                -6px -6px 30px #ffffff,
-                6px 6px 15px rgba(0, 0, 0, 0.2),
-                6px 6px 30px rgba(0, 0, 0, 0.1);
-        }
-        .button:hover { background-color: #ffffff; }
-        .button:active { box-shadow: none; }
-        .button:active .button__content { box-shadow: none; }
-        .button:active .button__text, .button:active .button__icon { transform: translate3d(0, 0, 0); }
-        .button__content {
-            display: flex; align-items: center; justify-content: center; gap: 12px;
-            width: 100%; height: 100%; border-radius: 50px; padding: 0 20px;
-            box-shadow: inset 0px -6px 0px #dddddd, 0px -6px 0px #f4f5f6;
-            transition: 0.15s ease-in-out;
-        }
-        .button__icon {
-            display: flex; align-items: center; justify-content: center;
-            transform: translate3d(0px, -4px, 0px); transition: 0.15s ease-in-out;
-        }
-        .button__icon svg { width: 32px; height: 32px; fill: #ffffff; transition: 0.15s ease-in-out; }
-        .button:hover .button__icon svg { fill: #007BFF; }
-        .button__text {
-            font-family: "Roboto", sans-serif; font-size: 24px; font-weight: bold; margin: 0;
-            color: #ffffff; transform: translate3d(0px, -4px, 0px); text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-            transition: 0.15s ease-in-out;
-        }
-        .button:hover .button__text { color: #007BFF; text-shadow: none; }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .card {
-                width: 95%;
-                padding: 30px;
-            }
-            .login-card h2, #appointmentsSection h2 {
-                font-size: 1.8em;
-            }
-            .button {
-                width: 100%;
-                height: 70px;
-            }
-            .button__text {
-                font-size: 20px;
-            }
-            .appointment-card {
-                padding: 20px;
-            }
-            #appointmentsSection {
-                max-height: 60vh;
-            }
-        }
-        @media (max-width: 900px) {
-            #appointmentsSection {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        @media (max-width: 600px) {
-            #appointmentsSection {
-                grid-template-columns: 1fr;
-            }
-        }
-        .dg-patient-dashboard {
-            width: min(1100px, 96vw);
-            margin: 24px auto;
-            padding: 0 max(12px, env(safe-area-inset-right)) 24px max(12px, env(safe-area-inset-left));
-        }
-        .dg-dash-tabs {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin: 16px 0;
-            justify-content: center;
-        }
-        .dg-dash-tab {
-            border: 1px solid #f26727;
-            background: #fff;
-            color: #f26727;
-            border-radius: 999px;
-            padding: 8px 16px;
-            font-weight: 600;
-            cursor: pointer;
-            touch-action: manipulation;
-        }
-        .dg-dash-tab.active {
-            background: #f26727;
-            color: #fff;
-        }
-        .dg-dash-panel { display: none; }
-        .dg-dash-panel.active { display: block; }
-        .dg-dash-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-        .dg-dash-stat {
-            background: rgba(255,255,255,0.95);
-            border-radius: 12px;
-            padding: 14px;
-            text-align: center;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-        }
-        .dg-dash-stat strong { display: block; font-size: 1.4rem; color: #f26727; }
-        .dg-followup-btn {
-            margin-top: 10px;
-            background: #16a34a;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            touch-action: manipulation;
-        }
-        #appointmentsSection.visible {
-            position: relative;
-            top: auto;
-            left: auto;
-            transform: none;
-            width: 100%;
-            max-width: none;
-            display: block !important;
-        }
-    </style>
+    <link rel="stylesheet" href="css/dg-patient-dashboard.css">
+    <link rel="stylesheet" href="css/dg-site-footer.css">
 </head>
-<body class="dg-page auth-page">
+<body class="dg-page auth-page patient-portal">
     <a href="/" id="backToHomeBtn" class="dg-home-link"><i class="fas fa-house" aria-hidden="true"></i> Home</a>
-    <div class="card visible" id="loginCard">
-        <h2>Patient Login</h2>
-        <form id="patientLoginForm">
-            <div class="form-group">
-                <label for="patientEmail">Email:</label>
-                <input type="email" id="patientEmail" name="patientEmail" required placeholder="you@email.com">
-            </div>
-            <div class="form-group">
-                <label for="patientPassword">Password:</label>
-                <input type="password" id="patientPassword" name="patientPassword" required minlength="6">
-            </div>
-            <p style="font-size:0.85rem;color:#333;margin:0 0 8px;">New patient? <a href="telemedicine_platform.html" style="color:#000;font-weight:600;">Register here</a></p>
-            <button type="submit" class="button">
-                <div class="button__content">
-                    <div class="button__icon">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                        </svg>
-                    </div>
-                    <p class="button__text">Login</p>
-                </div>
-            </button>
-            <div id="message" class="message"></div>
-        </form>
-    </div>
 
-    <div class="card hidden" id="mainOptionsCard">
-        <h2>Welcome, Patient!</h2>
-        <button class="button" id="yourAppointmentsBtn">
-            <div class="button__content">
-                <div class="button__icon">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
-                    </svg>
+    <div class="patient-portal-shell">
+        <div class="card visible" id="loginCard">
+            <h2>Sign In</h2>
+            <p class="portal-login-sub">Patients and doctors use the same login. You will be redirected to your dashboard based on your account role.</p>
+            <form id="patientLoginForm">
+                <div class="form-group">
+                    <label for="patientEmail">Email</label>
+                    <input type="email" id="patientEmail" name="patientEmail" required placeholder="you@email.com">
                 </div>
-                <p class="button__text">My Health Dashboard</p>
-            </div>
-        </button>
-        <button class="button" id="newAppointmentBtn">
-            <div class="button__content">
-                <div class="button__icon">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
-                    </svg>
+                <div class="form-group">
+                    <label for="patientPassword">Password</label>
+                    <input type="password" id="patientPassword" name="patientPassword" required minlength="6" placeholder="Password">
                 </div>
-                <p class="button__text">New Appointment</p>
-            </div>
-        </button>
-    </div>
-
-    <div id="appointmentsSection" class="dg-patient-dashboard">
-        <h2>My Health Dashboard</h2>
-        <div class="dg-dash-stats" id="patientDashStats"></div>
-        <div class="dg-dash-tabs" role="tablist">
-            <button type="button" class="dg-dash-tab active" data-tab="appointments">Appointments</button>
-            <button type="button" class="dg-dash-tab" data-tab="consultations">Consultations</button>
-            <button type="button" class="dg-dash-tab" data-tab="prescriptions">Prescriptions</button>
-            <button type="button" class="dg-dash-tab" data-tab="orders">Orders</button>
+                <p style="font-size:0.85rem;color:#555;margin:0 0 16px;">New patient? <a href="telemedicine_platform.html?role=patient" style="color:#f26727;font-weight:600;">Register here</a></p>
+                <button type="submit" class="portal-btn portal-btn--primary">
+                    <i class="fas fa-right-to-bracket" aria-hidden="true"></i> Sign In
+                </button>
+                <div id="message" class="portal-message"></div>
+            </form>
         </div>
-        <div class="dg-dash-panel active" id="tab-appointments" data-panel="appointments"></div>
-        <div class="dg-dash-panel" id="tab-consultations" data-panel="consultations"></div>
-        <div class="dg-dash-panel" id="tab-prescriptions" data-panel="prescriptions"></div>
-        <div class="dg-dash-panel" id="tab-orders" data-panel="orders"></div>
-        <p id="noAppointmentsMessage" style="color: #666; font-size: 1.2em; text-align: center; display: none;">No records found.</p>
+
+        <div class="card hidden" id="mainOptionsCard">
+            <h2 id="welcomeTitle">Welcome!</h2>
+            <p class="portal-login-sub" id="welcomeSub">Manage your consultations, prescriptions, and orders.</p>
+            <button type="button" class="portal-btn portal-btn--primary" id="yourAppointmentsBtn">
+                <i class="fas fa-heart-pulse" aria-hidden="true"></i> My Health Dashboard
+            </button>
+            <button type="button" class="portal-btn portal-btn--ghost" id="newAppointmentBtn">
+                <i class="fas fa-calendar-plus" aria-hidden="true"></i> New Appointment
+            </button>
+            <button type="button" class="portal-btn portal-btn--ghost" id="menuLogoutBtn" style="color:#b91c1c;border-color:rgba(185,28,28,0.25);">
+                <i class="fas fa-right-from-bracket" aria-hidden="true"></i> Logout
+            </button>
+        </div>
+
+        <div id="appointmentsSection" class="dg-patient-dashboard">
+            <div class="dg-pat-shell">
+                <header class="dg-pat-topbar">
+                    <div class="dg-pat-brand">
+                        <div class="dg-pat-avatar" id="patientAvatar">P</div>
+                        <div class="dg-pat-brand-text">
+                            <h1>My Health Dashboard</h1>
+                            <p id="patientDashGreeting">Your consultations &amp; records</p>
+                        </div>
+                    </div>
+                    <div class="dg-pat-actions">
+                        <button type="button" class="dg-pat-btn dg-pat-btn--ghost" id="backToMenuBtn">
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i> Menu
+                        </button>
+                        <button type="button" class="dg-pat-btn dg-pat-btn--primary" id="dashNewAppointmentBtn">
+                            <i class="fas fa-plus" aria-hidden="true"></i> New Appointment
+                        </button>
+                        <button type="button" class="dg-pat-btn dg-pat-btn--danger" id="patientLogoutBtn">
+                            <i class="fas fa-right-from-bracket" aria-hidden="true"></i> Logout
+                        </button>
+                    </div>
+                </header>
+
+                <div id="dashboardMessage" class="dg-portal-toast" role="alert"></div>
+
+                <div class="dg-dash-stats" id="patientDashStats"></div>
+                <div class="dg-dash-tabs" role="tablist">
+                    <button type="button" class="dg-dash-tab active" data-tab="appointments">Appointments</button>
+                    <button type="button" class="dg-dash-tab" data-tab="consultations">Consultations</button>
+                    <button type="button" class="dg-dash-tab" data-tab="prescriptions">Prescriptions</button>
+                    <button type="button" class="dg-dash-tab" data-tab="orders">Orders</button>
+                </div>
+                <div class="dg-dash-panel active" id="tab-appointments" data-panel="appointments"></div>
+                <div class="dg-dash-panel" id="tab-consultations" data-panel="consultations"></div>
+                <div class="dg-dash-panel" id="tab-prescriptions" data-panel="prescriptions"></div>
+                <div class="dg-dash-panel" id="tab-orders" data-panel="orders"></div>
+                <p id="noAppointmentsMessage" class="dg-dash-empty" style="display:none;">No records found in any tab yet.</p>
+            </div>
+        </div>
     </div>
+
+    <div id="dg-site-footer"></div>
 
     <script src="js/dg-auth.js"></script>
     <script src="js/dg-api.js"></script>
     <script src="js/dg-doctor-status.js"></script>
-        <script src="js/dg-responsive-nav.js"></script>
+    <script src="js/dg-responsive-nav.js"></script>
     <script src="js/dg-site-contact.js"></script>
+    <script src="js/dg-site-footer.js"></script>
+    <script src="js/dg-doctor-fab.js"></script>
     <script src="patient.js"></script>
 </body>
 </html>

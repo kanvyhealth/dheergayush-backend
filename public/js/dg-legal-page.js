@@ -5,6 +5,7 @@
   'use strict';
 
   var LEGAL_NAV = [
+    { href: '/about-us', label: 'About', icon: 'fa-circle-info', key: 'about' },
     { href: '/privacy-policy', label: 'Privacy', icon: 'fa-shield-halved', key: 'privacy' },
     { href: '/terms-and-conditions', label: 'Terms', icon: 'fa-file-contract', key: 'terms' },
     { href: '/refund-policy', label: 'Refund', icon: 'fa-rotate-left', key: 'refund' },
@@ -15,6 +16,7 @@
 
   function currentKey() {
     var path = (location.pathname || '').toLowerCase();
+    if (path.indexOf('about-us') !== -1) return 'about';
     if (path.indexOf('privacy') !== -1) return 'privacy';
     if (path.indexOf('terms') !== -1) return 'terms';
     if (path.indexOf('refund') !== -1) return 'refund';
@@ -59,10 +61,10 @@
       '<footer class="dg-landing-footer">' +
         '<div class="dg-landing-footer-inner">' +
           '<p>&copy; ' + new Date().getFullYear() + ' DHEERGAYUSH INDIA PRIVATE LIMITED</p>' +
-          '<p style="margin:8px 0 0;font-size:0.9rem;">' +
-            '<a href="tel:+917842736777">+91 7842736777</a>' +
+          '<p class="dg-legal-footer-contact" style="margin:8px 0 0;font-size:0.9rem;">' +
+            '<a href="tel:+919908797474" class="dg-support-phone">+91 9908797474</a>' +
             ' &nbsp;&middot;&nbsp; ' +
-            '<a href="mailto:contact@dheergayush.net">contact@dheergayush.net</a>' +
+            '<a href="mailto:shaikmasthanjavidvali@gmail.com" class="dg-support-email">shaikmasthanjavidvali@gmail.com</a>' +
           '</p>' +
           '<nav class="dg-landing-footer-links" aria-label="Legal links">' + links + '</nav>' +
         '</div>' +
@@ -114,18 +116,19 @@
 
     body.insertAdjacentHTML('beforeend', buildFooter());
 
-    if (window.DgSiteContact) {
-      var phoneEl = document.getElementById('dgContactPhone');
-      var emailEl = document.getElementById('dgContactEmail');
-      if (phoneEl) {
-        phoneEl.href = 'tel:' + DgSiteContact.phoneTel;
-        phoneEl.textContent = DgSiteContact.phoneFormatted;
-      }
-      if (emailEl) {
-        emailEl.href = 'mailto:' + DgSiteContact.email;
-        emailEl.textContent = DgSiteContact.email;
-      }
-    }
+    hydrateContacts();
+  }
+
+  function hydrateContacts() {
+    if (!window.DgSiteContact) return;
+    document.querySelectorAll('.dg-support-email, #dgContactEmail, #dgSupportEmail').forEach(function (el) {
+      el.href = 'mailto:' + DgSiteContact.email;
+      el.textContent = DgSiteContact.email;
+    });
+    document.querySelectorAll('.dg-support-phone, #dgContactPhone, #dgSupportPhone').forEach(function (el) {
+      el.href = 'tel:' + DgSiteContact.phoneTel;
+      el.textContent = DgSiteContact.phoneFormatted;
+    });
   }
 
   if (document.readyState === 'loading') {

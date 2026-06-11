@@ -2,6 +2,8 @@
 @import url('dg-responsive.css');
 @import url('dg-assets.css');
 @import url('dg-premium-icons.css');
+@import url('dg-doctor-fab.css');
+@import url('dg-site-footer.css');
 
 :root {
   --dg-orange: #F26727;

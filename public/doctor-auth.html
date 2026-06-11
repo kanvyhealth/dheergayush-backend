@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="css/dg-premium-icons.css?v=3">
     <link rel="stylesheet" href="css/dg-landing.css?v=5">
     <link rel="stylesheet" href="css/dheergayush-forms.css">
+    <link rel="stylesheet" href="css/dg-site-footer.css">
 </head>
 <body class="dg-page dg-landing-page dg-doctor-auth-page">
     <div class="dg-landing-bg" aria-hidden="true">
@@ -65,8 +66,8 @@
             </div>
 
             <div class="dg-doctor-auth-card visible" id="doctorLoginPanel" role="tabpanel" aria-labelledby="doctorTabLogin">
-                <h2 class="dg-landing-panel-title">Doctor Login</h2>
-                <p class="dg-landing-panel-sub">Use the same email and password as the DHEERGAYUSH mobile app</p>
+                <h2 class="dg-landing-panel-title">Sign In</h2>
+                <p class="dg-landing-panel-sub">Patients and doctors use the same login. Approved doctors are redirected to the doctor dashboard automatically.</p>
                 <form id="doctorLoginForm" class="dg-doctor-auth-form">
                     <div class="form-group">
                         <label for="doctorEmail">Email</label>
@@ -101,23 +102,14 @@
         </section>
     </main>
 
-    <footer class="dg-landing-footer">
-        <div class="dg-landing-footer-inner">
-            <p>&copy; 2026 DHEERGAYUSH INDIA PRIVATE LIMITED</p>
-            <nav class="dg-landing-footer-links" aria-label="Legal links">
-                <a href="/privacy-policy">Privacy</a>
-                <a href="/terms-and-conditions">Terms</a>
-                <a href="/refund-policy">Refund</a>
-                <a href="/account-deletion">Delete Account</a>
-                <a href="/contact-us">Contact</a>
-                <a href="/support">Support</a>
-            </nav>
-        </div>
-    </footer>
+    <div id="dg-site-footer"></div>
 
     <script src="js/dg-auth.js"></script>
     <script src="doctor.js"></script>
     <script src="js/doctor-auth.js"></script>
     <script src="js/dg-responsive-nav.js"></script>
+    <script src="js/dg-site-contact.js"></script>
+    <script src="js/dg-site-footer.js"></script>
+    <script src="js/dg-doctor-fab.js"></script>
 </body>
 </html>

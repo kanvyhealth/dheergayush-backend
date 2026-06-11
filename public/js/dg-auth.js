@@ -51,17 +51,29 @@
     if (data.user?.name) localStorage.setItem('patientId', data.user.name);
     if (data.user?.phone) localStorage.setItem('patientPhoneNumber', data.user.phone);
     if (data.user?.email) localStorage.setItem('userEmail', data.user.email);
-    if (data.user?.role === 'Doctor') {
+
+    var isDoctor = data.portal === 'doctor' || data.role === 'Doctor' || data.user?.role === 'Doctor';
+    if (isDoctor) {
       localStorage.setItem('userRole', 'doctor');
       localStorage.setItem('isLoggedInDoctor', 'true');
       if (data.doctor) {
         localStorage.setItem('doctorName', data.doctor.name || '');
         localStorage.setItem('doctorLicense', data.doctor.doctorId || data.doctor.license || '');
-        localStorage.setItem('doctorUid', data.doctor.uid || data.user.uid || '');
+        localStorage.setItem('doctorUid', data.doctor.uid || data.user?.uid || data.uid || '');
       }
     } else {
       localStorage.setItem('userRole', 'patient');
+      localStorage.removeItem('isLoggedInDoctor');
     }
+  }
+
+  function redirectForPortal(data) {
+    if (!data || !data.redirectTo) return false;
+    if (data.portal === 'doctor') {
+      window.location.replace(data.redirectTo);
+      return true;
+    }
+    return false;
   }
 
   function clearSession() {
@@ -139,6 +151,7 @@
     registerCustomer,
     login,
     loginDoctor,
-    getUser
+    getUser,
+    redirectForPortal
   };
 })(typeof window !== 'undefined' ? window : global);

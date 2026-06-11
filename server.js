@@ -428,14 +428,18 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
       await linkAppointmentsToAuthUid({ authUid: auth.localId, phone: profile.phone });
     }
     const portalInfo = await resolveAuthPortal(auth.localId);
+    const userOut = profile
+      ? Object.assign({}, profile, { role: portalInfo.role })
+      : { uid: auth.localId, email: auth.email, name: auth.displayName, role: portalInfo.role };
     res.json({
       message: 'Login successful',
       idToken: auth.idToken,
       refreshToken: auth.refreshToken,
-      user: profile || { uid: auth.localId, email: auth.email, name: auth.displayName },
+      user: userOut,
       portal: portalInfo.portal,
       role: portalInfo.role,
-      redirectTo: portalInfo.redirectTo
+      redirectTo: portalInfo.redirectTo,
+      doctor: portalInfo.doctor || null
     });
   } catch (err) {
     res.status(401).json({ message: err.message || 'Invalid email or password' });
@@ -3884,6 +3888,7 @@ if (isProductionSite) {
    📄 Legal pages — clean URLs (not modals)
 --------------------------------------------------------------------*/
 const LEGAL_PAGE_ROUTES = {
+  '/about-us': 'about-us.html',
   '/privacy-policy': 'privacy-policy.html',
   '/terms-and-conditions': 'terms-and-conditions.html',
   '/refund-policy': 'refund-policy.html',
@@ -3912,6 +3917,7 @@ Object.entries(LEGAL_PAGE_ROUTES).forEach(([route, file]) => {
 });
 
 const LEGACY_LEGAL_REDIRECTS = {
+  '/about-us.html': '/about-us',
   '/PrivacyPage.html': '/privacy-policy',
   '/terms.html': '/terms-and-conditions',
   '/delete-account.html': '/account-deletion',

@@ -308,17 +308,22 @@
       if (window.DgApi) DgApi.bootstrapApp({ skipOnLocalhost: true });
       const token = window.DgAuth && DgAuth.getToken();
       if (!token) {
-        window.location.href = 'doctor-auth.html';
+        window.location.href = 'patient.html';
         return;
       }
       try {
         const res = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } });
         if (!res.ok) {
           if (window.DgAuth) DgAuth.clearSession();
-          window.location.href = 'doctor-auth.html';
+          window.location.href = 'patient.html';
+          return;
+        }
+        const me = await res.json();
+        if (me.portal !== 'doctor') {
+          window.location.replace(me.redirectTo || 'patient.html');
         }
       } catch (_) {
-        window.location.href = 'doctor-auth.html';
+        window.location.href = 'patient.html';
       }
     });
 
