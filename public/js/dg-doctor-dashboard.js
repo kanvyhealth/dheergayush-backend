@@ -157,8 +157,15 @@
     }
   }
 
+  async function resolveDoctorName() {
+    if (global.DgAuth && DgAuth.ensureDoctorSession) {
+      return await DgAuth.ensureDoctorSession();
+    }
+    return String(localStorage.getItem('doctorName') || '').trim();
+  }
+
   async function loadConsultationHistory(forceRefresh) {
-    var doctorName = localStorage.getItem('doctorName');
+    var doctorName = await resolveDoctorName();
     if (!doctorName) return;
 
     showLoading(true);
@@ -233,7 +240,7 @@
     var spec = localStorage.getItem('doctorSpecialization') || '';
     var license = localStorage.getItem('doctorLicense') || '';
 
-    var nameEl = document.getElementById('doctorName');
+    var nameEl = document.getElementById('doctorDisplayName');
     var specEl = document.getElementById('doctorSpecialization');
     var licenseEl = document.getElementById('doctorLicense');
     var avatarEl = document.getElementById('dgDocAvatarInitials');
@@ -250,7 +257,7 @@
   }
 
   async function loadPrescriptionHistory(forceRefresh) {
-    var doctorName = localStorage.getItem('doctorName');
+    var doctorName = await resolveDoctorName();
     if (!doctorName) return;
     var loading = document.getElementById('dgDocRxLoading');
     var wrap = document.getElementById('dgDocRxTableWrap');
@@ -327,7 +334,8 @@
     });
   }
 
-  function init() {
+  async function init() {
+    await resolveDoctorName();
     setDoctorHeaderInfo();
     initFilters();
     loadConsultationHistory(false);
@@ -341,6 +349,7 @@
 
   global.DgDoctorDashboard = {
     init: init,
+    setDoctorHeaderInfo: setDoctorHeaderInfo,
     refresh: loadConsultationHistory,
     refreshPrescriptions: loadPrescriptionHistory,
     getConsultations: function () { return allConsultations.slice(); }

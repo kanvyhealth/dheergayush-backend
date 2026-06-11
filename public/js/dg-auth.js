@@ -42,6 +42,32 @@
     return data;
   }
 
+  function hydrateDoctorPortal(data) {
+    if (!data) return;
+    var isDoctor = data.portal === 'doctor' || data.role === 'Doctor' || data.user?.role === 'Doctor';
+    if (!isDoctor && !data.doctor) return;
+
+    localStorage.setItem('userRole', 'doctor');
+    localStorage.setItem('isLoggedInDoctor', 'true');
+
+    var doc = data.doctor;
+    if (!doc) return;
+
+    var name = String(doc.name || doc.displayName || '').trim();
+    if (name) localStorage.setItem('doctorName', name);
+
+    var license = doc.doctorId || doc.license || doc.licenseId || '';
+    if (license) localStorage.setItem('doctorLicense', String(license));
+
+    var uid = doc.uid || data.user?.uid || data.uid || '';
+    if (uid) localStorage.setItem('doctorUid', String(uid));
+
+    var spec = doc.specialization ||
+      (Array.isArray(doc.specializations) ? doc.specializations[0] : '') ||
+      doc.speciality || '';
+    if (spec) localStorage.setItem('doctorSpecialization', String(spec));
+  }
+
   function setSession(data) {
     if (data.idToken) localStorage.setItem(TOKEN_KEY, data.idToken);
     if (data.refreshToken) localStorage.setItem(REFRESH_KEY, data.refreshToken);
@@ -54,16 +80,33 @@
 
     var isDoctor = data.portal === 'doctor' || data.role === 'Doctor' || data.user?.role === 'Doctor';
     if (isDoctor) {
-      localStorage.setItem('userRole', 'doctor');
-      localStorage.setItem('isLoggedInDoctor', 'true');
-      if (data.doctor) {
-        localStorage.setItem('doctorName', data.doctor.name || '');
-        localStorage.setItem('doctorLicense', data.doctor.doctorId || data.doctor.license || '');
-        localStorage.setItem('doctorUid', data.doctor.uid || data.user?.uid || data.uid || '');
-      }
+      hydrateDoctorPortal(data);
     } else {
       localStorage.setItem('userRole', 'patient');
       localStorage.removeItem('isLoggedInDoctor');
+    }
+  }
+
+  function getDoctorNameSync() {
+    return String(localStorage.getItem('doctorName') || '').trim();
+  }
+
+  async function ensureDoctorSession() {
+    var cached = getDoctorNameSync();
+    if (cached) return cached;
+
+    var token = await ensureValidToken();
+    if (!token) return '';
+
+    try {
+      var res = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } });
+      if (!res.ok) return '';
+      var data = await parseJsonResponse(res);
+      if (data.portal !== 'doctor') return '';
+      hydrateDoctorPortal(data);
+      return getDoctorNameSync();
+    } catch (_) {
+      return '';
     }
   }
 
@@ -78,7 +121,7 @@
 
   function clearSession() {
     [TOKEN_KEY, REFRESH_KEY, USER_KEY, 'firebaseUid', 'patientId', 'patientPhoneNumber', 'userEmail',
-      'userRole', 'isLoggedInDoctor', 'doctorName', 'doctorLicense', 'doctorUid'].forEach(function (k) {
+      'userRole', 'isLoggedInDoctor', 'doctorName', 'doctorLicense', 'doctorUid', 'doctorSpecialization'].forEach(function (k) {
       localStorage.removeItem(k);
     });
   }
@@ -137,6 +180,9 @@
   global.DgAuth = {
     getToken,
     setSession,
+    hydrateDoctorPortal,
+    getDoctorNameSync,
+    ensureDoctorSession,
     clearSession,
     ensureValidToken,
     authHeaders,

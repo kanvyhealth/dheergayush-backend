@@ -165,10 +165,13 @@
     const headers = { 'Content-Type': 'application/json' };
     const token = localStorage.getItem('firebaseIdToken');
     if (token) headers.Authorization = 'Bearer ' + token;
+    const body = { status };
+    const resolvedName = String(doctorName || '').trim();
+    if (resolvedName) body.doctorName = resolvedName;
     const res = await fetch('/api/doctors/updateStatus', {
       method: 'POST',
       headers,
-      body: JSON.stringify({ doctorName, status })
+      body: JSON.stringify(body)
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));

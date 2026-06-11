@@ -371,7 +371,8 @@ app.get('/api/auth/me', requireFirebaseAuth(), async (req, res) => {
     profile: req.userProfile || null,
     portal: portalInfo.portal,
     role: portalInfo.role,
-    redirectTo: portalInfo.redirectTo
+    redirectTo: portalInfo.redirectTo,
+    doctor: serializeDoctorSession(portalInfo.doctor)
   });
 });
 
@@ -457,12 +458,18 @@ app.post('/api/auth/refresh', authLimiter, async (req, res) => {
       return res.status(400).json({ message: 'refreshToken is required' });
     }
     const auth = await refreshIdToken(refreshToken);
-    const profile = await getUserProfile(auth.user_id || auth.localId);
+    const uid = auth.user_id || auth.localId;
+    const profile = await getUserProfile(uid);
+    const portalInfo = await resolveAuthPortal(uid);
     return res.json({
       message: 'Session refreshed',
       idToken: auth.id_token || auth.idToken,
       refreshToken: auth.refresh_token || auth.refreshToken || refreshToken,
-      user: profile || { uid: auth.user_id || auth.localId, email: auth.email }
+      user: profile || { uid, email: auth.email },
+      portal: portalInfo.portal,
+      role: portalInfo.role,
+      redirectTo: portalInfo.redirectTo,
+      doctor: serializeDoctorSession(portalInfo.doctor)
     });
   } catch (err) {
     return res.status(401).json({ message: err.message || 'Could not refresh session' });
@@ -984,6 +991,24 @@ function enrichDoctorRow(d) {
         ifscCode: payment.ifsc || row.ifscCode || row.ifsc || '',
         accountHolderName: payment.accountHolderName || row.accountHolderName || '',
         paymentMethod: payment.paymentMethod || row.paymentMethod || ''
+    };
+}
+
+function serializeDoctorSession(doctor) {
+    if (!doctor) return null;
+    const row = enrichDoctorRow(doctor);
+    return {
+        uid: row.uid || row._id || row.id || '',
+        name: String(row.name || row.displayName || '').trim(),
+        email: row.email || '',
+        doctorId: row.doctorId || row.license || row.licenseId || '',
+        license: row.license || row.licenseId || row.doctorId || '',
+        specialization: row.specialization ||
+            (Array.isArray(row.specializations) ? row.specializations[0] : '') ||
+            row.speciality || '',
+        working: row.working,
+        presenceStatus: row.presenceStatus,
+        effectiveStatus: row.effectiveStatus
     };
 }
 
@@ -3305,7 +3330,8 @@ app.post('/api/doctors/heartbeat', async (req, res) => {
 
 // Update doctor status (online / offline / busy toggle)
 app.post('/api/doctors/updateStatus', requireDoctorNameAccess(), async (req, res) => {
-  const { doctorName, status } = req.body;
+  const { status } = req.body;
+  const doctorName = String(req.body?.doctorName || req.doctor?.name || '').trim();
 
   if (!doctorName || !status) {
     return res.status(400).json({ message: 'doctorName and status are required' });
@@ -3317,7 +3343,7 @@ app.post('/api/doctors/updateStatus', requireDoctorNameAccess(), async (req, res
   }
 
   try {
-    const doctor = await findDoctorByName(doctorName);
+    const doctor = req.doctor || (await findDoctorByName(doctorName));
     if (!doctor) return res.status(404).json({ message: 'Doctor not found' });
 
     const currentPresence = getDoctorPresenceStatus(doctor);
@@ -3336,11 +3362,13 @@ app.post('/api/doctors/updateStatus', requireDoctorNameAccess(), async (req, res
 
     const refreshed = id ? await Doctor.findById(id) : doctor;
     const payload = await buildStatusPayload(refreshed || doctor);
-    emitDoctorStatus(doctorName, payload);
+    const canonicalName = String((refreshed || doctor).name || doctorName).trim();
+    emitDoctorStatus(canonicalName, payload);
 
     const working = normalized.toLowerCase();
     return res.json({
       message: 'Status updated',
+      doctorName: canonicalName,
       working,
       presenceStatus: working,
       effectiveStatus: payload.effectiveStatus,

@@ -52,12 +52,16 @@
       r.checked = r.value === mode;
     });
     togglePaymentMode(mode);
-    const nameEl = document.getElementById('doctorName');
+    const nameEl = document.getElementById('doctorDisplayName');
     if (nameEl && doctor.name) nameEl.textContent = 'Dr. ' + doctor.name;
     const specEl = document.getElementById('doctorSpecialization');
     if (specEl && map.profileSpec) specEl.textContent = map.profileSpec;
     const licEl = document.getElementById('doctorLicense');
     if (licEl && map.profileLicense) licEl.textContent = 'License: ' + map.profileLicense;
+
+    if (global.DgAuth && DgAuth.hydrateDoctorPortal) {
+      DgAuth.hydrateDoctorPortal({ portal: 'doctor', role: 'Doctor', doctor: doctor });
+    }
   }
 
   async function loadDoctorProfile() {

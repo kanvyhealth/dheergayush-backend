@@ -60,7 +60,7 @@
       <div class="dg-doc-brand">
         <div class="dg-doc-avatar" id="dgDocAvatarInitials" aria-hidden="true">DR</div>
         <div class="dg-doc-brand-text">
-          <h1 id="doctorName">Dr.</h1>
+          <h1 id="doctorDisplayName">Dr.</h1>
           <p id="doctorSpecialization">Ayurvedic Consultant</p>
         </div>
       </div>
@@ -304,6 +304,14 @@
       return headers;
     }
 
+    async function resolveDoctorName() {
+      if (window.DgAuth && DgAuth.ensureDoctorSession) {
+        const name = await DgAuth.ensureDoctorSession();
+        if (name) return name;
+      }
+      return String(localStorage.getItem('doctorName') || '').trim();
+    }
+
     document.addEventListener('DOMContentLoaded', async function () {
       if (window.DgApi) DgApi.bootstrapApp({ skipOnLocalhost: true });
       const token = window.DgAuth && DgAuth.getToken();
@@ -321,21 +329,32 @@
         const me = await res.json();
         if (me.portal !== 'doctor') {
           window.location.replace(me.redirectTo || 'patient.html');
+          return;
         }
+        if (window.DgAuth) DgAuth.hydrateDoctorPortal(me);
       } catch (_) {
         window.location.href = 'patient.html';
+        return;
       }
-    });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      checkDoctorStatus();
-      initDoctorRealtime();
+      const doctorName = await resolveDoctorName();
+      if (!doctorName) {
+        alert('Could not load your doctor profile. Please sign in again.');
+        window.location.href = 'doctor-auth.html';
+        return;
+      }
+
+      if (window.DgDoctorDashboard && DgDoctorDashboard.setDoctorHeaderInfo) {
+        DgDoctorDashboard.setDoctorHeaderInfo();
+      }
+
+      await checkDoctorStatus();
+      initDoctorRealtime(doctorName);
     });
 
     var activeRingConsultation = null;
 
-    function initDoctorRealtime() {
-      var doctorName = localStorage.getItem('doctorName');
+    function initDoctorRealtime(doctorName) {
       if (!doctorName || !window.DgRealtime) return;
 
       DgRealtime.registerDoctor(doctorName);
@@ -490,7 +509,7 @@
     }
 
     async function checkDoctorStatus() {
-      const doctorName = localStorage.getItem('doctorName');
+      const doctorName = await resolveDoctorName();
       if (!doctorName) return;
       try {
         const response = await fetch(`/api/doctors/status/${encodeURIComponent(doctorName)}`);
@@ -504,13 +523,16 @@
     }
 
     async function setDoctorAvailability(status) {
-      const doctorName = localStorage.getItem('doctorName');
-      if (!doctorName) return alert('Doctor name not found.');
+      const doctorName = await resolveDoctorName();
+      if (!doctorName) return alert('Doctor name not found. Please sign in again.');
       const switchWrap = document.getElementById('doctorOnlineSwitchWrap');
       if (switchWrap) switchWrap.classList.add('is-loading');
       doctorStatusPollPausedUntil = Date.now() + 8000;
       try {
         const data = await DgDoctorStatus.updateDoctorStatus(doctorName, status);
+        if (window.DgAuth && data.doctorName) {
+          DgAuth.hydrateDoctorPortal({ portal: 'doctor', doctor: { name: data.doctorName } });
+        }
         applyDoctorStatusUI(data.effectiveStatus || status, {
           dbStatus: data.dbStatus || data.working || data.presenceStatus || status
         });
@@ -534,9 +556,9 @@
     });
 
     document.getElementById('endActiveCallsBtn').addEventListener('click', async function () {
-      const doctorName = localStorage.getItem('doctorName');
+      const doctorName = await resolveDoctorName();
       if (!doctorName) {
-        alert('Doctor name not found.');
+        alert('Doctor name not found. Please sign in again.');
         return;
       }
       if (!confirm('End all active video consultations? Use this if you are stuck in a previous call before accepting or joining a new patient.')) {
@@ -557,9 +579,9 @@
     });
 
     async function startConsulting() {
-      const doctorName = localStorage.getItem('doctorName');
+      const doctorName = await resolveDoctorName();
       if (!doctorName) {
-        alert('Doctor name not found in localStorage.');
+        alert('Doctor name not found. Please sign in again.');
         return;
       }
 
@@ -596,9 +618,9 @@
     }
 
     async function logoutDoctor() {
-      const doctorName = localStorage.getItem('doctorName');
+      const doctorName = await resolveDoctorName();
       if (!doctorName) {
-        alert('Doctor name not found.');
+        alert('Doctor name not found. Please sign in again.');
         return;
       }
 
