@@ -2084,15 +2084,43 @@
         let cart = [];
 
         // Fetch store brands on page load (lightweight — medicines load when modal opens)
-        fetch('/api/stores/summary').then(r=>r.json()).then(stores=>{
-            allStores = window.DgCatalogMerge ? DgCatalogMerge.dedupeStores(stores) : stores;
+        function mapHomeStores(stores) {
+            return (window.DgCatalogMerge ? DgCatalogMerge.dedupeStores(stores) : stores).map(function(s) {
+                var key = window.DgCatalogMerge
+                    ? DgCatalogMerge.normalizeBrandKey(s.name || s._id)
+                    : String(s.name || s._id || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                return {
+                    _id: key || s._id,
+                    name: s.name,
+                    description: s.description,
+                    medicineCount: s.medicineCount || (s.medicines || []).length
+                };
+            });
+        }
+
+        fetch('/api/stores/summary').then(function(r) {
+            if (!r.ok) throw new Error('summary fail');
+            return r.json();
+        }).then(function(stores) {
+            allStores = mapHomeStores(stores);
             renderStores();
         }).catch(function(){
-            fetch('/api/stores').then(r=>r.json()).then(stores=>{
-                allStores = (window.DgCatalogMerge ? DgCatalogMerge.dedupeStores(stores) : stores).map(function(s){
-                    return { _id: s._id, name: s.name, medicineCount: (s.medicines||[]).length };
-                });
+            fetch('/api/stores').then(function(r) {
+                if (!r.ok) throw new Error('stores fail');
+                return r.json();
+            }).then(function(stores) {
+                allStores = mapHomeStores(stores);
                 renderStores();
+            }).catch(function() {
+                fetch('/data/medicine-catalog.json').then(function(r) {
+                    if (!r.ok) throw new Error('json fail');
+                    return r.json();
+                }).then(function(stores) {
+                    allStores = mapHomeStores(stores);
+                    renderStores();
+                }).catch(function() {
+                    console.warn('Could not load store brands');
+                });
             });
         });
 

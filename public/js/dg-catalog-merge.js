@@ -29,7 +29,27 @@
     'revinto ayurvedic': 'revinto',
     'revinto': 'revinto',
     'imc ayurvedic': 'imc',
-    'imc': 'imc'
+    'imc': 'imc',
+    'ban labs': 'banlabs',
+    'banlabs': 'banlabs',
+    'soultree': 'soultree',
+    'sri sri tattva': 'srisritattva',
+    'the ayurveda experience': 'ayurvedaexperience',
+    'inlife pharma': 'inlife',
+    'inlife': 'inlife',
+    'medimix': 'medimix',
+    'nutriorg': 'nutriorg',
+    'sandu pharmaceuticals': 'sandu',
+    'sandu': 'sandu',
+    'kapiva': 'kapiva',
+    'maharishi ayurveda': 'maharishi',
+    'maharishi': 'maharishi',
+    'organic india': 'organicindia',
+    'soul tree': 'soultree',
+    'charak': 'charak',
+    'kerala ayurveda': 'kerala',
+    'himalaya drugs and pharmaceuticals': 'himalayadrugs',
+    'dabur classical division': 'daburclassical'
   };
 
   function normalizeText(str) {

@@ -25,6 +25,8 @@
     "catalog:images-refresh:sdpl": "node scripts/refreshBrandImages.js --brand Dhootapapeshwar",
     "catalog:images-refresh:dabur": "node scripts/refreshBrandImages.js --brand Dabur",
     "catalog:images-refresh:baidyanath": "node scripts/refreshBrandImages.js --brand Baidyanath",
+    "catalog:cleanup": "node scripts/cleanupCatalog.js",
+    "catalog:images-all": "node scripts/downloadAllBrandImages.js --missing-only",
     "build:brand": "python scripts/build-brand-assets.py",
     "build": "npm install"
   },

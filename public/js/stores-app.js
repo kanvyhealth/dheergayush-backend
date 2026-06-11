@@ -132,7 +132,7 @@
   function renderStoresStrip() {
     if (!els.storesStrip) return;
     var html = '<button type="button" class="store-chip' + (currentStoreFilter === 'all' ? ' active' : '') +
-      '" data-store="all">All stores</button>';
+      '" data-store="all">All brands</button>';
     stores.forEach(function (store) {
       html += '<button type="button" class="store-chip' + (currentStoreFilter === store._id ? ' active' : '') +
         '" data-store="' + store._id + '">' + escapeHtml(store.name) +
@@ -383,7 +383,10 @@
       var data = await res.json();
       applyProductsPage(data);
     } catch (e) {
-      if (currentPage === 0) {
+      if (products.length && !hasMore) {
+        renderFullLegacy(filterLegacyProducts(products));
+        updateProductCount();
+      } else if (currentPage <= 1) {
         await loadLegacyFallback();
       }
     } finally {
@@ -405,6 +408,58 @@
     return !!excludedStoreNames[String(name || '').trim().toLowerCase()];
   }
 
+  function storeBrandKey(name) {
+    return window.DgCatalogMerge
+      ? DgCatalogMerge.normalizeBrandKey(name)
+      : String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  function mapStoreSummary(list) {
+    return dedupeStores((list || []).map(function (s) {
+      var key = storeBrandKey(s.name || s._id);
+      return {
+        _id: key || s._id,
+        name: s.name,
+        medicineCount: s.medicineCount || (s.medicines || []).length
+      };
+    }));
+  }
+
+  function filterLegacyProducts(list) {
+    var out = list || [];
+    if (currentStoreFilter !== 'all') {
+      out = out.filter(function (m) {
+        return storeBrandKey(m.company || m.storeName) === currentStoreFilter;
+      });
+    }
+    if (currentCategory !== 'all') {
+      var cat = String(currentCategory || '').toLowerCase();
+      out = out.filter(function (m) {
+        var mc = String(m.category || '').toLowerCase();
+        if (cat.indexOf('beauty') >= 0) {
+          return mc.indexOf('beauty') >= 0 || mc.indexOf('cosmetic') >= 0 || mc.indexOf('skin') >= 0;
+        }
+        if (cat.indexOf('wellness') >= 0) {
+          return mc.indexOf('wellness') >= 0 || mc.indexOf('juice') >= 0 || mc.indexOf('tea') >= 0;
+        }
+        if (cat.indexOf('medicine') >= 0) {
+          return mc.indexOf('medicine') >= 0 || mc.indexOf('ayurved') >= 0 || mc.indexOf('asava') >= 0
+            || mc.indexOf('arishta') >= 0 || mc.indexOf('bhasma') >= 0;
+        }
+        return mc.indexOf(cat) >= 0;
+      });
+    }
+    var q = (els.searchInput && els.searchInput.value.trim().toLowerCase()) || '';
+    if (q) {
+      out = out.filter(function (m) {
+        return (m.name || '').toLowerCase().indexOf(q) >= 0
+          || (m.description || '').toLowerCase().indexOf(q) >= 0
+          || (m.company || '').toLowerCase().indexOf(q) >= 0;
+      });
+    }
+    return sortProducts(out.slice());
+  }
+
   async function loadLegacyFallback() {
     try {
       var fallback = await fetch('/data/medicine-catalog.json');
@@ -412,17 +467,18 @@
       var legacyStores = (await fallback.json()).filter(function (s) {
         return !isExcludedStoreName(s.name);
       });
-      stores = legacyStores.map(function (s) {
-        return { _id: s._id, name: s.name, medicineCount: (s.medicines || []).length };
-      });
+      stores = mapStoreSummary(legacyStores);
       products = [];
       legacyStores.forEach(function (s) {
+        var brandKey = storeBrandKey(s.name);
         (s.medicines || []).forEach(function (m) {
-          var imageUrl = m.imageUrl || (m.imageFile ? '/medicine-assets/' + encodeURIComponent(m.imageFile) : null);
+          var imageFile = m.imageFile || (m._id ? m._id + '.jpg' : '');
+          var imageUrl = m.imageUrl || (imageFile ? '/medicine-assets/' + encodeURIComponent(imageFile) : null);
           products.push(Object.assign({}, m, {
-            storeId: s._id,
+            imageFile: imageFile,
+            storeId: brandKey,
             storeName: s.name,
-            company: m.company || s.name,
+            company: m.company || m.brand || s.name,
             imageUrl: imageUrl
           }));
         });
@@ -431,7 +487,7 @@
       totalProducts = products.length;
       hasMore = false;
       renderStoresStrip();
-      renderFullLegacy(products);
+      renderFullLegacy(filterLegacyProducts(products));
       updateProductCount();
     } catch (err) {
       els.productGrid.innerHTML = '<p class="empty-grid">Could not load store. Please ensure the server is running.</p>';
@@ -656,13 +712,7 @@
       var summaryRes = await summaryPromise;
       if (!summaryRes.ok) throw new Error('fail');
       var data = await summaryRes.json();
-      if (Array.isArray(data) && data[0] && data[0].medicines) {
-        stores = data.map(function (s) {
-          return { _id: s._id, name: s.name, medicineCount: (s.medicines || []).length };
-        });
-      } else {
-        stores = dedupeStores(data);
-      }
+      stores = mapStoreSummary(data);
       if (!stores.length) throw new Error('empty');
       renderStoresStrip();
 
