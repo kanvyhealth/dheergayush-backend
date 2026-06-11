@@ -94,6 +94,10 @@ const {
   listRoomIdsForDoctor,
   normalizePhone
 } = require('./lib/paymentLookup');
+const {
+  getPatientDiagnosisHistoryForDoctor,
+  saveConsultationClinicalNotes
+} = require('./lib/patientDiagnosisHistory');
 const { createPrescriptionStoreOrder } = require('./lib/prescriptionCheckout');
 const {
   requirePatientPhoneAccess,
@@ -1623,6 +1627,7 @@ async function completeWebsiteConsultationCheckout({
   selectedDoctorFee,
   amountNum,
   doctorAvailableTime,
+  patientSymptoms,
   reportFiles,
   razorpayOrderId,
   razorpayPaymentId,
@@ -1706,6 +1711,8 @@ async function completeWebsiteConsultationCheckout({
   }
 
   const feeNum = parseFloat(String(selectedDoctorFee ?? '').replace(/[^\d.]/g, ''));
+  const symptomsText = String(patientSymptoms || '').trim().slice(0, 2000);
+
   const payment = new Payment({
     name,
     phone,
@@ -1718,6 +1725,7 @@ async function completeWebsiteConsultationCheckout({
     selectedDoctorFee: Number.isNaN(feeNum) ? String(selectedDoctorFee) : feeNum,
     amount: effectiveAmount,
     reports: reportUrls,
+    patientSymptoms: symptomsText,
     doctorAvailableTime: doctorAvailableTime || doctor.availableTime || doctor.slotTime || '',
     consultationStatus: 'ringing',
     status: 'completed',
@@ -1743,6 +1751,7 @@ async function completeWebsiteConsultationCheckout({
     doctorName: selectedDoctorName,
     doctorId: doctorUid,
     amount: effectiveAmount,
+    patientSymptoms: symptomsText,
     doctorAvailableTime: doctorAvailableTime || doctor.availableTime || doctor.slotTime || '',
     expiresAt,
     source: 'website',
@@ -1878,6 +1887,7 @@ app.post(
         selectedDoctorFee,
         amount,
         doctorAvailableTime,
+        patientSymptoms,
         razorpay_order_id,
         razorpay_payment_id,
         razorpay_signature
@@ -1905,6 +1915,7 @@ app.post(
         selectedDoctorFee,
         amountNum,
         doctorAvailableTime,
+        patientSymptoms,
         reportFiles,
         razorpayOrderId: razorpay_order_id,
         razorpayPaymentId: razorpay_payment_id,
@@ -2081,7 +2092,7 @@ app.post(
     requireFirebaseAuth(),
     async (req, res) => {
         try {
-            const { name, phone, address, selectedDoctorName, doctorAvailableTime } = req.body;
+            const { name, phone, address, selectedDoctorName, doctorAvailableTime, patientSymptoms } = req.body;
             if (!name || !phone || !address || !selectedDoctorName) {
                 return res.status(400).json({ message: 'Patient details and doctor name are required.' });
             }
@@ -2108,6 +2119,7 @@ app.post(
                 selectedDoctorFee: String(fee),
                 amountNum: 0,
                 doctorAvailableTime,
+                patientSymptoms,
                 reportFiles: req.files?.reports || []
             });
             return res.status(201).json({
@@ -2485,6 +2497,69 @@ app.get('/api/reports/:roomId', async (req, res) => {
       });
     }
   });
+
+app.get('/api/video-call/diagnosis-history/:roomId', requireDoctorSession(), async (req, res) => {
+  try {
+    const { roomId } = req.params;
+    if (!roomId) {
+      return res.status(400).json({ message: 'Room ID is required.' });
+    }
+    if (!(await prescriptionVideoRoomExists(roomId))) {
+      return res.status(403).json({ message: 'Invalid or unknown video room.' });
+    }
+
+    const result = await getPatientDiagnosisHistoryForDoctor(roomId, req.doctor.name);
+    if (result.error === 'not_found') {
+      return res.status(404).json({ message: result.message });
+    }
+    if (result.error === 'forbidden') {
+      return res.status(403).json({ message: result.message });
+    }
+
+    return res.json(result);
+  } catch (err) {
+    console.error('Diagnosis history error:', err);
+    return res.status(500).json({ message: 'Failed to load diagnosis history.', error: err.message });
+  }
+});
+
+app.post('/api/video-call/consultation-notes', requireDoctorSession(), async (req, res) => {
+  try {
+    const { roomId, patientSymptoms, doctorDiagnosis, consultationNotes } = req.body || {};
+    if (!roomId) {
+      return res.status(400).json({ message: 'Room ID is required.' });
+    }
+    if (!(await prescriptionVideoRoomExists(roomId))) {
+      return res.status(403).json({ message: 'Invalid or unknown video room.' });
+    }
+
+    const result = await saveConsultationClinicalNotes(roomId, req.doctor.name, {
+      patientSymptoms,
+      doctorDiagnosis,
+      consultationNotes
+    });
+
+    if (result.error === 'not_found') {
+      return res.status(404).json({ message: result.message });
+    }
+    if (result.error === 'forbidden') {
+      return res.status(403).json({ message: result.message });
+    }
+    if (result.error === 'bad_request') {
+      return res.status(400).json({ message: result.message });
+    }
+
+    return res.json({
+      message: 'Clinical notes saved.',
+      patientSymptoms: result.patientSymptoms,
+      doctorDiagnosis: result.doctorDiagnosis,
+      consultationNotes: result.consultationNotes
+    });
+  } catch (err) {
+    console.error('Save consultation notes error:', err);
+    return res.status(500).json({ message: 'Failed to save clinical notes.', error: err.message });
+  }
+});
   
   
 /* -------------------------------------------------------------------

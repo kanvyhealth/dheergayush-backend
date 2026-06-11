@@ -89,9 +89,20 @@
     document.body.appendChild(s);
   }
 
+  function loadScrollScript() {
+    if (window.__dgScrollInit || window.__dgScrollRequested) return;
+    if (document.querySelector('script[src*="dg-scroll.js"]')) return;
+    window.__dgScrollRequested = true;
+    var s = document.createElement('script');
+    s.src = 'js/dg-scroll.js';
+    s.defer = true;
+    document.body.appendChild(s);
+  }
+
   function init() {
     mountFooter();
     loadFabScript();
+    loadScrollScript();
   }
 
   if (document.readyState === 'loading') {

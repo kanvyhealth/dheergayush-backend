@@ -11,6 +11,9 @@ const paymentSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
   paymentProofPath: { type: String, required: true },
   reports: [String], // Added reports field to store file paths
+  patientSymptoms: { type: String, default: '' },
+  doctorDiagnosis: { type: String, default: '' },
+  consultationNotes: { type: String, default: '' },
   roomName: { type: String, required: true },
   doctorAvailableTime: { type: String, default: '' },
   consultationStatus: {

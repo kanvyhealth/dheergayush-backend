@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Doctor-Patient Video Call</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="prescription.css">
   <link rel="stylesheet" href="css/dg-assets.css">
   <link rel="stylesheet" href="css/dg-responsive.css">
@@ -198,7 +198,8 @@ html, body {
       cursor: pointer;
     }
     body.vcall-in-call #prescription-btn,
-    body.vcall-in-call #reports-btn {
+    body.vcall-in-call #reports-btn,
+    body.vcall-in-call #diagnosis-btn {
       z-index: auto;
     }
 
@@ -277,6 +278,9 @@ html, body {
     .dg-vcall-dock-btn--reports {
       background: #3498db;
     }
+    .dg-vcall-dock-btn--diagnosis {
+      background: #8e44ad;
+    }
     .dg-vcall-dock-btn--reports::after {
       content: 'Reports';
       position: absolute;
@@ -296,6 +300,27 @@ html, body {
     }
     .dg-vcall-dock-btn--reports:hover::after,
     .dg-vcall-dock-btn--reports:focus-visible::after {
+      opacity: 1;
+    }
+    .dg-vcall-dock-btn--diagnosis::after {
+      content: 'Diagnosis';
+      position: absolute;
+      left: calc(100% + 8px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(30, 30, 30, 0.92);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .dg-vcall-dock-btn--diagnosis:hover::after,
+    .dg-vcall-dock-btn--diagnosis:focus-visible::after {
       opacity: 1;
     }
     .dg-vcall-dock-btn .cart-badge {
@@ -325,6 +350,7 @@ html, body {
       overflow-y: auto;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: auto;
     }
     @media (max-width: 768px) {
       body.vcall-prejoin {
@@ -879,6 +905,8 @@ html, body {
       border-radius: 12px;
       max-height: 85vh;
       overflow-y: auto;
+      overscroll-behavior-y: auto;
+      scroll-padding-bottom: 24px;
       box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
     }
     .reports-section-title {
@@ -900,6 +928,116 @@ html, body {
       padding: 12px 8px;
       font-size: 0.9rem;
     }
+
+    .diagnosis-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 10060;
+    }
+    .diagnosis-modal-content {
+      position: relative;
+      background-color: #fff;
+      margin: 40px auto;
+      padding: 20px;
+      width: min(92vw, 760px);
+      border-radius: 12px;
+      max-height: 88vh;
+      overflow-y: auto;
+      overscroll-behavior-y: auto;
+      scroll-padding-bottom: 24px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+    }
+    .dg-diagnosis-current {
+      background: linear-gradient(135deg, #f5eef8 0%, #ebf5fb 100%);
+      border: 1px solid rgba(142, 68, 173, 0.2);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+    }
+    .dg-diagnosis-current h4 {
+      margin: 0 0 10px;
+      color: #6c3483;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dg-diagnosis-field {
+      margin-bottom: 12px;
+    }
+    .dg-diagnosis-field label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #566573;
+      margin-bottom: 4px;
+    }
+    .dg-diagnosis-field textarea {
+      width: 100%;
+      min-height: 72px;
+      border: 1px solid #d5dbdb;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+    .dg-diagnosis-save-btn {
+      background: #8e44ad;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .dg-diagnosis-save-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .dg-diagnosis-visit-card {
+      border: 1px solid #ecf0f1;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      background: #fafbfc;
+    }
+    .dg-diagnosis-visit-card h5 {
+      margin: 0 0 8px;
+      color: #2c3e50;
+      font-size: 0.95rem;
+    }
+    .dg-diagnosis-visit-card p {
+      margin: 4px 0;
+      font-size: 0.88rem;
+      color: #34495e;
+      line-height: 1.45;
+    }
+    .dg-diagnosis-visit-card .dg-symptom-text {
+      background: #fff;
+      border-left: 3px solid #8e44ad;
+      padding: 8px 10px;
+      margin-top: 6px;
+      border-radius: 0 6px 6px 0;
+    }
+    .dg-diagnosis-meds {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      font-size: 0.85rem;
+      color: #566573;
+    }
+    .dg-diagnosis-status {
+      font-size: 0.82rem;
+      margin-top: 8px;
+      min-height: 1.2em;
+    }
+    .dg-diagnosis-status--ok { color: #16a34a; }
+    .dg-diagnosis-status--err { color: #c0392b; }
 
     .reports-list {
       margin-top: 20px;
@@ -1270,6 +1408,8 @@ html, body {
     .modal-body {
         flex: 1;
         overflow-y: auto;
+        overscroll-behavior-y: auto;
+        scroll-padding-bottom: 24px;
         padding: 15px;
         padding-bottom: 30px; /* Add extra padding at bottom */
         margin-right: 5px; /* Reduce right margin */
@@ -1581,6 +1721,8 @@ html, body {
         overflow-x: hidden;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: auto;
+        scroll-padding-bottom: max(20px, env(safe-area-inset-bottom));
         
         /* New Centering Method: Absolute Positioning + Transform */
         position: absolute; /* Position relative to the body */
@@ -1923,23 +2065,43 @@ html, body {
     <link rel="stylesheet" href="css/dheergayush-theme.css">
     <link rel="stylesheet" href="css/dheergayush-forms.css">
     <link rel="stylesheet" href="css/dg-platform.css">
+    <link rel="stylesheet" href="css/dg-video-call-ui.css">
 </head>
 <body class="vcall-prejoin">
   
   <div id="dg-patient-rx-actions" class="dg-patient-rx-actions" aria-label="Prescription actions">
-    <button type="button" id="browse-store-btn" class="dg-patient-rx-btn" style="background-color: #3498db;"><i class="fas fa-store"></i> Store</button>
-    <button type="button" id="view-prescription-btn" class="dg-patient-rx-btn"><i class="fas fa-prescription"></i> Prescription</button>
-    <button type="button" id="download-written-btn" class="dg-patient-rx-btn"><i class="fas fa-download"></i> Download</button>
+    <div class="dg-vcall-tool-rail dg-vcall-tool-rail--patient" role="toolbar">
+      <button type="button" id="browse-store-btn" class="dg-vcall-tool-btn dg-vcall-tool-btn--store-patient" title="Browse Ayurvedic store" aria-label="Browse store">
+        <span class="dg-vcall-tool-icon" aria-hidden="true"><i class="fa-solid fa-store"></i></span>
+        <span class="dg-vcall-tool-label">Store</span>
+      </button>
+      <button type="button" id="view-prescription-btn" class="dg-vcall-tool-btn dg-vcall-tool-btn--rx-patient" title="View your prescription" aria-label="View prescription">
+        <span class="dg-vcall-tool-icon" aria-hidden="true"><i class="fa-solid fa-file-prescription"></i></span>
+        <span class="dg-vcall-tool-label">Rx</span>
+      </button>
+      <button type="button" id="download-written-btn" class="dg-vcall-tool-btn dg-vcall-tool-btn--download-patient" title="Download written prescription" aria-label="Download prescription">
+        <span class="dg-vcall-tool-icon" aria-hidden="true"><i class="fa-solid fa-file-arrow-down"></i></span>
+        <span class="dg-vcall-tool-label">Download</span>
+      </button>
+    </div>
   </div>
 
   <div id="dg-vcall-doctor-dock" class="dg-vcall-doctor-dock" aria-label="Doctor tools">
-    <button type="button" id="prescription-btn" class="dg-vcall-dock-btn dg-vcall-dock-btn--store" title="Open store & prescribe" aria-label="Open store and prescription cart">
-      <i class="fas fa-shopping-cart"></i>
-      <span class="cart-badge" id="cart-badge">0</span>
-    </button>
-    <button type="button" id="reports-btn" class="dg-vcall-dock-btn dg-vcall-dock-btn--reports" title="View patient submitted reports" aria-label="View patient submitted reports">
-      <i class="fas fa-file-medical"></i>
-    </button>
+    <div class="dg-vcall-tool-rail" role="toolbar">
+      <button type="button" id="prescription-btn" class="dg-vcall-tool-btn dg-vcall-tool-btn--rx" title="Open store and prescribe" aria-label="Prescribe medicines">
+        <span class="dg-vcall-tool-icon" aria-hidden="true"><i class="fa-solid fa-prescription-bottle-medical"></i></span>
+        <span class="dg-vcall-tool-label">Prescribe</span>
+        <span class="cart-badge" id="cart-badge">0</span>
+      </button>
+      <button type="button" id="reports-btn" class="dg-vcall-tool-btn dg-vcall-tool-btn--reports" title="View patient reports" aria-label="View patient reports">
+        <span class="dg-vcall-tool-icon" aria-hidden="true"><i class="fa-solid fa-file-medical"></i></span>
+        <span class="dg-vcall-tool-label">Reports</span>
+      </button>
+      <button type="button" id="diagnosis-btn" class="dg-vcall-tool-btn dg-vcall-tool-btn--diagnosis" title="Diagnosis history" aria-label="View diagnosis history">
+        <span class="dg-vcall-tool-icon" aria-hidden="true"><i class="fa-solid fa-stethoscope"></i></span>
+        <span class="dg-vcall-tool-label">Diagnosis</span>
+      </button>
+    </div>
   </div>
 
   <!-- Agora container (shown after join) -->
@@ -1953,38 +2115,48 @@ html, body {
         <div class="left-panel">
             <video id="preview-video" autoplay playsinline muted></video>
             <div class="camera-off-message">
-                <i class="fas fa-video-slash"></i>
-                <span>Camera is OFF</span>
+                <i class="fa-solid fa-video-slash"></i>
+                <span>Camera is off</span>
             </div>
         </div>
 
         <div class="right-panel">
-            <h2>Join Video Call</h2>
+            <div class="vcall-prejoin-header">
+              <div class="vcall-prejoin-badge" aria-hidden="true"><i class="fa-solid fa-video"></i></div>
+              <div>
+                <p class="vcall-prejoin-eyebrow">Secure teleconsultation</p>
+                <h2>Join your consultation</h2>
+              </div>
+            </div>
             <div class="vcall-profile-card" id="vcall-profile-card" aria-live="polite">
                 <p class="vcall-profile-label">Joining as</p>
                 <p id="vcall-profile-name" class="vcall-profile-name">Loading profile…</p>
-                <p id="vcall-profile-role" class="vcall-profile-role"><i class="fas fa-user"></i> Patient</p>
+                <p id="vcall-profile-role" class="vcall-profile-role"><i class="fa-solid fa-user"></i> Patient</p>
             </div>
             <p class="vcall-permission-note">
-                <i class="fas fa-shield-halved"></i>
-                Allow camera and microphone access below, then join the consultation.
+                <i class="fa-solid fa-shield-halved"></i>
+                Allow camera and microphone, then join when you are ready.
             </p>
 
             <div class="toggle-buttons">
                 <button type="button" id="toggle-camera" title="Toggle camera" aria-label="Toggle camera">
-                    <i class="fas fa-video"></i>
+                    <i class="fa-solid fa-video"></i>
                     <span class="line-through"></span>
                 </button>
                 <button type="button" id="toggle-mic" title="Toggle microphone" aria-label="Toggle microphone">
-                    <i class="fas fa-microphone"></i>
+                    <i class="fa-solid fa-microphone"></i>
                     <span class="line-through"></span>
                 </button>
             </div>
+            <div class="vcall-device-hint">
+              <span class="vcall-device-chip"><i class="fa-solid fa-video"></i> HD video</span>
+              <span class="vcall-device-chip"><i class="fa-solid fa-lock"></i> Encrypted</span>
+            </div>
 
             <button type="button" id="dg-end-active-calls-prejoin" class="dg-end-active-calls-btn" title="End other active video sessions before joining a new room">
-              End other active video calls
+              <i class="fa-solid fa-phone-slash"></i> End other active video calls
             </button>
-            <button id="join-btn">Join Call</button>
+            <button id="join-btn" type="button"><i class="fa-solid fa-circle-play"></i> Join consultation</button>
         </div>
     </div>
 
@@ -2046,7 +2218,7 @@ html, body {
 
   <div class="prescription-modal" id="prescription-modal">
     <div class="modal-content"> <div class="modal-header">
-      <h3>Medical Prescription</h3>
+      <h3><i class="fa-solid fa-prescription-bottle-medical"></i> Medical Prescription</h3>
       <button class="close-btn">&times;</button>
             </div>
     <div class="modal-body">
@@ -2106,7 +2278,7 @@ html, body {
   <div class="reports-modal" id="reports-modal">
     <div class="reports-modal-content">
       <div class="modal-header">
-        <h3>Patient Submitted Reports</h3>
+        <h3><i class="fa-solid fa-folder-open"></i> Patient Reports</h3>
         <button class="refresh-btn" id="refresh-btn">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -2116,6 +2288,24 @@ html, body {
         <button class="close-btn">&times;</button>
       </div>
       <div class="reports-list" id="reports-list">
+      </div>
+    </div>
+  </div>
+
+  <div class="diagnosis-modal" id="diagnosis-modal">
+    <div class="diagnosis-modal-content">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-stethoscope"></i> Diagnosis &amp; History</h3>
+        <button type="button" class="refresh-btn" id="diagnosis-refresh-btn" title="Refresh history">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Refresh
+        </button>
+        <button type="button" class="close-btn" id="diagnosis-close-btn">&times;</button>
+      </div>
+      <div id="diagnosis-modal-body">
+        <p class="reports-empty-note">Loading diagnosis history…</p>
       </div>
     </div>
   </div>
@@ -2158,10 +2348,11 @@ html, body {
             const roleEl = document.getElementById('vcall-profile-role');
             const displayName = callIdentity.name || 'Your account';
             const roleLabel = callIdentity.role === 'doctor' ? 'Doctor' : 'Patient';
-            const roleIcon = callIdentity.role === 'doctor' ? 'fa-user-md' : 'fa-user';
+            const roleIcon = callIdentity.role === 'doctor' ? 'fa-user-doctor' : 'fa-user-injured';
             if (nameEl) nameEl.textContent = displayName;
             if (roleEl) {
-                roleEl.innerHTML = '<i class="fas ' + roleIcon + '"></i> ' + roleLabel;
+                roleEl.className = 'vcall-profile-role' + (callIdentity.role === 'doctor' ? ' vcall-profile-role--doctor' : '');
+                roleEl.innerHTML = '<i class="fa-solid ' + roleIcon + '"></i> ' + roleLabel;
             }
         }
 
@@ -2809,7 +3000,11 @@ html, body {
   const reportsBtn = document.getElementById('reports-btn');
   const reportsModal = document.getElementById('reports-modal');
   const reportsList = document.getElementById('reports-list');
+  const diagnosisBtn = document.getElementById('diagnosis-btn');
+  const diagnosisModal = document.getElementById('diagnosis-modal');
+  const diagnosisModalBody = document.getElementById('diagnosis-modal-body');
   let isRefreshing = false;
+  let isDiagnosisLoading = false;
 
   // New DOM elements for cart actions
   const emptyCartBtn = document.getElementById('empty-cart-btn');
@@ -3192,7 +3387,9 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
     if (cartTab) cartTab.style.display = isBrowseOnlyMode ? 'none' : '';
     if (manualUpload) manualUpload.style.display = (isDoctorUser && !isBrowseOnlyMode) ? '' : 'none';
     if (modalTitle) {
-      modalTitle.textContent = isBrowseOnlyMode ? 'Ayurvedic Store' : 'Medical Prescription';
+      modalTitle.innerHTML = isBrowseOnlyMode
+        ? '<i class="fa-solid fa-store"></i> Ayurvedic Store'
+        : '<i class="fa-solid fa-prescription-bottle-medical"></i> Medical Prescription';
     }
     if (isBrowseOnlyMode) {
       document.querySelector('.tab-btn[data-tab="stores"]')?.click();
@@ -3728,6 +3925,225 @@ function handleWeightSelection(event) {
         if (e.target === reportsModal) {
           reportsModal.style.display = 'none';
         }
+      });
+    }
+
+    function escapeDiagnosisHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function formatDiagnosisDate(value) {
+      if (!value) return '—';
+      const d = new Date(value);
+      return Number.isNaN(d.getTime()) ? '—' : d.toLocaleString();
+    }
+
+    function renderMedicineList(medicines) {
+      if (!medicines || !medicines.length) {
+        return '<p><em>No medicines prescribed in this visit.</em></p>';
+      }
+      const items = medicines.map(function (med) {
+        const weight = med.selectedWeight
+          ? ' (' + med.selectedWeight.value + ' ' + (med.selectedWeight.unit || '') + ')'
+          : '';
+        return '<li>' + escapeDiagnosisHtml(med.name) + weight + ' × ' + (med.quantity || 1) + '</li>';
+      }).join('');
+      return '<ul class="dg-diagnosis-meds">' + items + '</ul>';
+    }
+
+    function renderDiagnosisModal(data) {
+      if (!diagnosisModalBody || !data) return;
+      const patient = data.patient || {};
+      const current = data.current || {};
+      const pastVisits = data.pastVisits || [];
+
+      let pastHtml = '';
+      if (!pastVisits.length) {
+        pastHtml = '<p class="reports-empty-note">No previous consultations with this patient yet. Symptoms and diagnosis you save now will appear here on future visits.</p>';
+      } else {
+        pastHtml = pastVisits.map(function (visit, index) {
+          const symptoms = visit.symptoms || 'Not recorded';
+          const diagnosis = visit.diagnosis || 'Not recorded yet';
+          return (
+            '<div class="dg-diagnosis-visit-card">' +
+              '<h5>Visit ' + (index + 1) + ' · ' + formatDiagnosisDate(visit.date) +
+              (visit.status ? ' · ' + escapeDiagnosisHtml(visit.status) : '') + '</h5>' +
+              '<p><strong>Symptoms reported:</strong></p>' +
+              '<div class="dg-symptom-text">' + escapeDiagnosisHtml(symptoms) + '</div>' +
+              '<p><strong>Your diagnosis:</strong> ' + escapeDiagnosisHtml(diagnosis) + '</p>' +
+              (visit.notes ? '<p><strong>Notes:</strong> ' + escapeDiagnosisHtml(visit.notes) + '</p>' : '') +
+              '<p><strong>Prescribed medicines:</strong></p>' +
+              renderMedicineList(visit.prescribedMedicines) +
+            '</div>'
+          );
+        }).join('');
+      }
+
+      diagnosisModalBody.innerHTML =
+        '<div class="payment-info">' +
+          '<h4>' + escapeDiagnosisHtml(patient.name || 'Patient') + '</h4>' +
+          '<p><strong>Phone:</strong> ' + escapeDiagnosisHtml(patient.phone || '—') + '</p>' +
+        '</div>' +
+        '<div class="dg-diagnosis-current">' +
+          '<h4><i class="fas fa-user-injured"></i> Present consultation</h4>' +
+          '<p style="margin:0 0 12px;font-size:0.85rem;color:#566573;">Compare past symptoms below with what the patient reports today.</p>' +
+          '<div class="dg-diagnosis-field">' +
+            '<label for="dg-current-symptoms">Patient symptoms (present)</label>' +
+            '<textarea id="dg-current-symptoms" maxlength="2000" placeholder="Update symptoms as the patient describes them during this call…">' +
+              escapeDiagnosisHtml(current.symptoms || '') +
+            '</textarea>' +
+          '</div>' +
+          '<div class="dg-diagnosis-field">' +
+            '<label for="dg-current-diagnosis">Your diagnosis (this visit)</label>' +
+            '<textarea id="dg-current-diagnosis" maxlength="2000" placeholder="Record your assessment and diagnosis for this consultation…">' +
+              escapeDiagnosisHtml(current.diagnosis || '') +
+            '</textarea>' +
+          '</div>' +
+          '<div class="dg-diagnosis-field">' +
+            '<label for="dg-current-notes">Clinical notes (optional)</label>' +
+            '<textarea id="dg-current-notes" maxlength="2000" placeholder="Follow-up advice, observations, or comparison notes…">' +
+              escapeDiagnosisHtml(current.notes || '') +
+            '</textarea>' +
+          '</div>' +
+          '<button type="button" class="dg-diagnosis-save-btn" id="dg-save-clinical-notes">' +
+            '<i class="fas fa-save"></i> Save for this visit' +
+          '</button>' +
+          '<p class="dg-diagnosis-status" id="dg-diagnosis-save-status"></p>' +
+          (current.prescribedMedicines && current.prescribedMedicines.length
+            ? '<div style="margin-top:12px;"><strong>Prescribed so far:</strong>' + renderMedicineList(current.prescribedMedicines) + '</div>'
+            : '') +
+        '</div>' +
+        '<h4 class="reports-section-title"><i class="fas fa-clock-rotate-left"></i> Past visits with you</h4>' +
+        pastHtml;
+
+      const saveBtn = document.getElementById('dg-save-clinical-notes');
+      if (saveBtn) {
+        saveBtn.addEventListener('click', saveClinicalNotes);
+      }
+    }
+
+    async function fetchDiagnosisHistory() {
+      if (isDiagnosisLoading) return;
+      const refreshBtn = document.getElementById('diagnosis-refresh-btn');
+      try {
+        isDiagnosisLoading = true;
+        if (refreshBtn) refreshBtn.classList.add('spinning');
+        if (diagnosisModalBody) {
+          diagnosisModalBody.innerHTML = '<p class="reports-empty-note">Loading diagnosis history…</p>';
+        }
+
+        const roomID = getUrlParams().get('roomID') || localStorage.getItem('videoRoomId');
+        if (!roomID) throw new Error('Room ID not found');
+
+        if (window.DgAuth && DgAuth.ensureValidToken) {
+          await DgAuth.ensureValidToken();
+        }
+        const authHdr = (window.getFirebaseAuthHeaders || getFirebaseAuthHeaders)();
+        if (!authHdr.Authorization) {
+          throw new Error('Please log in as doctor before opening diagnosis history.');
+        }
+
+        const response = await fetch('/api/video-call/diagnosis-history/' + encodeURIComponent(roomID), {
+          headers: authHdr
+        });
+        const payload = await response.json().catch(function () { return {}; });
+        if (!response.ok) {
+          throw new Error(payload.message || 'Failed to load diagnosis history');
+        }
+
+        renderDiagnosisModal(payload);
+      } catch (err) {
+        console.error('Diagnosis history error:', err);
+        if (diagnosisModalBody) {
+          diagnosisModalBody.innerHTML =
+            '<p class="reports-empty-note" style="color:#c0392b;">' + escapeDiagnosisHtml(err.message || 'Could not load history') + '</p>';
+        }
+      } finally {
+        isDiagnosisLoading = false;
+        if (refreshBtn) refreshBtn.classList.remove('spinning');
+      }
+    }
+
+    async function saveClinicalNotes() {
+      const statusEl = document.getElementById('dg-diagnosis-save-status');
+      const saveBtn = document.getElementById('dg-save-clinical-notes');
+      const symptomsEl = document.getElementById('dg-current-symptoms');
+      const diagnosisEl = document.getElementById('dg-current-diagnosis');
+      const notesEl = document.getElementById('dg-current-notes');
+
+      try {
+        if (saveBtn) saveBtn.disabled = true;
+        if (statusEl) {
+          statusEl.textContent = 'Saving…';
+          statusEl.className = 'dg-diagnosis-status';
+        }
+
+        const roomID = getUrlParams().get('roomID') || localStorage.getItem('videoRoomId');
+        if (!roomID) throw new Error('Room ID not found');
+
+        if (window.DgAuth && DgAuth.ensureValidToken) {
+          await DgAuth.ensureValidToken();
+        }
+        const authHdr = Object.assign(
+          { 'Content-Type': 'application/json' },
+          (window.getFirebaseAuthHeaders || getFirebaseAuthHeaders)()
+        );
+
+        const response = await fetch('/api/video-call/consultation-notes', {
+          method: 'POST',
+          headers: authHdr,
+          body: JSON.stringify({
+            roomId: roomID,
+            patientSymptoms: symptomsEl ? symptomsEl.value.trim() : '',
+            doctorDiagnosis: diagnosisEl ? diagnosisEl.value.trim() : '',
+            consultationNotes: notesEl ? notesEl.value.trim() : ''
+          })
+        });
+        const payload = await response.json().catch(function () { return {}; });
+        if (!response.ok) {
+          throw new Error(payload.message || 'Failed to save notes');
+        }
+
+        if (statusEl) {
+          statusEl.textContent = 'Saved — this visit will appear in future diagnosis history.';
+          statusEl.className = 'dg-diagnosis-status dg-diagnosis-status--ok';
+        }
+      } catch (err) {
+        console.error('Save clinical notes error:', err);
+        if (statusEl) {
+          statusEl.textContent = err.message || 'Could not save notes';
+          statusEl.className = 'dg-diagnosis-status dg-diagnosis-status--err';
+        }
+      } finally {
+        if (saveBtn) saveBtn.disabled = false;
+      }
+    }
+
+    if (diagnosisBtn) {
+      diagnosisBtn.addEventListener('click', function () {
+        if (diagnosisModal) diagnosisModal.style.display = 'block';
+        fetchDiagnosisHistory();
+      });
+    }
+
+    const diagnosisRefreshBtn = document.getElementById('diagnosis-refresh-btn');
+    if (diagnosisRefreshBtn) {
+      diagnosisRefreshBtn.addEventListener('click', fetchDiagnosisHistory);
+    }
+
+    const diagnosisCloseBtn = document.getElementById('diagnosis-close-btn');
+    if (diagnosisCloseBtn && diagnosisModal) {
+      diagnosisCloseBtn.addEventListener('click', function () {
+        diagnosisModal.style.display = 'none';
+      });
+    }
+    if (diagnosisModal) {
+      diagnosisModal.addEventListener('click', function (e) {
+        if (e.target === diagnosisModal) diagnosisModal.style.display = 'none';
       });
     }
 

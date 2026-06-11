@@ -343,6 +343,7 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: auto;
 }
 
 /* ================= FORM CONTAINER ================= */
@@ -358,6 +359,9 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: auto;
+  scroll-padding-bottom: max(20px, env(safe-area-inset-bottom));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
 
 .form-container.hidden {
@@ -676,6 +680,14 @@ body {
 
       <label for="address"><i class="fas fa-house dg-label-icon" aria-hidden="true"></i>Address</label>
       <textarea id="address" name="address" rows="3" required></textarea>
+
+      <label for="patientSymptoms"><i class="fas fa-stethoscope dg-label-icon" aria-hidden="true"></i>Current Symptoms / Health Concerns</label>
+      <textarea id="patientSymptoms" name="patientSymptoms" rows="4" placeholder="Describe your symptoms, duration, and any relevant health details (e.g. fever for 3 days, joint pain, acidity…)" maxlength="2000"></textarea>
+      <p class="dg-note-box" style="color: #666; font-size: 0.9em; margin-top: -8px; margin-bottom: 16px;">
+        <i class="fas fa-lightbulb dg-label-icon" aria-hidden="true"></i>
+        <span>Your doctor will see these symptoms during the video call and can compare them with your past visits.</span>
+      </p>
+
       <div class="terms-box">
                         <input type="checkbox" id="agree"> <label for="agree">
                             I agree to the 

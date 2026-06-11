@@ -9,12 +9,103 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: auto;
 }
 
 html,
 body {
   max-width: 100%;
   overflow-x: hidden;
+}
+
+body {
+  overflow-y: auto;
+  overscroll-behavior-y: auto;
+}
+
+/* ── Scroll hierarchy: inner regions scroll first, then page ── */
+.dg-scroll-region,
+.form-container,
+.dg-form-panel,
+.auth-form,
+.login-card,
+.card#loginCard,
+#adminLoginContainer,
+#custom-prejoin,
+#paymentFormContainer,
+.modal-content,
+.reports-modal-content,
+.diagnosis-modal-content,
+.modal-body,
+.prescription-modal .modal-content,
+.checkout-grid .dg-form-panel,
+#orderPaymentForm.dg-form-panel,
+.dg-form-scroll {
+  overscroll-behavior-y: auto;
+  overscroll-behavior-x: none;
+  scroll-padding-bottom: max(20px, env(safe-area-inset-bottom));
+  scroll-padding-top: 8px;
+}
+
+.dg-scroll-region {
+  position: relative;
+}
+
+.dg-scroll-region.dg-scroll-has-more::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 56px;
+  pointer-events: none;
+  z-index: 4;
+  border-radius: inherit;
+  background: linear-gradient(
+    to top,
+    rgba(255, 255, 255, 0.98) 20%,
+    rgba(255, 255, 255, 0.72) 55%,
+    transparent
+  );
+}
+
+.dg-scroll-region.dg-scroll-at-bottom::after,
+.dg-scroll-region:not(.dg-scroll-is-scrollable)::after {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.dg-scroll-region.dg-scroll-has-more::before {
+  content: 'Scroll for more';
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  z-index: 4;
+  pointer-events: none;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(60, 60, 60, 0.55);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(242, 103, 39, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.dg-scroll-region.dg-scroll-at-bottom::before,
+.dg-scroll-region:not(.dg-scroll-is-scrollable)::before {
+  content: none;
+}
+
+@media (max-width: 768px) {
+  .dg-scroll-region.dg-scroll-has-more::before {
+    bottom: max(8px, env(safe-area-inset-bottom));
+  }
 }
 
 img,
@@ -58,6 +149,8 @@ svg {
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: auto;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
 }
 
 #regdocsec .auth-section {
@@ -419,12 +512,19 @@ header.doctor-header {
 .dg-vcall-doctor-dock,
 #prescription-btn,
 #reports-btn,
+#diagnosis-btn,
+#browse-store-btn,
+#view-prescription-btn,
+#download-written-btn,
 #cart-btn-floating {
   margin-left: 0 !important;
 }
 
-body.vcall-in-call .dg-vcall-doctor-dock {
-  left: max(12px, env(safe-area-inset-left)) !important;
+body.vcall-in-call .dg-vcall-doctor-dock,
+body.vcall-in-call .dg-patient-rx-actions {
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
 }
 
 @media (max-width: 768px) {
@@ -449,15 +549,13 @@ body.vcall-in-call .dg-vcall-doctor-dock {
     z-index: 14 !important;
   }
 
-  body.vcall-in-call .dg-vcall-doctor-dock {
-    bottom: max(80px, calc(68px + env(safe-area-inset-bottom, 0px))) !important;
-    left: max(12px, env(safe-area-inset-left)) !important;
-  }
-
+  body.vcall-in-call .dg-vcall-doctor-dock,
   body.vcall-in-call .dg-patient-rx-actions {
-    bottom: max(80px, calc(68px + env(safe-area-inset-bottom, 0px))) !important;
-    width: min(520px, calc(100vw - 24px)) !important;
-    max-width: calc(100vw - 24px) !important;
+    bottom: max(96px, calc(84px + env(safe-area-inset-bottom, 0px))) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: auto !important;
+    max-width: calc(100vw - 16px) !important;
   }
 }
 

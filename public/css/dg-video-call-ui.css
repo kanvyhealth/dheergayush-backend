@@ -1,0 +1,585 @@
+/**
+ * Dheergayush — premium video consultation UI
+ */
+:root {
+  --vcall-brand: #f67227;
+  --vcall-brand-dark: #e05a12;
+  --vcall-teal: #0d9488;
+  --vcall-indigo: #4f46e5;
+  --vcall-purple: #7c3aed;
+  --vcall-surface: rgba(12, 18, 28, 0.82);
+  --vcall-surface-light: rgba(255, 255, 255, 0.12);
+  --vcall-border: rgba(255, 255, 255, 0.14);
+  --vcall-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  --vcall-radius: 16px;
+  --vcall-radius-pill: 999px;
+}
+
+/* ── Page & stage ── */
+body.vcall-prejoin {
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(246, 114, 39, 0.18), transparent 55%),
+    linear-gradient(160deg, #0f172a 0%, #1e293b 45%, #0f172a 100%) !important;
+  overflow-y: auto;
+}
+
+body.vcall-in-call {
+  background: #05080d !important;
+  overflow: hidden;
+}
+
+.dg-agora-stage {
+  background: linear-gradient(180deg, #0a0f16 0%, #111827 100%) !important;
+}
+
+.dg-agora-local,
+#dg-agora-local {
+  border-radius: 14px !important;
+  border: 2px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: var(--vcall-shadow) !important;
+}
+
+.dg-agora-stage--swapped .dg-agora-remote {
+  border-radius: 14px !important;
+  border: 2px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+/* ── Status bar ── */
+.dg-call-status-bar {
+  top: max(14px, env(safe-area-inset-top, 0px)) !important;
+  padding: 10px 18px !important;
+  gap: 10px !important;
+  background: var(--vcall-surface) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--vcall-border);
+  border-radius: var(--vcall-radius-pill) !important;
+  font-size: 0.82rem !important;
+  letter-spacing: 0.02em;
+  box-shadow: var(--vcall-shadow) !important;
+}
+
+.dg-call-status-bar .dg-call-status-dot {
+  width: 9px;
+  height: 9px;
+  box-shadow: 0 0 0 3px rgba(144, 238, 144, 0.25);
+}
+
+.dg-call-status-bar.reconnecting {
+  background: rgba(180, 83, 9, 0.92) !important;
+  color: #fff !important;
+}
+
+.dg-call-status-bar.ended {
+  background: rgba(185, 28, 28, 0.92) !important;
+}
+
+/* ── In-call tool rails (doctor + patient) ── */
+.dg-vcall-doctor-dock,
+.dg-patient-rx-actions {
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  bottom: max(108px, calc(92px + env(safe-area-inset-bottom, 0px))) !important;
+  width: auto !important;
+  max-width: calc(100vw - 20px) !important;
+  flex-direction: row !important;
+  gap: 0 !important;
+  pointer-events: none;
+}
+
+body.vcall-in-call .dg-vcall-doctor-dock.dg-vcall-doctor-dock--visible,
+.dg-patient-rx-actions.dg-patient-rx-actions--visible {
+  display: flex !important;
+  pointer-events: auto;
+}
+
+.dg-vcall-tool-rail {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: var(--vcall-radius-pill);
+  background: var(--vcall-surface);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--vcall-border);
+  box-shadow: var(--vcall-shadow);
+}
+
+.dg-vcall-tool-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 72px;
+  padding: 8px 12px 6px;
+  border: none;
+  border-radius: 14px;
+  background: transparent;
+  color: #f8fafc;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dg-vcall-tool-btn:hover,
+.dg-vcall-tool-btn:focus-visible {
+  background: var(--vcall-surface-light);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.dg-vcall-tool-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.dg-vcall-tool-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  opacity: 0.92;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.dg-vcall-tool-btn--rx .dg-vcall-tool-icon {
+  background: linear-gradient(145deg, #22c55e, #15803d);
+}
+
+.dg-vcall-tool-btn--reports .dg-vcall-tool-icon {
+  background: linear-gradient(145deg, #3b82f6, #1d4ed8);
+}
+
+.dg-vcall-tool-btn--diagnosis .dg-vcall-tool-icon {
+  background: linear-gradient(145deg, #a855f7, #6d28d9);
+}
+
+.dg-vcall-tool-btn--store-patient .dg-vcall-tool-icon {
+  background: linear-gradient(145deg, #0ea5e9, #0369a1);
+}
+
+.dg-vcall-tool-btn--rx-patient .dg-vcall-tool-icon {
+  background: linear-gradient(145deg, var(--vcall-brand), var(--vcall-brand-dark));
+}
+
+.dg-vcall-tool-btn--download-patient .dg-vcall-tool-icon {
+  background: linear-gradient(145deg, #14b8a6, #0f766e);
+}
+
+.dg-vcall-tool-btn .cart-badge {
+  position: absolute;
+  top: 2px;
+  right: 6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(12, 18, 28, 0.9);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+#view-prescription-btn.dg-rx-ready .dg-vcall-tool-icon::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ef4444;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.4);
+}
+
+#view-prescription-btn.dg-rx-ready .dg-vcall-tool-icon {
+  position: relative;
+}
+
+/* Legacy dock btn overrides (hidden structure) */
+.dg-vcall-dock-btn {
+  display: none !important;
+}
+
+/* ── Agora bottom toolbar ── */
+.dg-agora-toolbar {
+  padding: 0 max(12px, env(safe-area-inset-left)) max(14px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-right)) !important;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.55)) !important;
+}
+
+.dg-agora-toolbar-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 10px 12px;
+  border-radius: var(--vcall-radius-pill);
+  background: var(--vcall-surface);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--vcall-border);
+  box-shadow: var(--vcall-shadow);
+}
+
+.dg-agora-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dg-agora-ctrl {
+  width: 46px !important;
+  height: 46px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #fff !important;
+  font-size: 1rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background 0.2s, transform 0.15s !important;
+}
+
+.dg-agora-ctrl:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+  transform: scale(1.04);
+}
+
+.dg-agora-ctrl--off {
+  background: rgba(220, 38, 38, 0.88) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.dg-agora-ctrl--active {
+  background: rgba(13, 148, 136, 0.88) !important;
+}
+
+.dg-agora-leave {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0 !important;
+  padding: 12px 20px !important;
+  border-radius: var(--vcall-radius-pill) !important;
+  background: linear-gradient(145deg, #dc2626, #b91c1c) !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.45) !important;
+}
+
+.dg-agora-leave i {
+  font-size: 0.95rem;
+}
+
+.dg-agora-autoplay {
+  border-radius: 14px !important;
+  border: 1px solid var(--vcall-border) !important;
+  backdrop-filter: blur(12px);
+}
+
+.dg-agora-autoplay button {
+  border-radius: 10px !important;
+  background: linear-gradient(145deg, var(--vcall-teal), #0f766e) !important;
+}
+
+/* ── Pre-join lobby ── */
+#custom-prejoin {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(246, 114, 39, 0.08) !important;
+}
+
+.vcall-prejoin-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 0.25rem;
+}
+
+.vcall-prejoin-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, var(--vcall-brand), var(--vcall-brand-dark));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  box-shadow: 0 8px 20px rgba(246, 114, 39, 0.35);
+  flex-shrink: 0;
+}
+
+.vcall-prejoin-eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vcall-brand);
+}
+
+.right-panel h2 {
+  margin: 0 !important;
+  font-family: 'Playfair Display', Georgia, serif !important;
+  font-size: 1.65rem !important;
+  color: #0f172a !important;
+  text-align: left !important;
+}
+
+.left-panel {
+  background: linear-gradient(180deg, #1e293b, #0f172a) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
+}
+
+.vcall-profile-card {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%) !important;
+  border: 1px solid rgba(246, 114, 39, 0.15) !important;
+}
+
+.vcall-profile-role {
+  background: rgba(246, 114, 39, 0.1) !important;
+  color: var(--vcall-brand-dark) !important;
+}
+
+.vcall-profile-role--doctor {
+  background: rgba(13, 148, 136, 0.12) !important;
+  color: #0f766e !important;
+}
+
+.toggle-buttons button {
+  width: 54px !important;
+  height: 54px !important;
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06) !important;
+}
+
+.toggle-buttons button.active {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border-color: #fecaca !important;
+}
+
+#join-btn {
+  width: 100%;
+  margin-top: 1rem !important;
+  padding: 1rem 1.5rem !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, var(--vcall-brand) 0%, #ff8a50 100%) !important;
+  font-size: 1.05rem !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 10px 28px rgba(246, 114, 39, 0.35) !important;
+}
+
+#join-btn:hover {
+  background: linear-gradient(135deg, var(--vcall-brand-dark) 0%, var(--vcall-brand) 100%) !important;
+  transform: translateY(-2px);
+}
+
+.vcall-device-hint {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.vcall-device-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.vcall-device-chip i {
+  color: var(--vcall-brand);
+}
+
+.dg-end-active-calls-btn {
+  display: none;
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 10px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  background: #fff5f5;
+  color: #b91c1c;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.dg-end-active-calls-btn.show {
+  display: inline-flex !important;
+}
+
+/* ── Modals (reports, diagnosis, prescription) ── */
+.reports-modal-content,
+.diagnosis-modal-content,
+.prescription-modal .modal-content {
+  border-radius: 18px !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.2) !important;
+}
+
+.reports-modal .modal-header,
+.diagnosis-modal .modal-header,
+.prescription-modal .modal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.reports-modal .modal-header h3,
+.diagnosis-modal .modal-header h3,
+.prescription-modal .modal-header h3 {
+  flex: 1;
+  margin: 0;
+  font-size: 1.15rem;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reports-modal .modal-header h3 i,
+.diagnosis-modal .modal-header h3 i {
+  color: var(--vcall-brand);
+}
+
+.reports-modal .refresh-btn,
+.diagnosis-modal .refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+}
+
+.reports-modal .close-btn,
+.diagnosis-modal .close-btn,
+.prescription-modal .close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 1.25rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.dg-toast-message {
+  bottom: max(24px, env(safe-area-inset-bottom)) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(12px);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .dg-vcall-tool-btn {
+    min-width: 58px;
+    padding: 6px 8px 4px;
+  }
+
+  .dg-vcall-tool-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 0.95rem;
+  }
+
+  .dg-vcall-tool-label {
+    font-size: 0.6rem;
+  }
+
+  .dg-vcall-doctor-dock,
+  .dg-patient-rx-actions {
+    bottom: max(96px, calc(84px + env(safe-area-inset-bottom, 0px))) !important;
+  }
+
+  .dg-agora-toolbar-inner {
+    max-width: 100%;
+    border-radius: 18px;
+    padding: 8px 10px;
+  }
+
+  .dg-agora-leave span.dg-agora-leave-text {
+    display: none;
+  }
+
+  .dg-agora-leave {
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+  }
+
+  .vcall-prejoin-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .right-panel h2 {
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 896px) and (orientation: landscape) {
+  .dg-vcall-doctor-dock,
+  .dg-patient-rx-actions {
+    top: auto !important;
+    bottom: max(88px, calc(76px + env(safe-area-inset-bottom, 0px))) !important;
+    transform: translateX(-50%) !important;
+  }
+}

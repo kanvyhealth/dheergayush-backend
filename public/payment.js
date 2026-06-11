@@ -370,18 +370,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         const name = document.getElementById('name').value.trim();
         const phone = document.getElementById('phone').value.trim();
         const address = document.getElementById('address').value.trim();
+        const patientSymptoms = document.getElementById('patientSymptoms')
+            ? document.getElementById('patientSymptoms').value.trim()
+            : '';
 
         try {
             if (payBtn) payBtn.disabled = true;
             if (followUpAccess && followUpAccess.covered) {
                 showMessage('Starting your free follow-up consultation…', 'info');
-                await confirmFreeConsultation(name, phone, address);
+                await confirmFreeConsultation(name, phone, address, patientSymptoms);
                 if (payBtn) payBtn.disabled = false;
                 return;
             }
             if (consultationAmount <= 0) {
                 showMessage('Confirming free consultation…', 'info');
-                await confirmFreeConsultation(name, phone, address);
+                await confirmFreeConsultation(name, phone, address, patientSymptoms);
                 if (payBtn) payBtn.disabled = false;
                 return;
             }
@@ -417,6 +420,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             confirmData.append('name', name);
             confirmData.append('phone', phone);
             confirmData.append('address', address);
+            confirmData.append('patientSymptoms', patientSymptoms);
             confirmData.append('selectedDoctorName', doctorName);
             confirmData.append('selectedDoctorFee', String(consultationAmount));
             confirmData.append('amount', String(consultationAmount));
@@ -492,11 +496,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    async function confirmFreeConsultation(name, phone, address) {
+    async function confirmFreeConsultation(name, phone, address, symptomsText) {
         const confirmData = new FormData();
         confirmData.append('name', name);
         confirmData.append('phone', phone);
         confirmData.append('address', address);
+        confirmData.append('patientSymptoms', symptomsText || '');
         confirmData.append('selectedDoctorName', doctorName);
         confirmData.append('selectedDoctorFee', '0');
         confirmData.append('amount', '0');
@@ -522,6 +527,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const name = document.getElementById('name').value.trim();
         const phone = document.getElementById('phone').value.trim();
         const address = document.getElementById('address').value.trim();
+        const patientSymptoms = document.getElementById('patientSymptoms')
+            ? document.getElementById('patientSymptoms').value.trim()
+            : '';
 
         if (!/^[A-Za-z ]+$/.test(name)) {
             alert('Full Name should contain only letters and spaces.');

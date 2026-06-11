@@ -12,6 +12,8 @@ body {
   min-height: 100dvh;
   overflow-x: hidden;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: auto;
 }
 
 .form-container {
@@ -25,7 +27,10 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: auto;
+  scroll-padding-bottom: max(20px, env(safe-area-inset-bottom));
   margin: 24px auto;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
 
 @media (max-width: 768px) {
@@ -71,6 +76,9 @@ button[type="submit"] {
   border-radius: 5px;
   font-size: 1rem;
   cursor: pointer;
+  position: sticky;
+  bottom: max(0px, env(safe-area-inset-bottom));
+  z-index: 6;
 }
 
 button[type="submit"]:hover {

@@ -8,6 +8,9 @@ const consultationRequestSchema = new mongoose.Schema({
   roomId: { type: String, required: true },
   amount: { type: Number },
   doctorAvailableTime: { type: String, default: '' },
+  patientSymptoms: { type: String, default: '' },
+  doctorDiagnosis: { type: String, default: '' },
+  consultationNotes: { type: String, default: '' },
   status: {
     type: String,
     enum: ['waiting', 'ringing', 'accepted', 'rejected', 'timeout', 'cancelled', 'in_call', 'completed'],

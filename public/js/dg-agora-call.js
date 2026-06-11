@@ -43,23 +43,30 @@
         '<div id="dg-agora-remote" class="dg-agora-remote"></div>' +
         '<div id="dg-agora-local" class="dg-agora-local dg-agora-local--mirror"></div>' +
         '<div id="dg-agora-autoplay" class="dg-agora-autoplay" hidden>' +
-          '<p>Tap to hear the other participant</p>' +
-          '<button type="button" id="dg-agora-resume-audio">Enable sound</button>' +
+          '<p><i class="fa-solid fa-volume-high" aria-hidden="true"></i> Tap to hear the other participant</p>' +
+          '<button type="button" id="dg-agora-resume-audio"><i class="fa-solid fa-play"></i> Enable sound</button>' +
         '</div>' +
         '<div class="dg-agora-toolbar">' +
-          '<button type="button" id="dg-agora-mic" class="dg-agora-ctrl" title="Microphone" aria-label="Toggle microphone">' +
-            '<i class="fas fa-microphone"></i>' +
-          '</button>' +
-          '<button type="button" id="dg-agora-cam" class="dg-agora-ctrl" title="Camera" aria-label="Toggle camera">' +
-            '<i class="fas fa-video"></i>' +
-          '</button>' +
-          '<button type="button" id="dg-agora-swap" class="dg-agora-ctrl" title="Swap video views" aria-label="Swap main and self video">' +
-            '<i class="fas fa-right-left"></i>' +
-          '</button>' +
-          '<button type="button" id="dg-agora-pip" class="dg-agora-ctrl" title="Show or hide self view" aria-label="Toggle self video preview">' +
-            '<i class="fas fa-user"></i>' +
-          '</button>' +
-          '<button type="button" id="dg-agora-leave" class="dg-agora-leave">Leave call</button>' +
+          '<div class="dg-agora-toolbar-inner">' +
+            '<div class="dg-agora-controls">' +
+              '<button type="button" id="dg-agora-mic" class="dg-agora-ctrl" title="Microphone" aria-label="Toggle microphone">' +
+                '<i class="fa-solid fa-microphone"></i>' +
+              '</button>' +
+              '<button type="button" id="dg-agora-cam" class="dg-agora-ctrl" title="Camera" aria-label="Toggle camera">' +
+                '<i class="fa-solid fa-video"></i>' +
+              '</button>' +
+              '<button type="button" id="dg-agora-swap" class="dg-agora-ctrl" title="Swap video views" aria-label="Swap main and self video">' +
+                '<i class="fa-solid fa-arrows-rotate"></i>' +
+              '</button>' +
+              '<button type="button" id="dg-agora-pip" class="dg-agora-ctrl" title="Show or hide self view" aria-label="Toggle self video preview">' +
+                '<i class="fa-solid fa-user"></i>' +
+              '</button>' +
+            '</div>' +
+            '<button type="button" id="dg-agora-leave" class="dg-agora-leave" aria-label="Leave call">' +
+              '<i class="fa-solid fa-phone-slash"></i>' +
+              '<span class="dg-agora-leave-text">End call</span>' +
+            '</button>' +
+          '</div>' +
         '</div>' +
       '</div>';
     return {
@@ -85,6 +92,10 @@
     if (uiRefs.pipBtn) {
       uiRefs.pipBtn.classList.toggle('dg-agora-ctrl--off', localPreviewHidden);
       uiRefs.pipBtn.setAttribute('aria-pressed', localPreviewHidden ? 'true' : 'false');
+      const pipIcon = uiRefs.pipBtn.querySelector('i');
+      if (pipIcon) {
+        pipIcon.className = localPreviewHidden ? 'fa-solid fa-user-slash' : 'fa-solid fa-user';
+      }
     }
     if (uiRefs.stage) {
       uiRefs.stage.classList.toggle('dg-agora-stage--swapped', layoutSwapped);
@@ -108,9 +119,17 @@
     if (!uiRefs) return;
     if (uiRefs.micBtn) {
       uiRefs.micBtn.classList.toggle('dg-agora-ctrl--off', !micEnabled);
+      const micIcon = uiRefs.micBtn.querySelector('i');
+      if (micIcon) {
+        micIcon.className = micEnabled ? 'fa-solid fa-microphone' : 'fa-solid fa-microphone-slash';
+      }
     }
     if (uiRefs.camBtn) {
       uiRefs.camBtn.classList.toggle('dg-agora-ctrl--off', !camEnabled);
+      const camIcon = uiRefs.camBtn.querySelector('i');
+      if (camIcon) {
+        camIcon.className = camEnabled ? 'fa-solid fa-video' : 'fa-solid fa-video-slash';
+      }
     }
   }
 

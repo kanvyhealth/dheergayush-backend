@@ -129,4 +129,16 @@
     script.defer = true;
     document.body.appendChild(script);
   })();
+
+  (function loadScrollRegions() {
+    if (window.__dgScrollInit || window.__dgScrollRequested) return;
+    window.__dgScrollRequested = true;
+    var base = document.currentScript && document.currentScript.src
+      ? document.currentScript.src.replace(/[^/]+$/, '')
+      : 'js/';
+    var script = document.createElement('script');
+    script.src = base + 'dg-scroll.js';
+    script.defer = true;
+    document.body.appendChild(script);
+  })();
 })();
