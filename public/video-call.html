@@ -1705,8 +1705,12 @@ html, body {
   </button>
 
   <div id="patient-rx-payment-panel" style="display: none; margin-top: 20px; animation: fadeIn 0.5s;">
+    <input type="text" id="patient-rx-name" placeholder="Your full name"
+      style="padding: 12px; width: 90%; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px;">
     <input type="text" id="phone-input" placeholder="Enter Phone Number" 
-      style="padding: 12px; width: 90%; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
+      style="padding: 12px; width: 90%; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
+    <textarea id="patient-rx-address" placeholder="Delivery address" rows="3"
+      style="padding: 12px; width: 90%; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; resize: vertical;"></textarea>
     <div id="cart-summary" style="margin: 15px 0; font-family: 'Segoe UI', sans-serif; color: #333; font-weight: 500;"></div>
     <div class="dg-pay-banner" style="margin-bottom:15px;padding:16px;background:#fff8f3;border-radius:10px;text-align:center;border:1px solid rgba(242,103,39,0.25);">
       <p style="margin:0;font-weight:600;color:#F67227;"><i class="fas fa-lock"></i> Pay with Razorpay</p>
@@ -1772,32 +1776,21 @@ html, body {
           <div class="cart-actions">
               <button class="empty-cart-btn" id="empty-cart-btn">Empty Cart</button>
               <button class="add-all-to-db-btn" id="add-all-to-db-btn">Prescribe All</button>
-        <button class="submit-btn" id="checkout-btn">Proceed to Payment</button>
+        <button class="submit-btn" id="checkout-btn">Send Prescription to Patient</button>
           </div>
     </div>
 
         <form class="payment-form" id="doctor-checkout-form">
             <button type="button" class="back-to-cart-btn">Back to Cart</button>
-            <h4>Payment Information</h4>
-          <div class="form-group">
-                <label for="doctor-checkout-name">Your Name:</label>
-                <input type="text" id="doctor-checkout-name" required>
+            <h4>Send to Patient</h4>
+            <p style="color:#555;font-size:0.95rem;margin:0 0 12px;">Review the cart and send medicines to the patient. The patient pays from their prescription panel during or after the call.</p>
+            <div class="dg-pay-banner" style="text-align:center;padding:16px;background:#fff8f3;border-radius:10px;margin:12px 0;">
+                <p style="margin:0;font-weight:600;color:#F67227;"><i class="fas fa-pills"></i> Prescription total</p>
+                <p id="payment-amount" style="margin:8px 0 0;font-weight:600;">Amount: ₹0</p>
             </div>
-          <div class="form-group">
-                <label for="doctor-checkout-phone">Phone Number:</label>
-                <input type="tel" id="doctor-checkout-phone" required>
-          </div>
-          <div class="form-group">
-                <label for="doctor-checkout-address">Delivery Address:</label>
-                <textarea id="doctor-checkout-address" required></textarea>
-          </div>
-          <div class="dg-pay-banner" style="text-align:center;padding:16px;background:#fff8f3;border-radius:10px;margin:12px 0;">
-                <p style="margin:0;font-weight:600;color:#F67227;"><i class="fas fa-lock"></i> Razorpay checkout</p>
-                <p id="payment-amount" style="margin:8px 0 0;font-weight:600;">Amount to Pay: ₹0</p>
-                </div>
-            <button type="submit" class="submit-btn"><i class="fas fa-credit-card"></i> Pay &amp; submit prescription</button>
+            <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Send prescription to patient</button>
             <p id="doctor-checkout-status" style="display:none;margin-top:10px;text-align:center;font-size:0.9rem;"></p>
-            </form>
+        </form>
       </div>
         </div>
     </div>
@@ -2492,16 +2485,30 @@ document.getElementById('pay-now-btn').addEventListener('click', () => {
     document.getElementById('pay-now-btn').style.display = 'none';
   document.getElementById('patient-rx-payment-panel').style.display = 'block';
   document.getElementById('total-amount').innerText = totalAmount;
+  const nameEl = document.getElementById('patient-rx-name');
+  const phoneEl = document.getElementById('phone-input');
+  if (nameEl && !nameEl.value) nameEl.value = localStorage.getItem('patientName') || localStorage.getItem('userName') || '';
+  if (phoneEl && !phoneEl.value) phoneEl.value = localStorage.getItem('patientPhoneNumber') || '';
 });
 document.getElementById('proceed-payment-btn').addEventListener('click', async () => {
+  const name = (document.getElementById('patient-rx-name') && document.getElementById('patient-rx-name').value.trim()) || '';
   const phone = document.getElementById('phone-input').value.trim();
+  const address = (document.getElementById('patient-rx-address') && document.getElementById('patient-rx-address').value.trim()) || '';
   const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
   const statusEl = document.getElementById('patient-rx-pay-status');
   const btn = document.getElementById('proceed-payment-btn');
 
   const phoneRegex = /^\d{10}$/;
+  if (!name) {
+    alert('Please enter your name for delivery.');
+    return;
+  }
   if (!phoneRegex.test(phone)) {
     alert('Phone number must be exactly 10 digits.');
+    return;
+  }
+  if (!address) {
+    alert('Please enter your delivery address.');
     return;
   }
   if (!window.DgRazorpayCheckout) {
@@ -2524,6 +2531,8 @@ document.getElementById('proceed-payment-btn').addEventListener('click', async (
       method: 'POST',
       headers: (window.getFirebaseAuthHeaders || getFirebaseAuthHeaders)(),
       body: JSON.stringify({
+        name,
+        address,
         phone,
         items: latestPrescription,
         total: totalAmount,
@@ -2535,6 +2544,9 @@ document.getElementById('proceed-payment-btn').addEventListener('click', async (
     });
     const result = await response.json();
     if (result.success) {
+      if (result.orderId) {
+        showMessage('Order placed successfully. Order ID: ' + result.orderId, 'success');
+      }
       // Generate prescription receipt data
       const receiptData = {
         roomId: roomID,
@@ -3109,91 +3121,64 @@ function handleWeightSelection(event) {
         showMessage('Please add items to prescription first', 'warning');
         return;
       }
-      
-      // Switch to payment form view
+
+      const cartTotal = calculateTotal();
+      if (paymentAmount) paymentAmount.textContent = 'Amount: ₹' + cartTotal;
+
       tabContents.forEach(content => content.classList.remove('active'));
       paymentForm.style.display = 'block';
-      
-      // Hide search and other elements temporarily
+
       searchInput.style.display = 'none';
       document.getElementById('search-btn').style.display = 'none';
       tabButtons.forEach(btn => btn.style.display = 'none');
     });
     
-    // Payment form submission
+    // Doctor sends prescription to patient (no payment on doctor side)
     document.getElementById('doctor-checkout-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       
       try {
-        const name = document.getElementById('doctor-checkout-name').value.trim();
-        const phone = document.getElementById('doctor-checkout-phone').value.trim();
-        const address = document.getElementById('doctor-checkout-address').value.trim();
         const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
         const statusEl = document.getElementById('doctor-checkout-status');
-        const cartTotal = calculateTotal();
-        
-        if (!name || !phone || !address) {
-          showMessage('Please fill in all required fields', 'warning');
-          return;
-        }
-        
+
         if (cart.length === 0) {
           showMessage('Please add items to your prescription', 'warning');
           return;
         }
 
-        if (!window.DgStorePayment) {
-          showMessage('Payment system not loaded. Refresh the page.', 'error');
+        if (window.DgAuth && DgAuth.ensureValidToken) {
+          await DgAuth.ensureValidToken();
+        }
+        const authHdr = (window.getFirebaseAuthHeaders || getFirebaseAuthHeaders)();
+        if (!authHdr.Authorization) {
+          showMessage('Please log in at /doctor.html before prescribing.', 'error');
           return;
         }
 
-        if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Opening Razorpay…'; statusEl.style.color = '#555'; }
+        if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Sending prescription…'; statusEl.style.color = '#555'; }
 
-        await DgStorePayment.checkoutCartOrder({
-          orderData: {
-            customerName: name,
-            customerPhone: phone,
-            deliveryAddress: address,
-            items: cart,
-            subtotal: cartTotal,
-            discount: 0,
-            deliveryFee: 0,
-            totalAmount: cartTotal,
-            notes: 'Video call prescription — room ' + roomID,
-            orderStatus: 'pending',
-            orderDate: new Date()
-          },
-          description: 'Prescription order (doctor checkout)',
-          prefill: { name, contact: phone }
-        });
-
-        const formData = {
-          name,
-          phone,
-          address,
-          items: cart,
-          total: cartTotal,
-          roomID: roomID,
-          paymentMethod: 'razorpay'
-        };
-
-        const response = await fetch('/api/prescriptions', {
+        const response = await fetch('/api/prescribe-cart', {
           method: 'POST',
-          headers: (window.getFirebaseAuthHeaders || getFirebaseAuthHeaders)(),
-          body: JSON.stringify(formData)
+          headers: authHdr,
+          body: JSON.stringify({
+            roomId: roomID,
+            cartItems: cart,
+            timestamp: new Date().toISOString()
+          })
         });
 
         const result = await response.json();
 
         if (!response.ok) {
-          throw new Error(result.message || 'Failed to save prescription');
+          throw new Error(result.message || 'Failed to send prescription');
         }
 
-        showMessage('Payment successful! Prescription will be delivered soon.', 'success');
-        
-        // Clear cart and close modal
+        showMessage('Prescription sent to patient. They can review and pay from their screen.', 'success');
+        notifyPrescriptionReady();
+
         cart = [];
         localStorage.removeItem(`prescriptionCart_${roomID}`);
+        paymentForm.style.display = 'none';
         prescriptionModal.style.display = 'none';
         updateCartBadge();
         renderCart();

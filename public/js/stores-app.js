@@ -103,9 +103,10 @@
 
   function productImageHtml(med, cardIdx) {
     var url = med.imageUrl || getMedicineImageUrl(med);
-    var fallback = '<div class="product-img-fallback" style="display:none"><i class="fas ' +
-      (med.category === 'Beauty Care' ? 'fa-spa' : med.category === 'Organic Food' ? 'fa-leaf' : 'fa-mortar-pestle') +
-      '"></i></div>';
+    var icon = window.DgStoreCategories
+      ? DgStoreCategories.departmentIconClass(med.category)
+      : 'fa-mortar-pestle';
+    var fallback = '<div class="product-img-fallback" style="display:none"><i class="fas ' + icon + '"></i></div>';
     if (url) {
       var eager = cardIdx !== undefined && cardIdx < 12;
       var loadAttrs = eager
@@ -129,13 +130,26 @@
     });
   }
 
+  function getStoreMenuLabel(store) {
+    if (store.menuLabel) return store.menuLabel;
+    return window.DgStoreCategories
+      ? DgStoreCategories.getStoreMenuLabel(store.name)
+      : store.name;
+  }
+
+  function sortStoresForMenu(list) {
+    return window.DgStoreCategories
+      ? DgStoreCategories.sortStoresWithFeatured(list)
+      : (list || []).slice();
+  }
+
   function renderStoresStrip() {
     if (!els.storesStrip) return;
     var html = '<button type="button" class="store-chip' + (currentStoreFilter === 'all' ? ' active' : '') +
       '" data-store="all">All brands</button>';
-    stores.forEach(function (store) {
+    sortStoresForMenu(stores).forEach(function (store) {
       html += '<button type="button" class="store-chip' + (currentStoreFilter === store._id ? ' active' : '') +
-        '" data-store="' + store._id + '">' + escapeHtml(store.name) +
+        '" data-store="' + store._id + '">' + escapeHtml(getStoreMenuLabel(store)) +
         ' <span class="chip-count">(' + (store.medicineCount || 0) + ')</span></button>';
     });
     els.storesStrip.innerHTML = html;
@@ -156,7 +170,7 @@
       els.breadcrumb.innerHTML = '<a href="/">Home</a> <span>›</span> <strong>Ayurvedic Store</strong>';
     } else if (currentStore) {
       els.breadcrumb.innerHTML = '<a href="/">Home</a> <span>›</span> <a href="stores.html">Store</a> <span>›</span> <strong>' +
-        escapeHtml(currentStore.name) + '</strong>';
+        escapeHtml(getStoreMenuLabel(currentStore)) + '</strong>';
     }
   }
 
@@ -402,10 +416,23 @@
     bindAddToCart();
   }
 
-  var excludedStoreNames = { plum: 1, 'deep ayurveda': 1 };
+  var excludedBrandKeys = {
+    plum: 1,
+    deepayurveda: 1,
+    nutriorg: 1,
+    neutriog: 1,
+    organicindia: 1,
+    soultree: 1,
+    ayurvedaexperience: 1
+  };
 
   function isExcludedStoreName(name) {
-    return !!excludedStoreNames[String(name || '').trim().toLowerCase()];
+    var key = storeBrandKey(name);
+    return !!(key && excludedBrandKeys[key]);
+  }
+
+  function isExcludedProduct(med) {
+    return isExcludedStoreName(med.brand || med.company || med.storeName || '');
   }
 
   function storeBrandKey(name) {
@@ -415,38 +442,29 @@
   }
 
   function mapStoreSummary(list) {
-    return dedupeStores((list || []).map(function (s) {
+    return sortStoresForMenu(dedupeStores((list || []).map(function (s) {
       var key = storeBrandKey(s.name || s._id);
       return {
         _id: key || s._id,
         name: s.name,
+        menuLabel: s.menuLabel || getStoreMenuLabel(s),
         medicineCount: s.medicineCount || (s.medicines || []).length
       };
-    }));
+    })));
   }
 
   function filterLegacyProducts(list) {
-    var out = list || [];
+    var out = (list || []).filter(function (m) { return !isExcludedProduct(m); });
     if (currentStoreFilter !== 'all') {
       out = out.filter(function (m) {
         return storeBrandKey(m.company || m.storeName) === currentStoreFilter;
       });
     }
     if (currentCategory !== 'all') {
-      var cat = String(currentCategory || '').toLowerCase();
       out = out.filter(function (m) {
-        var mc = String(m.category || '').toLowerCase();
-        if (cat.indexOf('beauty') >= 0) {
-          return mc.indexOf('beauty') >= 0 || mc.indexOf('cosmetic') >= 0 || mc.indexOf('skin') >= 0;
-        }
-        if (cat.indexOf('wellness') >= 0) {
-          return mc.indexOf('wellness') >= 0 || mc.indexOf('juice') >= 0 || mc.indexOf('tea') >= 0;
-        }
-        if (cat.indexOf('medicine') >= 0) {
-          return mc.indexOf('medicine') >= 0 || mc.indexOf('ayurved') >= 0 || mc.indexOf('asava') >= 0
-            || mc.indexOf('arishta') >= 0 || mc.indexOf('bhasma') >= 0;
-        }
-        return mc.indexOf(cat) >= 0;
+        return window.DgStoreCategories
+          ? DgStoreCategories.productMatchesDepartment(m, currentCategory)
+          : String(m.category || '').toLowerCase() === String(currentCategory || '').toLowerCase();
       });
     }
     var q = (els.searchInput && els.searchInput.value.trim().toLowerCase()) || '';
@@ -472,6 +490,7 @@
       legacyStores.forEach(function (s) {
         var brandKey = storeBrandKey(s.name);
         (s.medicines || []).forEach(function (m) {
+          if (isExcludedProduct(m)) return;
           var imageFile = m.imageFile || (m._id ? m._id + '.jpg' : '');
           var imageUrl = m.imageUrl || (imageFile ? '/medicine-assets/' + encodeURIComponent(imageFile) : null);
           products.push(Object.assign({}, m, {

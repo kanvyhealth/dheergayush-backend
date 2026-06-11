@@ -8,8 +8,9 @@
 const fs = require('fs');
 const path = require('path');
 const { CATALOG_PATH } = require('../lib/medicineCatalogJson');
-const { filterExcludedStores } = require('../lib/excludedBrands');
+const { filterExcludedStores, isExcludedMedicine } = require('../lib/excludedBrands');
 const { isValidAyurvedicProduct } = require('../lib/excludedProducts');
+const { classifyStoreProduct } = require('../lib/storeCategories');
 
 const DRY_RUN = process.argv.includes('--dry-run');
 const IMAGE_DIR = path.join(__dirname, '..', 'medicine', 'medicine');
@@ -46,12 +47,14 @@ function main() {
   const catalog = filterExcludedStores(JSON.parse(fs.readFileSync(CATALOG_PATH, 'utf8')));
   let removed = 0;
   let imageFixed = 0;
+  let recategorized = 0;
   const removedSamples = [];
 
   const cleaned = catalog.map((store) => {
     const medicines = (store.medicines || [])
       .filter((med) => {
-        const keep = isValidAyurvedicProduct(med);
+        const keep = isValidAyurvedicProduct(med)
+          && !isExcludedMedicine({ ...med, storeName: store.name });
         if (!keep) {
           removed++;
           if (removedSamples.length < 25) {
@@ -63,7 +66,9 @@ function main() {
       .map((med) => {
         const fixed = fixImageFile(med);
         if (fixed.imageFile !== med.imageFile) imageFixed++;
-        return fixed;
+        const department = classifyStoreProduct({ ...fixed, storeName: store.name });
+        if (department !== fixed.category) recategorized++;
+        return { ...fixed, category: department };
       });
 
     return { ...store, medicines };
@@ -75,6 +80,7 @@ function main() {
   console.log(`Brands: ${catalog.length} -> ${cleaned.length}`);
   console.log(`Products: ${before} -> ${after} (removed ${removed})`);
   console.log(`Image paths normalized: ${imageFixed}`);
+  console.log(`Departments recategorized: ${recategorized}`);
   if (removedSamples.length) {
     console.log('\nSample removed products:');
     removedSamples.forEach((r) => console.log(`  [${r.store}] ${r.name}`));

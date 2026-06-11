@@ -39,7 +39,7 @@
 
   function canJoinVideo(status) {
     var s = String(status || '').toLowerCase();
-    return ['accepted', 'in_call', 'ringing', 'waiting', 'completed'].indexOf(s) !== -1;
+    return ['accepted', 'in_call', 'completed'].indexOf(s) !== -1;
   }
 
   function filterConsultations(list) {

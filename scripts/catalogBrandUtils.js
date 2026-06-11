@@ -43,28 +43,13 @@ function parseWeight(pack) {
   };
 }
 
-function normalizeCategory(raw) {
-  const key = String(raw || '')
-    .replace(/\([^)]*\)/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .toLowerCase();
-  if (!key) return 'Ayurvedic Medicines';
-  if (key.includes('asav') || key.includes('arishta') || key.includes('kadha')) {
-    return 'Asava / Arishta / Kadha';
+const { classifyStoreProduct } = require('../lib/storeCategories');
+
+function normalizeCategory(raw, med) {
+  if (med && typeof med === 'object') {
+    return classifyStoreProduct(med);
   }
-  if (key.includes('bhasma')) return 'Bhasma';
-  if (key.includes('choorna') || key.includes('churna')) return 'Choorna';
-  if (key.includes('guggul')) return 'Guggulkalpa';
-  if (key.includes('ras') && key.includes('kalpa')) return 'Rasakalpa';
-  if (key.includes('suvarna')) return 'Suvarnakalpa';
-  if (key.includes('vati') || key.includes('guti') || key.includes('tablet')) return 'Guti / Vati';
-  if (key.includes('avaleha') || key.includes('pak')) return 'Avaleha';
-  if (key.includes('amrit')) return 'Ayurvedic Medicines';
-  if (key.includes('ark')) return 'Ayurvedic Medicines';
-  if (key.includes('oil') || key.includes('tail')) return 'Ayurvedic Medicines';
-  if (key.includes('patent') || key.includes('proprietary')) return 'Patent & Proprietary';
-  return 'Ayurvedic Medicines';
+  return classifyStoreProduct({ category: raw });
 }
 
 function cleanProductName(name) {

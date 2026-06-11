@@ -89,9 +89,11 @@ const {
   listPaymentsForPatient,
   listPaymentsForDoctor,
   listConsultationHistoryForDoctor,
+  listConsultationHistoryForPatient,
   listRoomIdsForDoctor,
   normalizePhone
 } = require('./lib/paymentLookup');
+const { createPrescriptionStoreOrder } = require('./lib/prescriptionCheckout');
 const {
   requirePatientPhoneAccess,
   requireDoctorNameAccess,
@@ -1258,10 +1260,20 @@ app.get('/api/get-prescription/:roomId', async (req, res) => {
     res.status(500).json({ message: 'Error fetching prescription.', error: err.message });
   }
 });
-app.post('/api/submit-prescription', async (req, res) => {
+async function handleSubmitPrescription(req, res) {
   try {
+    const authHeader = req.headers.authorization || '';
+    if (authHeader.startsWith('Bearer ')) {
+      try {
+        const decoded = await verifyIdToken(authHeader.slice(7).trim());
+        req.firebaseUid = decoded.uid;
+      } catch (_) { /* guest prescription checkout */ }
+    }
+
     const payload = typeof req.body.data === 'string' ? JSON.parse(req.body.data) : req.body;
     const {
+      name,
+      address,
       phone,
       items,
       total,
@@ -1295,6 +1307,8 @@ app.post('/api/submit-prescription', async (req, res) => {
     const prescription = new Prescription({
       roomID,
       phone,
+      name: name || '',
+      address: address || '',
       items,
       total,
       paymentProof: razorpayPaymentId,
@@ -1306,12 +1320,39 @@ app.post('/api/submit-prescription', async (req, res) => {
 
     await prescription.save();
 
-    res.json({ success: true, prescriptionId: prescription._id });
+    let storeOrderId = null;
+    try {
+      const storeOrder = await createPrescriptionStoreOrder({
+        customerName: name || 'Patient',
+        customerPhone: phone,
+        deliveryAddress: address || '',
+        items,
+        total,
+        roomID,
+        prescriptionId: prescription._id,
+        razorpayPaymentId,
+        razorpayOrderId,
+        userId: req.firebaseUid || null
+      });
+      storeOrderId = storeOrder.orderId;
+      prescription.orderId = storeOrderId;
+      await prescription.save();
+    } catch (orderErr) {
+      console.warn('Prescription store order sync failed:', orderErr.message);
+    }
+
+    res.json({
+      success: true,
+      prescriptionId: prescription._id,
+      orderId: storeOrderId
+    });
   } catch (err) {
     console.error('Error:', err);
     res.status(err.status || 500).json({ success: false, message: err.message || 'Server error' });
   }
-});
+}
+
+app.post('/api/submit-prescription', handleSubmitPrescription);
 
 // 👨‍⚕️ Doctor Login — Firebase token only (passwordless ID login removed)
 app.post('/api/doctor-login', async (req, res) => {
@@ -1809,6 +1850,39 @@ app.get('/api/payments/doctor/:doctorName', requireDoctorNameAccess('doctorName'
     } catch (err) {
         console.error('❌ Error fetching doctor payments:', err);
         res.status(500).json({ message: 'Failed to fetch appointments.', error: err.message });
+    }
+});
+
+// 🧑‍🦰 Merged consultation history for patient (payments + appointments)
+app.get('/api/patient/consultation-history/:phoneOrUid', requirePatientPhoneAccess('phoneOrUid'), async (req, res) => {
+    try {
+        const { phoneOrUid } = req.params;
+        if (!phoneOrUid) {
+            return res.status(400).json({ message: 'Phone or user id is required.' });
+        }
+        const identifiers = new Set([phoneOrUid]);
+        if (req.firebaseUid) identifiers.add(req.firebaseUid);
+        const customer = await findCustomerByPhone(phoneOrUid);
+        if (customer?.uid) identifiers.add(String(customer.uid));
+        if (customer?._id) identifiers.add(String(customer._id));
+
+        const seen = new Set();
+        const merged = [];
+        for (const id of identifiers) {
+            const batch = await listConsultationHistoryForPatient(id);
+            for (const row of batch) {
+                const key = String(row.id || row.consultationId || row.roomId);
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    merged.push(row);
+                }
+            }
+        }
+        merged.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+        res.status(200).json(merged);
+    } catch (err) {
+        console.error('❌ Error fetching patient consultation history:', err);
+        res.status(500).json({ message: 'Failed to fetch consultation history.', error: err.message });
     }
 });
 
@@ -3069,45 +3143,8 @@ app.post('/api/consultations/:id/cancel', async (req, res) => {
   }
 });
 
-// Handle prescription submissions with better error handling
-app.post('/api/prescriptions', async (req, res) => {
-  try {
-    console.log('Received prescription data:', req.body); // Debug log
-
-    // Validate required fields
-    const { name, phone, address, items, total, roomID } = req.body;
-    if (!name || !phone || !address || !items || !total || !roomID) {
-      return res.status(400).json({ 
-        message: 'Missing required fields: name, phone, address, items, total, or roomID',
-        received: { name, phone, address, itemsCount: items?.length, total, roomID }
-      });
-    }
-
-    // Create and save prescription
-    const prescription = new Prescription({
-      roomID,
-      phone,
-      items,
-      total,
-      paymentProof: req.body.paymentProof || 'pending' // Make it optional for now
-    });
-
-    const savedPrescription = await prescription.save();
-    console.log('Prescription saved successfully:', savedPrescription); // Debug log
-
-    res.status(201).json({ 
-      message: 'Prescription saved successfully', 
-      prescription: savedPrescription 
-    });
-  } catch (error) {
-    console.error('Error saving prescription:', error);
-    res.status(500).json({ 
-      message: 'Error saving prescription', 
-      error: error.message,
-      details: error.toString()
-    });
-  }
-});
+// Alias — same handler as /api/submit-prescription (verified Razorpay + store order)
+app.post('/api/prescriptions', handleSubmitPrescription);
 
 
 app.get('/api/stores', async (req, res) => {

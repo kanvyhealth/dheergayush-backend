@@ -160,6 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     showMessage('Appointments loaded successfully.', 'success');
                     appointmentsSection.classList.add('visible');
 
+                    await loadConsultationHistory(patientPhoneNumber, appointmentsSection);
                     await loadPrescriptionHistory(patientPhoneNumber, appointmentsSection);
 
                     document.querySelectorAll('.start-call-btn').forEach((button) => {
@@ -231,6 +232,46 @@ document.addEventListener('DOMContentLoaded', async () => {
         messageDiv.style.display = 'block';
     }
 
+    async function loadConsultationHistory(phone, container) {
+        try {
+            const fetchFn = window.DgAuth && DgAuth.authFetch ? DgAuth.authFetch.bind(DgAuth) : fetch;
+            const uid = localStorage.getItem('firebaseUid');
+            let history = [];
+            if (uid) {
+                const byUid = await fetchFn(`/api/patient/consultation-history/${encodeURIComponent(uid)}`);
+                if (byUid.ok) history = await byUid.json();
+            }
+            if (!history.length && phone) {
+                const byPhone = await fetchFn(`/api/patient/consultation-history/${encodeURIComponent(phone)}`);
+                if (byPhone.ok) history = await byPhone.json();
+            }
+            if (!Array.isArray(history) || history.length === 0) return;
+
+            const section = document.createElement('div');
+            section.className = 'consultation-history-section';
+            section.innerHTML = '<h2 style="margin-top:2rem;">Consultation History</h2>';
+
+            history.slice(0, 10).forEach((row, index) => {
+                const card = document.createElement('div');
+                card.className = 'appointment-card';
+                const createdAt = row.createdAt ? new Date(row.createdAt).toLocaleString() : '—';
+                card.innerHTML = `
+                    <h3>Consultation ${index + 1}</h3>
+                    <p><strong>Doctor:</strong> ${row.doctorName || '—'}</p>
+                    <p><strong>Status:</strong> ${row.status || '—'}</p>
+                    <p><strong>Fee:</strong> ₹${row.amount || 0}</p>
+                    <p><strong>Room:</strong> ${row.roomId || '—'}</p>
+                    <p><strong>Date:</strong> ${createdAt}</p>
+                `;
+                section.appendChild(card);
+            });
+
+            container.appendChild(section);
+        } catch (err) {
+            console.warn('Consultation history unavailable:', err);
+        }
+    }
+
     async function loadPrescriptionHistory(phone, container) {
         try {
             const fetchFn = window.DgAuth && DgAuth.authFetch ? DgAuth.authFetch.bind(DgAuth) : fetch;
@@ -248,12 +289,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 card.className = 'appointment-card';
                 const items = Array.isArray(rx.items) ? rx.items : [];
                 const itemSummary = items.slice(0, 3).map(i => i.name || 'Medicine').join(', ');
+                const orderLine = rx.orderId
+                    ? `<p><strong>Store order:</strong> ${rx.orderId}</p>`
+                    : '';
                 card.innerHTML = `
                     <h3>Prescription ${index + 1}</h3>
                     <p><strong>Room:</strong> ${rx.roomID || '—'}</p>
                     <p><strong>Total:</strong> ₹${rx.total || 0}</p>
                     <p><strong>Status:</strong> ${rx.status || 'not-delivered'}</p>
                     <p><strong>Medicines:</strong> ${itemSummary || '—'}${items.length > 3 ? '…' : ''}</p>
+                    ${orderLine}
                     <p><strong>Date:</strong> ${rx.createdAt ? new Date(rx.createdAt).toLocaleDateString() : '—'}</p>
                 `;
                 section.appendChild(card);
