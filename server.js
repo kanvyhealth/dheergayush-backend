@@ -90,6 +90,7 @@ const {
   listPaymentsForDoctor,
   listConsultationHistoryForDoctor,
   listConsultationHistoryForPatient,
+  listOrdersForPatient,
   listRoomIdsForDoctor,
   normalizePhone
 } = require('./lib/paymentLookup');
@@ -135,6 +136,12 @@ const {
   transitionConsultation,
   formatConsultationResponse
 } = require('./lib/consultationWorkflow');
+const { refundConsultationForRoom } = require('./lib/consultationRefund');
+const {
+  findActiveAccess,
+  grantConsultationAccess,
+  listAccessForPatient
+} = require('./lib/consultationAccess');
 const {
   resolvePatientUid,
   buildWebPaidAppointmentFields,
@@ -310,6 +317,24 @@ app.get('/api/firebase/collections', async (req, res) => {
   }
 });
 
+async function resolveAuthPortal(uid) {
+  const doctor = await findDoctorByUid(uid);
+  if (doctor && isDoctorApproved(doctor)) {
+    return {
+      portal: 'doctor',
+      role: 'Doctor',
+      redirectTo: '/doctor1.html',
+      doctor
+    };
+  }
+  return {
+    portal: 'patient',
+    role: 'Customer',
+    redirectTo: '/patient.html',
+    doctor: null
+  };
+}
+
 app.post('/api/auth/verify', async (req, res) => {
   try {
     const idToken = req.body.idToken || (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
@@ -335,7 +360,15 @@ app.post('/api/auth/sync', async (req, res) => {
 });
 
 app.get('/api/auth/me', requireFirebaseAuth(), async (req, res) => {
-  res.json({ ok: true, uid: req.firebaseUid, profile: req.userProfile || null });
+  const portalInfo = await resolveAuthPortal(req.firebaseUid);
+  res.json({
+    ok: true,
+    uid: req.firebaseUid,
+    profile: req.userProfile || null,
+    portal: portalInfo.portal,
+    role: portalInfo.role,
+    redirectTo: portalInfo.redirectTo
+  });
 });
 
 app.get('/api/firebase/config', (req, res) => {
@@ -394,11 +427,15 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
     if (profile?.phone) {
       await linkAppointmentsToAuthUid({ authUid: auth.localId, phone: profile.phone });
     }
+    const portalInfo = await resolveAuthPortal(auth.localId);
     res.json({
       message: 'Login successful',
       idToken: auth.idToken,
       refreshToken: auth.refreshToken,
-      user: profile || { uid: auth.localId, email: auth.email, name: auth.displayName }
+      user: profile || { uid: auth.localId, email: auth.email, name: auth.displayName },
+      portal: portalInfo.portal,
+      role: portalInfo.role,
+      redirectTo: portalInfo.redirectTo
     });
   } catch (err) {
     res.status(401).json({ message: err.message || 'Invalid email or password' });
@@ -447,7 +484,10 @@ app.post('/api/auth/login-doctor', authLimiter, async (req, res) => {
       idToken: auth.idToken,
       refreshToken: auth.refreshToken,
       user: profile,
-      doctor
+      doctor,
+      portal: 'doctor',
+      role: 'Doctor',
+      redirectTo: '/doctor1.html'
     });
   } catch (err) {
     res.status(401).json({ message: err.message || 'Invalid email or password' });
@@ -1200,6 +1240,52 @@ async function prescriptionVideoRoomExists(roomId) {
   return !!consultation;
 }
 
+async function enrichPrescribedCartItems(cartItems = []) {
+  const medicineIds = cartItems
+    .map((item) => String(item.medicineId || item.id || '').trim())
+    .filter(Boolean);
+  let catalogById = new Map();
+  if (medicineIds.length) {
+    const catalog = await getMedicinesByIds(medicineIds);
+    (catalog.items || []).forEach((med) => {
+      const key = String(med._id || med.id || '').trim();
+      if (key) catalogById.set(key, med);
+    });
+  }
+
+  return cartItems.map((item) => {
+    const medicineId = String(item.medicineId || item.id || '').trim();
+    const catalogMed = catalogById.get(medicineId);
+    const selectedWeight = item.selectedWeight || {
+      value: item.weightValue,
+      unit: item.weightUnit
+    };
+    const weightMatch = catalogMed && Array.isArray(catalogMed.weights)
+      ? catalogMed.weights.find((w) =>
+          String(w.value) === String(selectedWeight.value) &&
+          String(w.unit || '') === String(selectedWeight.unit || '')
+        )
+      : null;
+    const unitPrice = item.pricePerUnit || item.price || weightMatch?.price || 0;
+    const quantity = item.quantity || 1;
+    const imageUrl = item.imageUrl || catalogMed?.imageUrl ||
+      (catalogMed?.imageFile ? `/medicine-assets/${encodeURIComponent(catalogMed.imageFile)}` : null);
+    return {
+      medicineId,
+      storeId: item.storeId,
+      name: item.name,
+      description: item.description || catalogMed?.description || '',
+      imageUrl,
+      storeName: item.storeName || catalogMed?.storeName || catalogMed?.company || '',
+      category: item.category || catalogMed?.category || '',
+      selectedWeight,
+      pricePerUnit: unitPrice,
+      quantity,
+      totalPrice: item.totalPrice || unitPrice * quantity
+    };
+  });
+}
+
 app.post('/api/prescribe-cart', async (req, res) => {
   try {
     const { roomId, cartItems } = req.body;
@@ -1213,20 +1299,10 @@ app.post('/api/prescribe-cart', async (req, res) => {
       return res.status(403).json({ message: 'Invalid or unknown video room.' });
     }
 
+    const enrichedItems = await enrichPrescribedCartItems(cartItems);
     const newPrescription = new PrescribedCart({
       roomId,
-      cartItems: cartItems.map(item => ({
-        medicineId: item.id,
-        storeId: item.storeId,
-        name: item.name,
-        selectedWeight: {
-          value: item.weightValue,
-          unit: item.weightUnit
-        },
-        pricePerUnit: item.price,
-        quantity: item.quantity,
-        totalPrice: item.price * item.quantity
-      }))
+      cartItems: enrichedItems
     });
 
     await newPrescription.save();
@@ -1255,7 +1331,14 @@ app.get('/api/get-prescription/:roomId', async (req, res) => {
       return res.status(404).json({ message: 'No prescription found for this room.' });
     }
 
-    res.json(prescription);
+    const enrichedItems = await enrichPrescribedCartItems(
+      Array.isArray(prescription.cartItems) ? prescription.cartItems : []
+    );
+
+    const payload = typeof prescription.toObject === 'function'
+      ? prescription.toObject()
+      : Object.assign({}, prescription);
+    res.json(Object.assign({}, payload, { cartItems: enrichedItems }));
   } catch (err) {
     res.status(500).json({ message: 'Error fetching prescription.', error: err.message });
   }
@@ -1554,25 +1637,51 @@ async function completeWebsiteConsultationCheckout({
     });
   }
 
-  if (amountNum > 0) {
-    const razorpayPayment = await verifyAndFetchPayment({
-      orderId: razorpayOrderId,
-      paymentId: razorpayPaymentId,
-      signature: razorpaySignature
-    });
-    const paidPaise = razorpayPayment.amount;
-    const expectedPaise = Math.round(amountNum * 100);
-    if (paidPaise !== expectedPaise) {
-      throw Object.assign(new Error('Paid amount does not match consultation fee.'), { status: 402 });
-    }
-  }
-
   const patientUid = await resolvePatientUid({
     phone,
     firebaseUid,
     name,
     email: ''
   });
+
+  const doctorFee = parseFloat(
+    String(doctor.consultationFee ?? doctor.fee ?? selectedDoctorFee ?? '').replace(/[^\d.]/g, '')
+  ) || 0;
+  const activeAccess = await findActiveAccess({
+    patientUid,
+    patientPhone: phone,
+    doctorName: selectedDoctorName
+  });
+
+  let effectiveAmount = amountNum;
+  let isFollowUp = false;
+  if (activeAccess && effectiveAmount > 0) {
+    effectiveAmount = 0;
+    isFollowUp = true;
+  }
+  if (effectiveAmount <= 0 && doctorFee > 0) {
+    if (!activeAccess) {
+      throw Object.assign(
+        new Error('No active 15-day consultation plan for this doctor. Please pay the consultation fee first.'),
+        { status: 402 }
+      );
+    }
+    isFollowUp = true;
+  }
+
+  if (effectiveAmount > 0) {
+    const razorpayPayment = await verifyAndFetchPayment({
+      orderId: razorpayOrderId,
+      paymentId: razorpayPaymentId,
+      signature: razorpaySignature
+    });
+    const paidPaise = razorpayPayment.amount;
+    const expectedPaise = Math.round(effectiveAmount * 100);
+    if (paidPaise !== expectedPaise) {
+      throw Object.assign(new Error('Paid amount does not match consultation fee.'), { status: 402 });
+    }
+  }
+
   const patientFolder = `medical_reports/${phone}/consultation`;
   const reportUploads = await Promise.all(
     (reportFiles || []).map((file) => uploadToFirebase(file, patientFolder))
@@ -1603,18 +1712,20 @@ async function completeWebsiteConsultationCheckout({
     doctorName: selectedDoctorName,
     doctorId: doctor.uid || doctor._id,
     selectedDoctorFee: Number.isNaN(feeNum) ? String(selectedDoctorFee) : feeNum,
-    amount: amountNum,
+    amount: effectiveAmount,
     reports: reportUrls,
     doctorAvailableTime: doctorAvailableTime || doctor.availableTime || doctor.slotTime || '',
     consultationStatus: 'ringing',
     status: 'completed',
-    paymentStatus: 'completed',
-    paymentMethod: 'razorpay',
-    razorpayOrderId,
-    razorpayPaymentId,
-    transactionId: razorpayPaymentId,
+    paymentStatus: effectiveAmount > 0 ? 'completed' : 'included',
+    paymentMethod: effectiveAmount > 0 ? 'razorpay' : 'follow_up',
+    razorpayOrderId: effectiveAmount > 0 ? razorpayOrderId : '',
+    razorpayPaymentId: effectiveAmount > 0 ? razorpayPaymentId : '',
+    transactionId: effectiveAmount > 0 ? razorpayPaymentId : '',
     serviceType: 'consultation',
     source: 'website',
+    isFollowUp,
+    accessPlanActive: !!activeAccess,
     createdAt: new Date()
   });
 
@@ -1627,13 +1738,25 @@ async function completeWebsiteConsultationCheckout({
     patientPhone: phone,
     doctorName: selectedDoctorName,
     doctorId: doctorUid,
-    amount: amountNum,
+    amount: effectiveAmount,
     doctorAvailableTime: doctorAvailableTime || doctor.availableTime || doctor.slotTime || '',
     expiresAt,
     source: 'website',
+    isFollowUp,
     createdAt: new Date(),
     ...buildConsultationStatusFields('ringing')
   });
+
+  if (effectiveAmount > 0) {
+    await grantConsultationAccess({
+      patientUid,
+      patientPhone: phone,
+      patientName: name,
+      doctorName: selectedDoctorName,
+      sourcePaymentId: savedPayment._id,
+      amount: effectiveAmount
+    });
+  }
 
   const appointmentId = consultation._id || consultation.id;
   const videoRoomId = videoRoomIdForAppointment(appointmentId);
@@ -1644,7 +1767,7 @@ async function completeWebsiteConsultationCheckout({
     patientPhone: phone,
     doctorId: doctorUid,
     doctorName: selectedDoctorName,
-    amount: amountNum,
+    amount: effectiveAmount,
     paymentId: savedPayment._id,
     doctorAvailableTime: doctorAvailableTime || doctor.availableTime || doctor.slotTime || ''
   });
@@ -1655,7 +1778,7 @@ async function completeWebsiteConsultationCheckout({
     doctorName: selectedDoctorName,
     patientName: name,
     patientPhone: phone,
-    amount: amountNum,
+    amount: effectiveAmount,
     paymentId: savedPayment._id,
     videoRoomId
   });
@@ -1687,9 +1810,17 @@ async function completeWebsiteConsultationCheckout({
           const payload = await buildStatusPayload(d);
           if (payload) emitDoctorStatus(d.name, payload);
         }
+        const timeoutRefund = effectiveAmount > 0
+          ? await refundConsultationForRoom(videoRoomId, 'doctor_timeout').catch((e) => ({
+              ok: false,
+              message: e.message
+            }))
+          : { ok: true, refunded: false, message: 'Consultation request timed out.' };
         notifyConsultationEvent(String(consultation._id), 'consultation:timeout', {
           consultationId: String(consultation._id),
-          message: 'Consultation request timed out.'
+          message: timeoutRefund.message || 'Consultation request timed out.',
+          refunded: !!timeoutRefund.refunded,
+          amount: timeoutRefund.amount || 0
         });
       }
     } catch (e) {
@@ -1704,7 +1835,8 @@ async function completeWebsiteConsultationCheckout({
     patientPhone: phone,
     doctorName: selectedDoctorName,
     roomId: videoRoomId,
-    amount: amountNum,
+    amount: effectiveAmount,
+    isFollowUp,
     doctorAvailableTime: consultation.doctorAvailableTime,
     status: 'ringing',
     expiresAt
@@ -1898,6 +2030,149 @@ app.get('/api/doctors/:doctorName/consultation-history', requireDoctorNameAccess
     } catch (err) {
         console.error('❌ Error fetching consultation history:', err);
         res.status(500).json({ message: 'Failed to fetch consultation history.', error: err.message });
+    }
+});
+
+app.get('/api/consultations/access-check', requireFirebaseAuth(), async (req, res) => {
+    try {
+        const doctorName = String(req.query.doctorName || '').trim();
+        if (!doctorName) {
+            return res.status(400).json({ message: 'doctorName is required.' });
+        }
+        const phone = req.query.phone || req.body?.phone || '';
+        const access = await findActiveAccess({
+            patientUid: req.firebaseUid,
+            patientPhone: phone,
+            doctorName
+        });
+        return res.json({
+            covered: !!access,
+            doctorName,
+            daysRemaining: access?.daysRemaining || 0,
+            expiresAt: access?.expiresAt || null,
+            message: access
+                ? `Free follow-up calls with ${doctorName} for ${access.daysRemaining} more day(s).`
+                : 'Consultation fee applies for this doctor.'
+        });
+    } catch (err) {
+        console.error('Access check error:', err);
+        return res.status(500).json({ message: 'Could not check consultation access.' });
+    }
+});
+
+app.get('/api/patient/consultation-access', requireFirebaseAuth(), async (req, res) => {
+    try {
+        const phone = req.query.phone || '';
+        const list = await listAccessForPatient(req.firebaseUid, phone);
+        return res.json(list.filter((row) => row.active));
+    } catch (err) {
+        console.error('List access error:', err);
+        return res.status(500).json({ message: 'Could not load consultation access.' });
+    }
+});
+
+app.post(
+    '/api/consultations/start-followup',
+    upload.fields([{ name: 'reports', maxCount: 5 }]),
+    requireFirebaseAuth(),
+    async (req, res) => {
+        try {
+            const { name, phone, address, selectedDoctorName, doctorAvailableTime } = req.body;
+            if (!name || !phone || !address || !selectedDoctorName) {
+                return res.status(400).json({ message: 'Patient details and doctor name are required.' });
+            }
+            const doctor = await findDoctorByName(selectedDoctorName);
+            if (!doctor) return res.status(404).json({ message: 'Doctor not found.' });
+            const fee = parseFloat(String(doctor.consultationFee ?? doctor.fee ?? '').replace(/[^\d.]/g, '')) || 0;
+            const access = await findActiveAccess({
+                patientUid: req.firebaseUid,
+                patientPhone: phone,
+                doctorName: selectedDoctorName
+            });
+            if (!access && fee > 0) {
+                return res.status(402).json({
+                    message: 'No active 15-day plan for this doctor. Please pay the consultation fee first.',
+                    requiresPayment: true
+                });
+            }
+            const result = await completeWebsiteConsultationCheckout({
+                firebaseUid: req.firebaseUid,
+                name,
+                phone,
+                address,
+                selectedDoctorName,
+                selectedDoctorFee: String(fee),
+                amountNum: 0,
+                doctorAvailableTime,
+                reportFiles: req.files?.reports || []
+            });
+            return res.status(201).json({
+                message: 'Free follow-up consultation started. Waiting for doctor to accept.',
+                payment: result.savedPayment,
+                consultation: result.consultation,
+                videoRoomId: result.videoRoomId,
+                roomId: result.videoRoomId,
+                isFollowUp: true
+            });
+        } catch (err) {
+            console.error('Start follow-up error:', err);
+            return res.status(err.status || 500).json({ message: err.message || 'Could not start follow-up call.' });
+        }
+    }
+);
+
+app.get('/api/patient/orders/:phoneOrUid', requirePatientPhoneAccess('phoneOrUid'), async (req, res) => {
+    try {
+        const { phoneOrUid } = req.params;
+        const identifiers = new Set([phoneOrUid]);
+        if (req.firebaseUid) identifiers.add(req.firebaseUid);
+        const customer = await findCustomerByPhone(phoneOrUid);
+        if (customer?.uid) identifiers.add(String(customer.uid));
+        const seen = new Set();
+        const merged = [];
+        for (const id of identifiers) {
+            const batch = await listOrdersForPatient(id);
+            for (const row of batch) {
+                const key = String(row.id || row.orderId);
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    merged.push(row);
+                }
+            }
+        }
+        merged.sort((a, b) => new Date(b.orderDate || 0).getTime() - new Date(a.orderDate || 0).getTime());
+        return res.json(merged);
+    } catch (err) {
+        console.error('Patient orders error:', err);
+        return res.status(500).json({ message: 'Failed to fetch orders.' });
+    }
+});
+
+app.get('/api/patient/dashboard/:phoneOrUid', requirePatientPhoneAccess('phoneOrUid'), async (req, res) => {
+    try {
+        const { phoneOrUid } = req.params;
+        const [consultations, prescriptions, orders, accessPlans] = await Promise.all([
+            listConsultationHistoryForPatient(phoneOrUid),
+            (async () => {
+                const phone = normalizePhone(phoneOrUid) || phoneOrUid;
+                const rx = await Prescription.find({}).sort({ createdAt: -1 });
+                return rx.filter((r) => {
+                    const d = r.toObject ? r.toObject() : r;
+                    return normalizePhone(d.phone) === phone || String(d.phone) === String(phoneOrUid);
+                });
+            })(),
+            listOrdersForPatient(phoneOrUid),
+            listAccessForPatient(req.firebaseUid, phoneOrUid)
+        ]);
+        return res.json({
+            consultations,
+            prescriptions: prescriptions.map((r) => (r.toObject ? r.toObject() : r)),
+            orders,
+            accessPlans: accessPlans.filter((a) => a.active)
+        });
+    } catch (err) {
+        console.error('Patient dashboard error:', err);
+        return res.status(500).json({ message: 'Failed to load dashboard.' });
     }
 });
 
@@ -2135,13 +2410,35 @@ app.get('/api/reports/:roomId', async (req, res) => {
       console.log('🔍 Fetching reports for room:', roomId);
 
       const payment = await Payment.findOne({ roomName: roomId }).sort({ createdAt: -1 });
-
+      let consultation = null;
       if (!payment) {
-        return res.status(404).json({ message: 'Payment not found for this room' });
+        consultation = await ConsultationRequest.findOne({
+          $or: [{ roomId }, { videoRoomId: roomId }]
+        }).sort({ createdAt: -1 });
+        if (!consultation) {
+          return res.status(404).json({ message: 'No consultation found for this room' });
+        }
       }
 
-      const rawReports = Array.isArray(payment.reports) ? payment.reports : [];
-      const reports = await resolveReportEntries(rawReports, payment.createdAt);
+      const patientPhone = payment?.phone || consultation?.patientPhone || '';
+      const patientName = payment?.name || consultation?.patientName || '';
+      const rawConsultationReports = Array.isArray(payment?.reports) ? payment.reports : [];
+      const consultationReports = await resolveReportEntries(
+        rawConsultationReports,
+        payment?.createdAt || consultation?.createdAt
+      );
+
+      let previousReports = [];
+      if (patientPhone) {
+        const customer = await findCustomerByPhone(patientPhone);
+        if (customer && Array.isArray(customer.reports) && customer.reports.length) {
+          const currentSet = new Set(rawConsultationReports.map((r) => String(r || '').trim()));
+          const previousRaw = customer.reports.filter((r) => !currentSet.has(String(r || '').trim()));
+          previousReports = await resolveReportEntries(previousRaw, customer.createdAt);
+        }
+      }
+
+      const reports = consultationReports.concat(previousReports);
 
       let prescribedItems = [];
       try {
@@ -2155,23 +2452,25 @@ app.get('/api/reports/:roomId', async (req, res) => {
 
       res.json({
         reports,
+        consultationReports,
+        previousReports,
         prescribedItems,
         patientInfo: {
-          name: payment.name,
-          phone: payment.phone,
-          address: payment.address,
-          doctor: payment.selectedDoctorName,
-          doctorFee: payment.selectedDoctorFee,
-          amountPaid: payment.amount,
-          registrationDate: payment.createdAt
+          name: patientName,
+          phone: patientPhone,
+          address: payment?.address || '',
+          doctor: payment?.selectedDoctorName || consultation?.doctorName || '',
+          doctorFee: payment?.selectedDoctorFee,
+          amountPaid: payment?.amount,
+          registrationDate: payment?.createdAt || consultation?.createdAt
         },
-        paymentInfo: {
+        paymentInfo: payment ? {
           name: payment.name,
           phone: payment.phone,
           address: payment.address,
           total: payment.amount,
           createdAt: payment.createdAt
-        }
+        } : null
       });
 
     } catch (err) {
@@ -2599,7 +2898,9 @@ async function validateVideoRoomAccess(roomId, role) {
         return {
             ok: false,
             status: 403,
-            message: messages[status] || 'This consultation is not ready for video call yet.'
+            message: messages[status] || 'This consultation is not ready for video call yet.',
+            payment: ctx.payment,
+            consultation: ctx.consultation
         };
     }
     return { ok: true, ...ctx, status };
@@ -2628,7 +2929,7 @@ async function markConsultationCompleted(roomId) {
     const ctx = await loadRoomContext(roomId);
     if (!ctx) return;
     const current = consultationStatusOf(ctx.consultation, ctx.payment);
-    const canComplete = ['accepted', 'in_call', 'completed'];
+    const canComplete = ['in_call', 'completed'];
     if (!canComplete.includes(current)) return;
 
     if (ctx.consultation) {
@@ -2660,10 +2961,19 @@ app.get('/api/video-room/:roomId/access', async (req, res) => {
         const role = req.query.role || 'patient';
         const access = await validateVideoRoomAccess(req.params.roomId, role);
         if (!access.ok) {
-            return res.status(access.status || 403).json({
+            const deniedStatus = access.payment || access.consultation
+                ? consultationStatusOf(access.consultation, access.payment)
+                : '';
+            const payload = {
                 canJoin: false,
-                message: access.message
-            });
+                message: access.message,
+                consultationStatus: deniedStatus
+            };
+            if (access.payment) {
+                payload.refundStatus = access.payment.refundStatus || '';
+                payload.refunded = access.payment.refundStatus === 'processed';
+            }
+            return res.status(access.status || 403).json(payload);
         }
         return res.json({
             canJoin: true,
@@ -2683,6 +2993,33 @@ app.post('/api/video-room/:roomId/call-ended', async (req, res) => {
     } catch (err) {
         console.error('Call ended error:', err);
         return res.status(500).json({ message: 'Could not update consultation status.' });
+    }
+});
+
+app.post('/api/video-room/:roomId/refund', async (req, res) => {
+    try {
+        const reason = String(req.body?.reason || 'connection_failed').trim();
+        const result = await refundConsultationForRoom(req.params.roomId, reason);
+        if (!result.ok) {
+            return res.status(result.status || 400).json({
+                refunded: false,
+                message: result.message
+            });
+        }
+        return res.json({
+            refunded: !!result.refunded,
+            alreadyRefunded: !!result.alreadyRefunded,
+            freeConsultation: !!result.freeConsultation,
+            amount: result.amount || 0,
+            refundId: result.refundId || null,
+            message: result.message
+        });
+    } catch (err) {
+        console.error('Video room refund error:', err);
+        return res.status(500).json({
+            refunded: false,
+            message: 'Could not process refund. Please contact support.'
+        });
     }
 });
 
@@ -3100,12 +3437,27 @@ app.post('/api/consultations/:id/reject', requireConsultationDoctor(), async (re
       if (payload) emitDoctorStatus(doctor.name, payload);
     }
 
+    const roomId = consultation.roomId || consultation.videoRoomId || '';
+    const rejectRefund = roomId
+      ? await refundConsultationForRoom(roomId, 'doctor_rejected').catch((e) => ({
+          ok: false,
+          message: e.message
+        }))
+      : { ok: false };
+
     notifyConsultationEvent(String(consultation._id), 'consultation:rejected', {
       consultationId: String(consultation._id),
-      message: 'Doctor declined the consultation.'
+      message: rejectRefund.message || 'Doctor declined the consultation.',
+      refunded: !!rejectRefund.refunded,
+      amount: rejectRefund.amount || 0
     });
 
-    return res.json({ message: 'Consultation rejected', consultation });
+    return res.json({
+      message: rejectRefund.message || 'Consultation rejected',
+      consultation,
+      refunded: !!rejectRefund.refunded,
+      amount: rejectRefund.amount || 0
+    });
   } catch (err) {
     console.error('Reject consultation error:', err);
     return res.status(500).json({ message: 'Server error' });
@@ -3130,6 +3482,13 @@ app.post('/api/consultations/:id/cancel', async (req, res) => {
       await updateDoctorPresence(doctor, 'Available');
       const payload = await buildStatusPayload(doctor);
       if (payload) emitDoctorStatus(doctor.name, payload);
+    }
+
+    const cancelRoomId = consultation.roomId || consultation.videoRoomId || '';
+    if (cancelRoomId) {
+      await refundConsultationForRoom(cancelRoomId, 'consultation_cancelled').catch((e) => {
+        console.error('Cancel consultation refund error:', e.message);
+      });
     }
 
     notifyConsultationEvent(String(consultation._id || consultation.id), 'consultation:cancelled', {

@@ -216,11 +216,19 @@
       var key = normalizeBrandKey(s.name || s._id);
       if (!key) key = String(s._id || '').toLowerCase();
       if (!map[key]) {
-        map[key] = Object.assign({}, s);
+        map[key] = Object.assign({}, s, {
+          medicines: (s.medicines || []).slice()
+        });
         return;
       }
-      map[key].medicineCount = (map[key].medicineCount || 0) + (s.medicineCount || 0);
-      if ((s.name || '').length <= (map[key].name || '').length) map[key].name = s.name;
+      var existing = map[key];
+      existing.medicineCount = (existing.medicineCount || 0) + (s.medicineCount || 0);
+      if ((s.name || '').length > (existing.name || '').length) existing.name = s.name;
+      if (s._id && !existing._id) existing._id = s._id;
+      existing.medicines = mergeProducts(
+        (existing.medicines || []).concat(s.medicines || []),
+        existing.name
+      );
     });
     return Object.keys(map).map(function (k) { return map[k]; });
   }

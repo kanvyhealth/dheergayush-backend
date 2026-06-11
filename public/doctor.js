@@ -63,7 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('doctorSpecialization', data.doctor.specialization || (data.doctor.specializations && data.doctor.specializations[0]) || '');
                 localStorage.setItem('doctorUid', data.doctor.uid || '');
             }
-            setTimeout(() => { window.location.href = 'doctor1.html'; }, 1000);
+            var redirectTo = data.redirectTo || '/doctor1.html';
+            setTimeout(function () { window.location.href = redirectTo; }, 1000);
         } catch (error) {
             console.error('Doctor login error:', error);
             showMessage(error.message || 'Invalid email or password.', 'error');

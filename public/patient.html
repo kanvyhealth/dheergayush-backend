@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Patient Portal - Dheergayush</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Roboto:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -300,6 +300,69 @@
                 grid-template-columns: 1fr;
             }
         }
+        .dg-patient-dashboard {
+            width: min(1100px, 96vw);
+            margin: 24px auto;
+            padding: 0 max(12px, env(safe-area-inset-right)) 24px max(12px, env(safe-area-inset-left));
+        }
+        .dg-dash-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 16px 0;
+            justify-content: center;
+        }
+        .dg-dash-tab {
+            border: 1px solid #f26727;
+            background: #fff;
+            color: #f26727;
+            border-radius: 999px;
+            padding: 8px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .dg-dash-tab.active {
+            background: #f26727;
+            color: #fff;
+        }
+        .dg-dash-panel { display: none; }
+        .dg-dash-panel.active { display: block; }
+        .dg-dash-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .dg-dash-stat {
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        }
+        .dg-dash-stat strong { display: block; font-size: 1.4rem; color: #f26727; }
+        .dg-followup-btn {
+            margin-top: 10px;
+            background: #16a34a;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            touch-action: manipulation;
+        }
+        #appointmentsSection.visible {
+            position: relative;
+            top: auto;
+            left: auto;
+            transform: none;
+            width: 100%;
+            max-width: none;
+            display: block !important;
+        }
     </style>
 </head>
 <body class="dg-page auth-page">
@@ -339,7 +402,7 @@
                         <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
                     </svg>
                 </div>
-                <p class="button__text">Your Appointments</p>
+                <p class="button__text">My Health Dashboard</p>
             </div>
         </button>
         <button class="button" id="newAppointmentBtn">
@@ -354,9 +417,20 @@
         </button>
     </div>
 
-    <div id="appointmentsSection">
-        <h2>Your Appointments</h2>
-        <p id="noAppointmentsMessage" style="color: #666; font-size: 1.2em; text-align: center; grid-column: 1 / -1; display: none;">No appointments found.</p>
+    <div id="appointmentsSection" class="dg-patient-dashboard">
+        <h2>My Health Dashboard</h2>
+        <div class="dg-dash-stats" id="patientDashStats"></div>
+        <div class="dg-dash-tabs" role="tablist">
+            <button type="button" class="dg-dash-tab active" data-tab="appointments">Appointments</button>
+            <button type="button" class="dg-dash-tab" data-tab="consultations">Consultations</button>
+            <button type="button" class="dg-dash-tab" data-tab="prescriptions">Prescriptions</button>
+            <button type="button" class="dg-dash-tab" data-tab="orders">Orders</button>
+        </div>
+        <div class="dg-dash-panel active" id="tab-appointments" data-panel="appointments"></div>
+        <div class="dg-dash-panel" id="tab-consultations" data-panel="consultations"></div>
+        <div class="dg-dash-panel" id="tab-prescriptions" data-panel="prescriptions"></div>
+        <div class="dg-dash-panel" id="tab-orders" data-panel="orders"></div>
+        <p id="noAppointmentsMessage" style="color: #666; font-size: 1.2em; text-align: center; display: none;">No records found.</p>
     </div>
 
     <script src="js/dg-auth.js"></script>

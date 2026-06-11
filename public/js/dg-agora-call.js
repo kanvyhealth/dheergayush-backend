@@ -120,6 +120,11 @@
       await client.subscribe(user, mediaType);
       if (mediaType === 'video' && user.videoTrack && remoteEl) {
         user.videoTrack.play(remoteEl, { fit: 'cover' });
+        const vid = remoteEl.querySelector('video');
+        if (vid) {
+          vid.setAttribute('playsinline', 'true');
+          vid.setAttribute('webkit-playsinline', 'true');
+        }
       }
       if (mediaType === 'audio' && user.audioTrack) {
         user.audioTrack.setVolume(100);
@@ -265,7 +270,15 @@
     );
 
     const videoTrack = getCamTrack();
-    if (videoTrack) videoTrack.play(uiRefs.local);
+    if (videoTrack) {
+      videoTrack.play(uiRefs.local);
+      const localVid = uiRefs.local && uiRefs.local.querySelector('video');
+      if (localVid) {
+        localVid.setAttribute('playsinline', 'true');
+        localVid.setAttribute('webkit-playsinline', 'true');
+        localVid.setAttribute('muted', 'true');
+      }
+    }
     if (localTracks.length) await client.publish(localTracks);
     joined = true;
     updateInCallControlButtons();

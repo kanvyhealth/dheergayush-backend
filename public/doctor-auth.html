@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Login &amp; Registration — DHEERGAYUSH</title>
+    <meta name="description" content="Sign in or register as an Ayurvedic doctor on DHEERGAYUSH. Join our network of certified practitioners.">
+    <meta name="robots" content="index, follow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/dheergayush-theme.css">
+    <link rel="stylesheet" href="css/dg-premium-icons.css?v=3">
+    <link rel="stylesheet" href="css/dg-landing.css?v=5">
+    <link rel="stylesheet" href="css/dheergayush-forms.css">
+</head>
+<body class="dg-page dg-landing-page dg-doctor-auth-page">
+    <div class="dg-landing-bg" aria-hidden="true">
+        <span class="dg-landing-orb dg-landing-orb--1"></span>
+        <span class="dg-landing-orb dg-landing-orb--2"></span>
+        <span class="dg-landing-orb dg-landing-orb--3"></span>
+    </div>
+
+    <header class="dg-landing-nav">
+        <div class="dg-landing-nav-inner">
+            <a href="/" class="dg-nav-logo" aria-label="DHEERGAYUSH home">
+                <img src="/logos/logo-horizontal.png" alt="DHEERGAYUSH" onerror="this.style.display='none';this.nextElementSibling.style.display='inline';">
+                <span class="dg-nav-logo-text">DHEERGAYUSH</span>
+            </a>
+            <nav class="dg-landing-nav-actions" aria-label="Page navigation">
+                <a href="landingpage.html" class="dg-home-link dg-home-link--muted">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                    Patient access
+                </a>
+                <a href="/" class="dg-home-link">
+                    <i class="fas fa-house" aria-hidden="true"></i>
+                    Home
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="dg-doctor-auth-shell">
+        <section class="dg-doctor-auth-hero" aria-label="Doctor portal">
+            <div class="dg-landing-eyebrow">
+                <i class="fas fa-user-md" aria-hidden="true"></i>
+                Doctor Portal
+            </div>
+            <h1 class="dg-landing-title">Join Doctors with DHEERGAYUSH</h1>
+            <p class="dg-landing-lead">
+                Sign in to your practitioner account or register to offer secure Ayurvedic video consultations on our platform.
+            </p>
+        </section>
+
+        <section class="dg-doctor-auth-panel" aria-label="Doctor login and registration">
+            <div class="dg-doctor-auth-tabs" role="tablist" aria-label="Doctor account type">
+                <button type="button" class="dg-doctor-auth-tab active" id="doctorTabLogin" role="tab" aria-selected="true" aria-controls="doctorLoginPanel" data-tab="login">
+                    <i class="fas fa-right-to-bracket" aria-hidden="true"></i>
+                    Login
+                </button>
+                <button type="button" class="dg-doctor-auth-tab" id="doctorTabRegister" role="tab" aria-selected="false" aria-controls="doctorRegisterPanel" data-tab="register">
+                    <i class="fas fa-user-plus" aria-hidden="true"></i>
+                    Register
+                </button>
+            </div>
+
+            <div class="dg-doctor-auth-card visible" id="doctorLoginPanel" role="tabpanel" aria-labelledby="doctorTabLogin">
+                <h2 class="dg-landing-panel-title">Doctor Login</h2>
+                <p class="dg-landing-panel-sub">Use the same email and password as the DHEERGAYUSH mobile app</p>
+                <form id="doctorLoginForm" class="dg-doctor-auth-form">
+                    <div class="form-group">
+                        <label for="doctorEmail">Email</label>
+                        <input type="email" id="doctorEmail" name="doctorEmail" placeholder="doctor@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="doctorPassword">Password</label>
+                        <input type="password" id="doctorPassword" name="doctorPassword" placeholder="Password" required minlength="6">
+                    </div>
+                    <button type="submit" class="dg-landing-doctor-cta-btn dg-doctor-auth-submit">
+                        <i class="fas fa-right-to-bracket" aria-hidden="true"></i>
+                        Login to Dashboard
+                    </button>
+                    <div id="message" class="message" role="alert"></div>
+                </form>
+            </div>
+
+            <div class="dg-doctor-auth-card hidden" id="doctorRegisterPanel" role="tabpanel" aria-labelledby="doctorTabRegister" hidden>
+                <h2 class="dg-landing-panel-title">Doctor Registration</h2>
+                <p class="dg-landing-panel-sub">Create your practitioner profile. Admin approval is required before you can take consultations.</p>
+                <ul class="dg-doctor-auth-benefits">
+                    <li><i class="fas fa-video" aria-hidden="true"></i> Secure HD video consultations</li>
+                    <li><i class="fas fa-file-prescription" aria-hidden="true"></i> Digital prescriptions &amp; records</li>
+                    <li><i class="fas fa-mobile-screen" aria-hidden="true"></i> Same account on web &amp; Android app</li>
+                </ul>
+                <button type="button" class="dg-landing-doctor-cta-btn" id="doctorRegisterContinueBtn">
+                    <i class="fas fa-user-plus" aria-hidden="true"></i>
+                    Continue Registration
+                </button>
+                <p class="dg-doctor-auth-note">You will complete your profile, upload credentials, and set consultation fees on the next step.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="dg-landing-footer">
+        <div class="dg-landing-footer-inner">
+            <p>&copy; 2026 DHEERGAYUSH INDIA PRIVATE LIMITED</p>
+            <nav class="dg-landing-footer-links" aria-label="Legal links">
+                <a href="PrivacyPage.html">Privacy</a>
+                <a href="terms.html">Terms</a>
+                <a href="contact-us.html">Contact</a>
+                <a href="support.html">Support</a>
+            </nav>
+        </div>
+    </footer>
+
+    <script src="js/dg-auth.js"></script>
+    <script src="doctor.js"></script>
+    <script src="js/doctor-auth.js"></script>
+    <script src="js/dg-responsive-nav.js"></script>
+</body>
+</html>

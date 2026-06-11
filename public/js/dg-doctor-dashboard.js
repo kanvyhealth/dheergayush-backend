@@ -249,16 +249,100 @@
     }
   }
 
+  async function loadPrescriptionHistory(forceRefresh) {
+    var doctorName = localStorage.getItem('doctorName');
+    if (!doctorName) return;
+    var loading = document.getElementById('dgDocRxLoading');
+    var wrap = document.getElementById('dgDocRxTableWrap');
+    var empty = document.getElementById('dgDocRxEmpty');
+    var tbody = document.getElementById('dgDocRxTbody');
+    if (!tbody) return;
+    if (loading) loading.style.display = 'block';
+    if (wrap) wrap.style.display = 'none';
+    if (empty) empty.style.display = 'none';
+    try {
+      var headers = {};
+      var token = localStorage.getItem('firebaseIdToken');
+      if (token) headers.Authorization = 'Bearer ' + token;
+      var url = '/api/prescriptions/doctor/' + encodeURIComponent(doctorName);
+      if (forceRefresh) url += '?t=' + Date.now();
+      var res = await fetch(url, { headers: headers });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Could not load prescriptions');
+      var list = Array.isArray(data) ? data : [];
+      tbody.innerHTML = '';
+      if (!list.length) {
+        if (empty) empty.style.display = 'block';
+        return;
+      }
+      if (wrap) wrap.style.display = 'block';
+      list.forEach(function (rx) {
+        var items = Array.isArray(rx.items) ? rx.items : [];
+        var summary = items.slice(0, 2).map(function (i) { return i.name || 'Medicine'; }).join(', ');
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td data-label="Patient">' + escapeHtml(rx.name || rx.phone || '—') + '</td>' +
+          '<td data-label="Medicines">' + escapeHtml(summary || '—') + (items.length > 2 ? '…' : '') + '</td>' +
+          '<td data-label="Total">' + escapeHtml(formatAmount(rx.total)) + '</td>' +
+          '<td data-label="Status">' + escapeHtml(rx.status || 'pending') + '</td>' +
+          '<td data-label="Date">' + escapeHtml(formatDate(rx.createdAt)) + '</td>';
+        tbody.appendChild(tr);
+      });
+      renderDoctorOrdersFromPrescriptions(list);
+    } catch (err) {
+      console.error('Prescription history error:', err);
+      if (empty) {
+        empty.style.display = 'block';
+        empty.innerHTML = '<p><strong>Could not load prescriptions</strong></p><p style="font-size:0.85rem;color:#888;">' + escapeHtml(err.message) + '</p>';
+      }
+    } finally {
+      if (loading) loading.style.display = 'none';
+    }
+  }
+
+  function renderDoctorOrdersFromPrescriptions(prescriptions) {
+    var tbody = document.getElementById('dgDocOrdersTbody');
+    var wrap = document.getElementById('dgDocOrdersTableWrap');
+    var empty = document.getElementById('dgDocOrdersEmpty');
+    if (!tbody) return;
+    var withOrders = (prescriptions || []).filter(function (rx) { return rx.orderId; });
+    tbody.innerHTML = '';
+    if (!withOrders.length) {
+      if (wrap) wrap.style.display = 'none';
+      if (empty) empty.style.display = 'block';
+      return;
+    }
+    if (wrap) wrap.style.display = 'block';
+    if (empty) empty.style.display = 'none';
+    withOrders.forEach(function (rx) {
+      var items = Array.isArray(rx.items) ? rx.items : [];
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td data-label="Patient">' + escapeHtml(rx.name || rx.phone || '—') + '</td>' +
+        '<td data-label="Items">' + escapeHtml(String(items.length)) + ' item(s)</td>' +
+        '<td data-label="Total">' + escapeHtml(formatAmount(rx.total)) + '</td>' +
+        '<td data-label="Status">' + escapeHtml(rx.status || 'pending') + '</td>' +
+        '<td data-label="Date">' + escapeHtml(formatDate(rx.createdAt)) + '</td>';
+      tbody.appendChild(tr);
+    });
+  }
+
   function init() {
     setDoctorHeaderInfo();
     initFilters();
     loadConsultationHistory(false);
+    loadPrescriptionHistory(false);
     setInterval(function () { loadConsultationHistory(false); }, 60000);
+    var rxRefresh = document.getElementById('dgDocRxRefresh');
+    if (rxRefresh) rxRefresh.addEventListener('click', function () { loadPrescriptionHistory(true); });
+    var ordersRefresh = document.getElementById('dgDocOrdersRefresh');
+    if (ordersRefresh) ordersRefresh.addEventListener('click', function () { loadPrescriptionHistory(true); });
   }
 
   global.DgDoctorDashboard = {
     init: init,
     refresh: loadConsultationHistory,
+    refreshPrescriptions: loadPrescriptionHistory,
     getConsultations: function () { return allConsultations.slice(); }
   };
 

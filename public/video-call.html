@@ -31,7 +31,11 @@ html, body {
 
         #root {
             width: 100vw;
+            height: 100dvh;
             height: 100vh;
+            position: fixed;
+            inset: 0;
+            z-index: 5;
         }
 
     /* Fix for pre-join layout */
@@ -273,6 +277,27 @@ html, body {
     .dg-vcall-dock-btn--reports {
       background: #3498db;
     }
+    .dg-vcall-dock-btn--reports::after {
+      content: 'Reports';
+      position: absolute;
+      left: calc(100% + 8px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(30, 30, 30, 0.92);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .dg-vcall-dock-btn--reports:hover::after,
+    .dg-vcall-dock-btn--reports:focus-visible::after {
+      opacity: 1;
+    }
     .dg-vcall-dock-btn .cart-badge {
       top: -4px;
       right: -4px;
@@ -355,6 +380,38 @@ html, body {
       }
       .dg-agora-leave {
         width: min(100%, 280px);
+      }
+      #join-btn,
+      .dg-agora-ctrl,
+      .dg-agora-leave,
+      #dg-agora-resume-audio {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+      #custom-prejoin .right-panel {
+        position: sticky;
+        bottom: 0;
+        background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #fff 24%);
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+        z-index: 2;
+      }
+      #join-btn {
+        width: 100%;
+        min-height: 48px;
+        font-size: 1rem;
+      }
+      .dg-agora-autoplay {
+        bottom: max(100px, calc(88px + env(safe-area-inset-bottom, 0px))) !important;
+        left: 12px !important;
+        right: 12px !important;
+        width: auto !important;
+        max-width: none !important;
+        padding: 14px 16px !important;
+      }
+      #dg-agora-resume-audio {
+        min-height: 44px;
+        width: 100%;
+        font-size: 1rem;
       }
     }
     @media (max-width: 896px) and (orientation: landscape) {
@@ -521,9 +578,254 @@ html, body {
       background: #2980b9;
     }
 
-    #prescription-btn,
-    #reports-btn {
-      display: none !important;
+    /* Legacy standalone buttons hidden; doctor dock buttons use .dg-vcall-dock-btn */
+
+    .vcall-brands-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+      max-height: 110px;
+      overflow-y: auto;
+    }
+    .vcall-brand-chip {
+      border: 1px solid #e8c9a8;
+      background: #fffaf5;
+      color: #3c3c3c;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .vcall-brand-chip.active,
+    .vcall-brand-chip:hover {
+      background: linear-gradient(135deg, #f26727, #ff8a50);
+      border-color: transparent;
+      color: #3c3c3c;
+    }
+    .vcall-product-count {
+      margin: 0 0 10px;
+      font-size: 0.82rem;
+      color: #666;
+    }
+    .vcall-product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 12px;
+    }
+    .vcall-product-card {
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .vcall-product-img-wrap {
+      aspect-ratio: 1;
+      background: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+    }
+    .vcall-product-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .vcall-product-img-fallback {
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      color: #f26727;
+      font-size: 1.6rem;
+    }
+    .vcall-product-body {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+    .vcall-product-brand {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #f26727;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .vcall-product-title {
+      margin: 0;
+      font-size: 0.82rem;
+      line-height: 1.3;
+      color: #2c3e50;
+      min-height: 2.4em;
+    }
+    .vcall-product-desc {
+      margin: 0;
+      font-size: 0.72rem;
+      color: #777;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .vcall-product-rating {
+      font-size: 0.68rem;
+      color: #888;
+    }
+    .vcall-rating-num { font-weight: 700; color: #f26727; margin-left: 4px; }
+    .vcall-product-price {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #2c3e50;
+    }
+    .vcall-price-note { font-size: 0.68rem; font-weight: 500; color: #888; }
+    .vcall-pack-label,
+    .vcall-pack-single {
+      font-size: 0.72rem;
+      color: #555;
+    }
+    .vcall-product-weight {
+      width: 100%;
+      font-size: 0.72rem;
+      margin-bottom: 4px;
+    }
+    .vcall-product-actions {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .vcall-product-qty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .vcall-qty-btn {
+      width: 28px;
+      height: 28px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+    }
+    .vcall-add-btn {
+      border: none;
+      border-radius: 8px;
+      background: #4CAF50;
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 8px;
+      cursor: pointer;
+    }
+    .vcall-add-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .vcall-browse-only-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: #666;
+      justify-content: center;
+      padding: 6px 0;
+    }
+    .vcall-load-more-btn {
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      border: 1px solid #f26727;
+      border-radius: 8px;
+      background: #fff;
+      color: #f26727;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .vcall-empty-catalog {
+      text-align: center;
+      color: #7f8c8d;
+      padding: 20px 10px;
+    }
+    .vcall-rx-item {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding: 12px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #fff, #f8f9fa);
+      border: 1px solid #e8e8e8;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .vcall-rx-thumb-wrap {
+      width: 72px;
+      height: 72px;
+      flex-shrink: 0;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .vcall-rx-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .vcall-rx-thumb-fallback {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f26727;
+      font-size: 1.4rem;
+    }
+    .vcall-rx-details { flex: 1; min-width: 0; }
+    .vcall-rx-brand {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #f26727;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .vcall-rx-name {
+      display: block;
+      font-size: 0.95rem;
+      color: #2c3e50;
+      margin-bottom: 4px;
+    }
+    .vcall-rx-desc {
+      margin: 0 0 6px;
+      font-size: 0.75rem;
+      color: #666;
+      line-height: 1.35;
+    }
+    .vcall-rx-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.74rem;
+      color: #555;
+      margin-bottom: 4px;
+    }
+    .vcall-rx-meta i { color: #f26727; margin-right: 3px; }
+    .vcall-rx-line-total {
+      font-size: 0.82rem;
+      color: #2c3e50;
     }
 
     body.vcall-in-call .prescription-modal {
@@ -556,11 +858,6 @@ html, body {
       justify-content: center;
     }
 
-    /* Reports button — legacy hidden; use doctor dock */
-    #reports-btn {
-      display: none !important;
-    }
-
     /* Reports Modal Styles */
     .reports-modal {
       display: none;
@@ -578,11 +875,30 @@ html, body {
       background-color: #fff;
       margin: 50px auto;
       padding: 20px;
-      width: 80%;
-            max-width: 600px;
-      border-radius: 8px;
-      max-height: 80vh;
-            overflow-y: auto;
+      width: min(92vw, 720px);
+      border-radius: 12px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+    }
+    .reports-section-title {
+      margin: 18px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid rgba(52, 152, 219, 0.25);
+      font-size: 1rem;
+      color: #2c3e50;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .reports-section-title i {
+      color: #3498db;
+    }
+    .reports-empty-note {
+      text-align: center;
+      color: #7f8c8d;
+      padding: 12px 8px;
+      font-size: 0.9rem;
     }
 
     .reports-list {
@@ -1444,45 +1760,51 @@ html, body {
             letter-spacing: -0.02em;
         }
 
-        #username-input {
+        .vcall-profile-card {
             width: 100%;
-            padding: 0.9rem 1.2rem;
-            border: 1px solid #ddd;
-            border-radius: 0.75rem;
-            font-size: 1rem;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            box-sizing: border-box; /* Include padding in width */
+            padding: 1rem 1.1rem;
+            border-radius: 0.85rem;
+            background: linear-gradient(135deg, rgba(255, 248, 225, 0.9), rgba(255, 255, 255, 0.95));
+            border: 1px solid rgba(242, 103, 39, 0.18);
+            text-align: center;
+            box-sizing: border-box;
         }
-
-        #username-input:focus {
-            outline: none;
-            border-color: #6a8cff;
-            box-shadow: 0 0 0 3px rgba(106, 140, 255, 0.2);
+        .vcall-profile-label {
+            margin: 0 0 0.35rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: #888;
         }
-
-        .role-selection {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            font-size: 1.05rem;
-            color: #555;
+        .vcall-profile-name {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2c3e50;
         }
-
-        .role-selection label {
-            display: flex;
+        .vcall-profile-role {
+            margin: 0.35rem 0 0;
+            display: inline-flex;
             align-items: center;
-            cursor: pointer;
-            position: relative;
+            gap: 0.35rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            background: rgba(242, 103, 39, 0.12);
+            color: #f26727;
+            font-size: 0.82rem;
+            font-weight: 700;
         }
-
-        .role-selection input[type="radio"] {
-            /* Make the default radio button visible and interactive */
-            position: static; /* Revert to normal positioning */
-            margin-right: 8px; /* Add some space between radio and label text */
-            width: 18px; /* Give it a reasonable size */
-            height: 18px;
-            vertical-align: middle; /* Align with text */
-            cursor: pointer;
+        .vcall-permission-note {
+            margin: 0;
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: #666;
+            text-align: center;
+        }
+        .vcall-permission-note i {
+            color: #f26727;
+            margin-right: 4px;
         }
 
         #join-btn {
@@ -1615,7 +1937,7 @@ html, body {
       <i class="fas fa-shopping-cart"></i>
       <span class="cart-badge" id="cart-badge">0</span>
     </button>
-    <button type="button" id="reports-btn" class="dg-vcall-dock-btn dg-vcall-dock-btn--reports" title="View patient reports" aria-label="View patient reports">
+    <button type="button" id="reports-btn" class="dg-vcall-dock-btn dg-vcall-dock-btn--reports" title="View patient submitted reports" aria-label="View patient submitted reports">
       <i class="fas fa-file-medical"></i>
     </button>
   </div>
@@ -1638,18 +1960,15 @@ html, body {
 
         <div class="right-panel">
             <h2>Join Video Call</h2>
-            <input type="text" id="username-input" placeholder="Enter your name">
-
-            <div class="role-selection">
-                <label>
-                    <input type="radio" name="role" value="doctor">
-                    Doctor
-                </label>
-                <label>
-                    <input type="radio" name="role" value="patient">
-                    Patient
-                </label>
+            <div class="vcall-profile-card" id="vcall-profile-card" aria-live="polite">
+                <p class="vcall-profile-label">Joining as</p>
+                <p id="vcall-profile-name" class="vcall-profile-name">Loading profile…</p>
+                <p id="vcall-profile-role" class="vcall-profile-role"><i class="fas fa-user"></i> Patient</p>
             </div>
+            <p class="vcall-permission-note">
+                <i class="fas fa-shield-halved"></i>
+                Allow camera and microphone access below, then join the consultation.
+            </p>
 
             <div class="toggle-buttons">
                 <button type="button" id="toggle-camera" title="Toggle camera" aria-label="Toggle camera">
@@ -1680,7 +1999,7 @@ html, body {
     <div id="root"></div>
 
   <!-- Legacy hidden buttons kept for JS compatibility -->
-  <div id="prescription-card" style="display: none; position: fixed; bottom: 20px; right: 20px; width: 400px; max-height: 600px; background: linear-gradient(135deg, #ffffff, #f8f9fa); border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.35); overflow-y: auto; padding: 20px; z-index: 10000; transition: transform 0.4s ease, opacity 0.4s ease;">
+  <div id="prescription-card" style="display: none; position: fixed; bottom: 20px; right: 20px; width: min(440px, calc(100vw - 24px)); max-height: 70vh; background: linear-gradient(135deg, #ffffff, #f8f9fa); border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.35); overflow-y: auto; padding: 20px; z-index: 10000; transition: transform 0.4s ease, opacity 0.4s ease;">
 
   <!-- Close Button -->
   <div onclick="document.getElementById('prescription-card').style.display='none'" 
@@ -1742,24 +2061,13 @@ html, body {
         </div>
 
         <div class="tab-content active" id="stores">
-          <div class="store-navigation">
-            <button class="back-to-stores-btn" id="back-to-stores-btn" style="display: none;">
-              <i class="fas fa-chevron-left"></i> Back to Stores
-            </button>
-            <div class="current-store" id="current-store"></div>
-            </div>
-
-          <div class="store-buttons" id="store-buttons"></div>
-
-          <div class="store-categories" style="display: none;"> <button class="category-btn active" data-category="all">All</button>
-            <button class="category-btn" data-category="organic">Patent</button>
-            <button class="category-btn" data-category="general">Classical</button>
-        </div>
-
-        <div id="prescription-view" style="display: none;">
-            <h2 id="medicine-list-title">Medicines</h2>
+          <div class="vcall-brands-strip" id="vcall-brands-strip"></div>
+          <div id="prescription-view">
+            <h2 id="medicine-list-title">Ayurvedic Store</h2>
+            <p id="vcall-product-count" class="vcall-product-count"></p>
             <div class="medicine-list" id="medicine-list"></div>
-        </div>
+            <button type="button" id="vcall-load-more-btn" class="vcall-load-more-btn" style="display:none;">Load more products</button>
+          </div>
     
           <div class="manual-report-upload">
             <h4>Manual Report Upload</h4>
@@ -1798,7 +2106,7 @@ html, body {
   <div class="reports-modal" id="reports-modal">
     <div class="reports-modal-content">
       <div class="modal-header">
-        <h3>Patient Reports</h3>
+        <h3>Patient Submitted Reports</h3>
         <button class="refresh-btn" id="refresh-btn">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -1816,6 +2124,9 @@ html, body {
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script src="js/dg-store-payment.js"></script>
   <script src="js/dg-catalog-merge.js"></script>
+  <script src="js/dg-store-categories.js"></script>
+  <script src="js/medicine-images.js"></script>
+  <script src="js/dg-vcall-store.js"></script>
 <script>
         // Agora credentials loaded from server (set AGORA_APP_ID + AGORA_APP_CERTIFICATE in .env)
 
@@ -1839,35 +2150,84 @@ html, body {
         const toggleMicButton = document.getElementById('toggle-mic');
         const cameraOffMessage = document.querySelector('.camera-off-message');
         const joinButton = document.getElementById('join-btn');
-        const usernameInput = document.getElementById('username-input');
         const roleFromURL = getUrlParams().get("role");
-        const storedName = localStorage.getItem('patientId') || localStorage.getItem('doctorName') || '';
-        if (storedName && usernameInput) {
-            usernameInput.value = storedName;
+        let callIdentity = { role: '', name: '', userId: '' };
+
+        function updateProfileCard() {
+            const nameEl = document.getElementById('vcall-profile-name');
+            const roleEl = document.getElementById('vcall-profile-role');
+            const displayName = callIdentity.name || 'Your account';
+            const roleLabel = callIdentity.role === 'doctor' ? 'Doctor' : 'Patient';
+            const roleIcon = callIdentity.role === 'doctor' ? 'fa-user-md' : 'fa-user';
+            if (nameEl) nameEl.textContent = displayName;
+            if (roleEl) {
+                roleEl.innerHTML = '<i class="fas ' + roleIcon + '"></i> ' + roleLabel;
+            }
         }
 
-        if (roleFromURL === "patient") {
-            const patientRadio = document.querySelector('input[value="patient"]');
-            if (patientRadio) patientRadio.checked = true;
-        } else if (roleFromURL === "doctor") {
-            const doctorRadio = document.querySelector('input[value="doctor"]');
-            if (doctorRadio) doctorRadio.checked = true;
+        async function resolveCallIdentity() {
+            let role = (roleFromURL === 'doctor' || roleFromURL === 'patient') ? roleFromURL : '';
+            let name = '';
+            let userId = '';
+
+            const token = await resolveFirebaseTokenForCall();
+            if (token) {
+                try {
+                    const headers = window.DgAuth && DgAuth.authHeaders
+                        ? DgAuth.authHeaders()
+                        : { Authorization: 'Bearer ' + token };
+                    const res = await fetch('/api/auth/me', { headers: headers });
+                    if (res.ok) {
+                        const data = await res.json();
+                        const profile = data.profile || {};
+                        if (!role) {
+                            role = data.portal === 'doctor' ? 'doctor' : 'patient';
+                        }
+                        name = String(profile.name || profile.displayName || '').trim();
+                        userId = String(profile.name || profile.uid || data.uid || '').trim();
+                    }
+                } catch (err) {
+                    console.warn('Could not load profile for video call:', err);
+                }
+            }
+
+            if (!role) {
+                role = localStorage.getItem('userRole') === 'doctor' ? 'doctor' : 'patient';
+            }
+            if (!name) {
+                name = role === 'doctor'
+                    ? String(localStorage.getItem('doctorName') || '').trim()
+                    : String(
+                        localStorage.getItem('patientId') ||
+                        localStorage.getItem('userName') ||
+                        localStorage.getItem('userEmail') ||
+                        ''
+                    ).trim();
+            }
+            if (!userId) {
+                userId = role === 'doctor'
+                    ? String(localStorage.getItem('doctorName') || '').trim()
+                    : String(localStorage.getItem('patientId') || localStorage.getItem('firebaseUid') || '').trim();
+            }
+
+            callIdentity = { role: role, name: name, userId: userId };
+            localStorage.setItem('userRole', role);
+            if (role === 'doctor' && name) localStorage.setItem('doctorName', name);
+            if (role === 'patient' && name) localStorage.setItem('patientId', name);
+            updateProfileCard();
+            updateDoctorEndCallsButton();
+            return callIdentity;
         }
 
         const endActiveCallsPrejoinBtn = document.getElementById('dg-end-active-calls-prejoin');
         function updateDoctorEndCallsButton() {
-            const isDoctor =
+            const isDoctor = callIdentity.role === 'doctor' ||
                 roleFromURL === 'doctor' ||
-                localStorage.getItem('userRole') === 'doctor' ||
-                (document.querySelector('input[name="role"]:checked') || {}).value === 'doctor';
+                localStorage.getItem('userRole') === 'doctor';
             if (endActiveCallsPrejoinBtn) {
                 endActiveCallsPrejoinBtn.classList.toggle('show', !!isDoctor);
             }
         }
-        updateDoctorEndCallsButton();
-        document.querySelectorAll('input[name="role"]').forEach((el) => {
-            el.addEventListener('change', updateDoctorEndCallsButton);
-        });
         if (endActiveCallsPrejoinBtn) {
             endActiveCallsPrejoinBtn.addEventListener('click', async () => {
                 const doctorName = localStorage.getItem('doctorName');
@@ -1901,11 +2261,11 @@ html, body {
             }
         }
 
-        // Patient: show explicit join button (user gesture required for audio autoplay)
-        if (roleFromURL === "patient" && roomID) {
-            joinButton.textContent = 'Join Consultation (Enable Audio)';
-            joinButton.style.background = 'linear-gradient(135deg, #2d6a4f, #40916c)';
+        if (joinButton) {
+            joinButton.textContent = 'Join Call';
         }
+
+        resolveCallIdentity();
 
         
         let localStream;
@@ -1940,6 +2300,68 @@ html, body {
             messageContent.textContent = message;
             messageBox.classList.add('show');
             overlay.classList.add('show');
+        }
+
+        window.__vcallRemoteJoined = false;
+        let noPeerRefundTimer = null;
+
+        function clearNoPeerRefundTimer() {
+            if (noPeerRefundTimer) {
+                clearTimeout(noPeerRefundTimer);
+                noPeerRefundTimer = null;
+            }
+        }
+
+        async function requestConsultationRefund(reason) {
+            const activeRoom = roomID || localStorage.getItem('videoRoomId');
+            if (!activeRoom) return null;
+            try {
+                const res = await fetch(`/api/video-room/${encodeURIComponent(activeRoom)}/refund`, {
+                    method: 'POST',
+                    headers: Object.assign({ 'Content-Type': 'application/json' }, getFirebaseAuthHeaders()),
+                    body: JSON.stringify({ reason })
+                });
+                return await res.json();
+            } catch (err) {
+                console.warn('Refund request failed:', err);
+                return null;
+            }
+        }
+
+        async function handleConsultationFailure(title, message, reason) {
+            clearNoPeerRefundTimer();
+            const role = localStorage.getItem('userRole') || callIdentity?.role || 'patient';
+            if (role !== 'patient') {
+                showMessageBox(title, message);
+                return;
+            }
+            const refund = await requestConsultationRefund(reason);
+            let fullMessage = message;
+            if (refund && (refund.refunded || refund.alreadyRefunded) && refund.message) {
+                fullMessage = refund.message;
+            } else if (refund && refund.freeConsultation) {
+                fullMessage = message;
+            } else if (Number(refund?.amount) > 0) {
+                fullMessage += ' We could not process an automatic refund. Please contact support with your payment details.';
+            } else {
+                fullMessage += ' Please contact support if you were charged.';
+            }
+            showMessageBox(title, fullMessage);
+        }
+
+        function startNoPeerRefundWatchdog() {
+            clearNoPeerRefundTimer();
+            const role = localStorage.getItem('userRole') || callIdentity?.role || 'patient';
+            if (role !== 'patient') return;
+            noPeerRefundTimer = setTimeout(function () {
+                if (!window.__vcallRemoteJoined) {
+                    handleConsultationFailure(
+                        'Doctor did not join',
+                        'You joined the video room but the doctor did not connect.',
+                        'no_peer_connected'
+                    );
+                }
+            }, 5 * 60 * 1000);
         }
 
         messageBoxOkButton.addEventListener('click', () => {
@@ -2059,15 +2481,34 @@ html, body {
             if (dock) dock.classList.toggle('dg-vcall-doctor-dock--visible', !!visible);
         }
 
-        function getFirebaseAuthHeaders(extra) {
+        async function getFirebaseAuthHeaders(extra) {
             const headers = Object.assign({ 'Content-Type': 'application/json' }, extra || {});
-            const token = (window.DgAuth && DgAuth.getToken && DgAuth.getToken()) ||
-                localStorage.getItem('firebaseIdToken') ||
-                sessionStorage.getItem('firebaseIdToken') || '';
+            let token = '';
+            if (window.DgAuth && DgAuth.ensureValidToken) {
+                token = await DgAuth.ensureValidToken();
+            } else if (window.DgAuth && DgAuth.getToken) {
+                token = DgAuth.getToken();
+            }
+            if (!token) {
+                token = localStorage.getItem('firebaseIdToken') || '';
+            }
             if (token) headers.Authorization = 'Bearer ' + token;
             return headers;
         }
         window.getFirebaseAuthHeaders = getFirebaseAuthHeaders;
+
+        function clearStaleVideoTokens() {
+            sessionStorage.removeItem('firebaseIdToken');
+            sessionStorage.removeItem('firebaseRefreshToken');
+        }
+
+        async function releasePreviewTracks() {
+            if (!localStream) return;
+            localStream.getTracks().forEach((track) => track.stop());
+            localStream = null;
+            if (previewVideo) previewVideo.srcObject = null;
+            await new Promise((resolve) => setTimeout(resolve, 350));
+        }
 
         function getFirebaseIdToken() {
             return (window.DgAuth && DgAuth.getToken && DgAuth.getToken()) ||
@@ -2083,6 +2524,7 @@ html, body {
         }
 
         (async function warmVideoCallAuth() {
+            await resolveCallIdentity();
             const token = await resolveFirebaseTokenForCall();
             if (!token && joinButton) {
                 joinButton.title = 'Log in first — session required for video call';
@@ -2091,19 +2533,22 @@ html, body {
 
         // --- Join Button Logic ---
         joinButton.addEventListener('click', async () => {
-            const userName = usernameInput.value.trim();
-            const selectedRole = document.querySelector('input[name="role"]:checked');
+            await resolveCallIdentity();
+            const role = callIdentity.role || 'patient';
+            const userName = callIdentity.name;
 
-            if (userName === '') {
-                showMessageBox("Input Required", "Please enter your name to join the call.");
+            if (!userName) {
+                showMessageBox(
+                    'Profile required',
+                    'Could not load your name from your account. Please log in again, then re-open the consultation link.'
+                );
                 return;
             }
 
-            if (!selectedRole) {
-                showMessageBox("Role Selection Required", "Please select whether you are a Doctor or a Patient.");
-                return;
+            if (!localStream) {
+                await initMediaAndPreview();
+                if (!localStream) return;
             }
-            const role = selectedRole.value;
 
             if (!micEnabled) {
                 const proceedMuted = confirm("Your microphone is muted. The other person will NOT hear you.\n\nJoin anyway?");
@@ -2130,19 +2575,15 @@ html, body {
                 }
             }
 
-            // Stop preview stream before Agora takes over
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                previewVideo.srcObject = null; // Clear video element
-            }
+            await releasePreviewTracks();
 
             // Hide custom prejoin UI
             document.getElementById('custom-prejoin').style.display = 'none';
             setVcallBodyPhase('in-call');
             setCallStatus('Connecting to secure video server…', 'connecting');
 
-            const userID = localStorage.getItem('doctorName') ||
-                localStorage.getItem('patientId') ||
+            const userID = callIdentity.userId ||
+                (role === 'doctor' ? localStorage.getItem('doctorName') : localStorage.getItem('patientId')) ||
                 ('guest_' + String(roomID).slice(0, 24));
 
             const firebaseToken = await resolveFirebaseTokenForCall();
@@ -2152,22 +2593,32 @@ html, body {
                 hideCallStatus();
                 showMessageBox(
                     'Sign in required',
-                    'Doctors must log in at /doctor.html before joining a video call.'
+                    'Doctors must log in before joining a video call.'
                 );
-                setTimeout(function () { window.location.href = '/doctor.html'; }, 2500);
+                setTimeout(function () { window.location.href = '/doctor-auth.html'; }, 2500);
                 return;
             }
 
             let tokenData;
             try {
                 const agoraPayload = { roomID, userID, userName, role };
-                const agoraHeaders = getFirebaseAuthHeaders();
-                const tokenRes = await fetch('/api/agora/token', {
+                let agoraHeaders = await getFirebaseAuthHeaders();
+                let tokenRes = await fetch('/api/agora/token', {
                     method: 'POST',
                     headers: agoraHeaders,
                     body: JSON.stringify(agoraPayload)
                 });
                 tokenData = await tokenRes.json();
+                if (!tokenRes.ok && tokenRes.status === 401 && role === 'patient') {
+                    clearStaleVideoTokens();
+                    agoraHeaders = { 'Content-Type': 'application/json' };
+                    tokenRes = await fetch('/api/agora/token', {
+                        method: 'POST',
+                        headers: agoraHeaders,
+                        body: JSON.stringify(agoraPayload)
+                    });
+                    tokenData = await tokenRes.json();
+                }
                 if (!tokenRes.ok) {
                     document.getElementById('custom-prejoin').style.display = 'flex';
                     setVcallBodyPhase('prejoin');
@@ -2175,17 +2626,22 @@ html, body {
                     var errMsg = tokenData.message || tokenData.error || 'Could not start video call.';
                     if (tokenRes.status === 401) {
                         errMsg = 'Your session expired. Please log in again and rejoin the call.';
+                        clearStaleVideoTokens();
                         localStorage.removeItem('firebaseIdToken');
                         if (window.DgAuth && DgAuth.clearSession) DgAuth.clearSession();
                     }
-                    showMessageBox('Video unavailable', errMsg);
+                    await handleConsultationFailure('Video unavailable', errMsg, 'token_failed');
                     return;
                 }
             } catch (err) {
                 document.getElementById('custom-prejoin').style.display = 'flex';
                 setVcallBodyPhase('prejoin');
                 hideCallStatus();
-                showMessageBox('Connection error', 'Could not reach video server. Check your network and tap Join again.');
+                await handleConsultationFailure(
+                    'Connection error',
+                    'Could not reach video server. Check your network and try again.',
+                    'connection_failed'
+                );
                 return;
             }
 
@@ -2197,11 +2653,21 @@ html, body {
                 setDoctorDockVisible(false);
                 setPatientRxActionsVisible(false);
 
+                clearNoPeerRefundTimer();
                 if (roomID) {
-                    try {
-                        await fetch(`/api/video-room/${encodeURIComponent(roomID)}/call-ended`, { method: 'POST' });
-                    } catch (err) {
-                        console.warn('Could not mark consultation completed:', err);
+                    const leaveRole = localStorage.getItem('userRole');
+                    if (leaveRole === 'patient' && !window.__vcallRemoteJoined) {
+                        try {
+                            await requestConsultationRefund('no_peer_connected');
+                        } catch (err) {
+                            console.warn('Could not request refund:', err);
+                        }
+                    } else {
+                        try {
+                            await fetch(`/api/video-room/${encodeURIComponent(roomID)}/call-ended`, { method: 'POST' });
+                        } catch (err) {
+                            console.warn('Could not mark consultation completed:', err);
+                        }
                     }
                 }
 
@@ -2243,6 +2709,8 @@ html, body {
                     cameraEnabled: cameraEnabled,
                     microphoneEnabled: micEnabled,
                     onUserJoined: () => {
+                        window.__vcallRemoteJoined = true;
+                        clearNoPeerRefundTimer();
                         const role = localStorage.getItem('userRole');
                         const label = role === 'doctor' ? 'Patient joined' : 'Doctor joined';
                         setCallStatus(label, 'connected');
@@ -2259,6 +2727,7 @@ html, body {
                     },
                     onConnected: async () => {
                         setCallStatus('Connected', 'connected');
+                        startNoPeerRefundWatchdog();
                         const currentRole = localStorage.getItem("userRole");
                         if (currentRole === "doctor") {
                             const doctorName = localStorage.getItem("doctorName");
@@ -2291,7 +2760,11 @@ html, body {
                 setVcallBodyPhase('prejoin');
                 document.getElementById('root').style.display = 'none';
                 hideCallStatus();
-                showMessageBox('Video error', err.message || 'Could not join video call.');
+                await handleConsultationFailure(
+                    'Video error',
+                    err.message || 'Could not join video call.',
+                    'video_join_failed'
+                );
             }
         });
 
@@ -2451,14 +2924,11 @@ async function loadPatientPrescription(silent) {
     listContainer.innerHTML = '';
     totalAmount = 0;
     latestPrescription.forEach(item => {
-      totalAmount += item.totalPrice;
+      totalAmount += Number(item.totalPrice) || 0;
       const itemDiv = document.createElement('div');
-      itemDiv.style = "margin-bottom: 15px; padding: 10px; border-radius: 10px; background: linear-gradient(45deg, #f2f2f2, #e0e0e0); box-shadow: 0 2px 8px rgba(0,0,0,0.15);";
-      itemDiv.innerHTML = `
-        <div style="font-weight: bold; font-size: 17px; color: #2c3e50;">${item.name}</div>
-        <div style="color: #555;">${(item.selectedWeight && item.selectedWeight.value) || ''} ${(item.selectedWeight && item.selectedWeight.unit) || ''}</div>
-        <div style="margin-top: 5px;">Quantity: ${item.quantity} | Price: ₹${item.totalPrice}</div>
-      `;
+      itemDiv.innerHTML = window.DgVcallStore
+        ? DgVcallStore.prescriptionItemHtml(item)
+        : ('<div><strong>' + (item.name || '') + '</strong> — ₹' + (item.totalPrice || 0) + '</div>');
       listContainer.appendChild(itemDiv);
     });
 
@@ -2729,6 +3199,48 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
     }
   }
 
+  function updateVcallProductCount() {
+    const countEl = document.getElementById('vcall-product-count');
+    if (!countEl || !window.DgVcallStore) return;
+    const shown = DgVcallStore.getProducts().length;
+    const total = DgVcallStore.getTotalProducts();
+    countEl.textContent = total > shown
+      ? ('Showing ' + shown + ' of ' + total + ' products')
+      : (shown + ' product' + (shown === 1 ? '' : 's'));
+  }
+
+  async function loadVcallCatalog(searchTerm, append) {
+    const brandsStrip = document.getElementById('vcall-brands-strip');
+    const medicineList = document.getElementById('medicine-list');
+    const loadMoreBtn = document.getElementById('vcall-load-more-btn');
+    if (!window.DgVcallStore) return;
+
+    if (!append) {
+      DgVcallStore.resetCatalog();
+      if (medicineList) {
+        medicineList.innerHTML = '<p class="vcall-empty-catalog"><i class="fas fa-spinner fa-spin"></i> Loading products…</p>';
+      }
+    }
+
+    if (!storesLoaded) {
+      await DgVcallStore.loadSummary();
+      stores = DgVcallStore.getStores();
+      storesLoaded = true;
+      DgVcallStore.renderBrandChips(brandsStrip, function () {
+        searchInput.value = '';
+        loadVcallCatalog('', false);
+      });
+    }
+
+    await DgVcallStore.fetchProductsPage(1, searchTerm || '', !!append);
+    DgVcallStore.renderProductGrid(medicineList, isBrowseOnlyMode);
+    updateVcallProductCount();
+
+    if (loadMoreBtn) {
+      loadMoreBtn.style.display = DgVcallStore.hasMore() ? 'block' : 'none';
+    }
+  }
+
   function openPrescriptionModal(browseOnly) {
     if (!prescriptionModal) return;
     configurePrescriptionModalForRole(browseOnly);
@@ -2746,15 +3258,8 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
     currentView = 'stores';
     displayStoresView();
     searchInput.value = '';
-    searchInput.placeholder = 'Search stores...';
-
-    if (storeButtonsContainer) {
-      storeButtonsContainer.innerHTML = '<p style="text-align:center;color:#7f8c8d;width:100%;padding:16px;"><i class="fas fa-spinner fa-spin"></i> Loading store catalog…</p>';
-    }
-
-    loadStores().then(function () {
-      renderStoreButtons(stores);
-    });
+    searchInput.placeholder = 'Search products by name or brand…';
+    loadVcallCatalog('', false);
   }
 
   // Initialize the app
@@ -2988,11 +3493,8 @@ function handleWeightSelection(event) {
   }
   function displayStoresView() {
     const prescriptionView = document.getElementById('prescription-view');
-    if (prescriptionView) prescriptionView.style.display = 'none';
-    if (storeButtonsContainer) storeButtonsContainer.style.display = 'flex';
-    if (storeNavigation) storeNavigation.style.display = 'none';
-    if (medicineList) medicineList.style.display = 'none';
-    if (storeCategories) storeCategories.style.display = 'none';
+    if (prescriptionView) prescriptionView.style.display = 'block';
+    if (medicineList) medicineList.style.display = 'block';
   }
 
 
@@ -3028,92 +3530,99 @@ function handleWeightSelection(event) {
         document.querySelector('.back-to-cart-btn').style.display = 'none';
         
         if (tabId === 'stores') {
-            // Reset view to stores
             currentView = 'stores';
             displayStoresView();
-            searchInput.placeholder = 'Search stores...';
+            searchInput.placeholder = 'Search products by name or brand…';
             searchInput.value = '';
-            loadStores().then(() => {
-                renderStoreButtons(stores);
-            });
+            loadVcallCatalog('', false);
         } else if (tabId === 'shop-prescription') {
             currentView = 'cart';
             renderCart();
-            storeNavigation.style.display = 'none';
-            storeButtonsContainer.style.display = 'none';
-            storeCategories.style.display = 'none';
-            medicineList.style.display = 'none';
+            if (storeNavigation) storeNavigation.style.display = 'none';
+            if (medicineList) medicineList.style.display = 'none';
+            const prescriptionView = document.getElementById('prescription-view');
+            if (prescriptionView) prescriptionView.style.display = 'none';
             searchInput.placeholder = 'Search cart items...';
             searchInput.value = '';
         }
       });
     });
-    
-    // Medicine controls (delegated event listener)
-    medicineList.addEventListener('click', (e) => {
-      const medicineItemDiv = e.target.closest('.medicine-item');
-      if (!medicineItemDiv) return;
 
-      const medicineId = medicineItemDiv.dataset.id;
-      const medicine = currentStore && currentStore.medicines
-        ? currentStore.medicines.find(m => m._id === medicineId)
-        : null;
-      if (!medicine) return;
+    function getVcallWeightParts(card) {
+      const sel = card.querySelector('.vcall-product-weight');
+      if (!sel || !sel.value) return null;
+      const parts = sel.value.split('|');
+      return {
+        medicineId: parts[1],
+        value: parts[2],
+        unit: parts[3],
+        price: Number(parts[4])
+      };
+    }
 
-      const qtyElement = medicineItemDiv.querySelector(`.medicine-qty[data-id="${medicineId}"]`);
-      let qty = parseInt(qtyElement.textContent, 10) || 0;
+    if (medicineList) {
+      medicineList.addEventListener('click', (e) => {
+        const card = e.target.closest('.vcall-product-card');
+        if (!card) return;
+        if (isBrowseOnlyMode) return;
 
-      const selectedWeightBtn = medicineItemDiv.querySelector('.weight-btn.active');
-      let selectedWeight = null;
-      let pricePerUnit = 0;
+        const idx = parseInt(card.dataset.idx, 10);
+        const med = window.DgVcallStore ? DgVcallStore.getProduct(idx) : null;
+        if (!med) return;
 
-      if (selectedWeightBtn) {
-        selectedWeight = {
-          value: parseFloat(selectedWeightBtn.dataset.value),
-          unit: selectedWeightBtn.dataset.unit
-        };
-        pricePerUnit = parseFloat(selectedWeightBtn.dataset.price);
-      }
+        const qtyEl = card.querySelector('.vcall-qty-val');
+        let qty = parseInt(qtyEl && qtyEl.textContent, 10) || 0;
+        const addBtn = card.querySelector('.vcall-add-btn');
 
-      if (e.target.closest('.increment-btn')) {
-        qty++;
-        qtyElement.textContent = qty;
-        updateMedicineState(medicineId, qty, selectedWeight);
-        return;
-      }
-
-      if (e.target.closest('.decrement-btn')) {
-        if (qty > 0) qty--;
-        qtyElement.textContent = qty;
-        updateMedicineState(medicineId, qty, selectedWeight);
-        return;
-      }
-
-      if (e.target.closest('.weight-btn')) {
-        medicineItemDiv.querySelectorAll('.weight-btn').forEach(btn => btn.classList.remove('active'));
-        e.target.closest('.weight-btn').classList.add('active');
-        selectedWeight = {
-          value: parseFloat(e.target.closest('.weight-btn').dataset.value),
-          unit: e.target.closest('.weight-btn').dataset.unit
-        };
-        pricePerUnit = parseFloat(e.target.closest('.weight-btn').dataset.price);
-        updateMedicineState(medicineId, qty, selectedWeight);
-        return;
-      }
-
-      if (isBrowseOnlyMode) return;
-
-      if (e.target.closest('.add-to-cart-btn')) {
-        if (qty > 0 && selectedWeight) {
-          addToCart(medicineId, currentStore._id, medicine.name, selectedWeight, pricePerUnit, qty);
-          qtyElement.textContent = '0';
-          medicineItemDiv.querySelectorAll('.weight-btn').forEach(btn => btn.classList.remove('active'));
-          updateMedicineState(medicineId, 0, null);
-        } else {
-          showMessage('Please select a weight and quantity greater than 0', 'warning');
+        if (e.target.closest('.vcall-qty-inc')) {
+          qty += 1;
+          if (qtyEl) qtyEl.textContent = String(qty);
+          if (addBtn) addBtn.disabled = qty <= 0;
+          return;
         }
-      }
-    });
+
+        if (e.target.closest('.vcall-qty-dec')) {
+          qty = Math.max(0, qty - 1);
+          if (qtyEl) qtyEl.textContent = String(qty);
+          if (addBtn) addBtn.disabled = qty <= 0;
+          return;
+        }
+
+        if (e.target.closest('.vcall-add-btn')) {
+          const parts = getVcallWeightParts(card);
+          if (!parts || qty <= 0) {
+            showMessage('Select pack size and quantity greater than 0', 'warning');
+            return;
+          }
+          addToCart(
+            parts.medicineId,
+            med.storeId || med.company || 'general',
+            med.name,
+            { value: parts.value, unit: parts.unit },
+            parts.price,
+            qty
+          );
+          if (qtyEl) qtyEl.textContent = '0';
+          if (addBtn) addBtn.disabled = true;
+          showMessage('Added to prescription cart', 'success');
+        }
+      });
+
+      medicineList.addEventListener('change', (e) => {
+        const card = e.target.closest('.vcall-product-card');
+        if (!card || !e.target.classList.contains('vcall-product-weight')) return;
+        const addBtn = card.querySelector('.vcall-add-btn');
+        const qty = parseInt(card.querySelector('.vcall-qty-val')?.textContent || '0', 10) || 0;
+        if (addBtn) addBtn.disabled = isBrowseOnlyMode || qty <= 0;
+      });
+    }
+
+    const vcallLoadMoreBtn = document.getElementById('vcall-load-more-btn');
+    if (vcallLoadMoreBtn) {
+      vcallLoadMoreBtn.addEventListener('click', () => {
+        loadVcallCatalog((searchInput && searchInput.value.trim()) || '', true);
+      });
+    }
     
     // Checkout button
     checkoutBtn.addEventListener('click', () => {
@@ -3151,7 +3660,7 @@ function handleWeightSelection(event) {
         }
         const authHdr = (window.getFirebaseAuthHeaders || getFirebaseAuthHeaders)();
         if (!authHdr.Authorization) {
-          showMessage('Please log in at /doctor.html before prescribing.', 'error');
+          showMessage('Please log in at /doctor-auth.html before prescribing.', 'error');
           return;
         }
 
@@ -3196,35 +3705,42 @@ function handleWeightSelection(event) {
       }
     });
 
-    // Reports button click
-    reportsBtn.addEventListener('click', () => {
-      reportsModal.style.display = 'block';
-      fetchAndDisplayReports();
-    });
+    if (reportsBtn) {
+      reportsBtn.addEventListener('click', () => {
+        if (reportsModal) reportsModal.style.display = 'block';
+        fetchAndDisplayReports();
+      });
+    }
 
-    // Refresh button click - only fetch when clicked
-    document.getElementById('refresh-btn').addEventListener('click', fetchAndDisplayReports);
+    const refreshReportsBtn = document.getElementById('refresh-btn');
+    if (refreshReportsBtn) {
+      refreshReportsBtn.addEventListener('click', fetchAndDisplayReports);
+    }
 
-    // Close reports modal
-    reportsModal.querySelector('.close-btn').addEventListener('click', () => {
-      reportsModal.style.display = 'none';
-    });
-
-    // Close modal when clicking outside
-    reportsModal.addEventListener('click', (e) => {
-      if (e.target === reportsModal) {
-        reportsModal.style.display = 'none';
+    if (reportsModal) {
+      const reportsCloseBtn = reportsModal.querySelector('.close-btn');
+      if (reportsCloseBtn) {
+        reportsCloseBtn.addEventListener('click', () => {
+          reportsModal.style.display = 'none';
+        });
       }
-    });
+      reportsModal.addEventListener('click', (e) => {
+        if (e.target === reportsModal) {
+          reportsModal.style.display = 'none';
+        }
+      });
+    }
 
     
-    backToStoresBtn.addEventListener('click', () => {
+    if (backToStoresBtn) {
+      backToStoresBtn.addEventListener('click', () => {
         currentView = 'stores';
         displayStoresView();
-        searchInput.placeholder = 'Search stores...';
+        searchInput.placeholder = 'Search products by name or brand…';
         searchInput.value = '';
-        renderStoreButtons(stores);
-    });
+        loadVcallCatalog('', false);
+      });
+    }
 
     // Update back to cart button click handler
     const backToCartBtn = document.querySelector('.back-to-cart-btn');
@@ -3259,7 +3775,7 @@ function handleWeightSelection(event) {
             }
             const authHdr = (window.getFirebaseAuthHeaders || getFirebaseAuthHeaders)();
             if (!authHdr.Authorization) {
-                showMessage('Please log in at /doctor.html before prescribing.', 'error');
+                showMessage('Please log in at /doctor-auth.html before prescribing.', 'error');
                 return;
             }
             const response = await fetch('/api/prescribe-cart', {
@@ -3288,12 +3804,8 @@ function handleWeightSelection(event) {
             updateCartBadge();
             broadcastPrescriptionUpdate(cart);
 
-            // Switch back to stores view
             document.querySelector('.tab-btn[data-tab="stores"]').click();
-            loadStores().then(() => {
-                renderStoreButtons(stores);
-                displayStoresView();
-            });
+            loadVcallCatalog('', false);
 
         } catch (error) {
             console.error('Error prescribing cart items:', error);
@@ -3382,145 +3894,128 @@ function handleWeightSelection(event) {
 
 
 
-  // Function to fetch and display reports
+  function renderReportItemsList(reports, options) {
+    const list = Array.isArray(reports) ? reports : [];
+    const showLatestBadge = !!(options && options.showLatestBadge);
+    if (!list.length) {
+      return '<p class="reports-empty-note">No reports in this section.</p>';
+    }
+
+    return list.map(function (report, index) {
+      const reportPath = String(report.path || '');
+      const fullReportPath = String(report.fullPath || '');
+      const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(reportPath.toLowerCase());
+      const imagePreview = isImage
+        ? '<img src="' + fullReportPath + '" class="report-preview" alt="Report preview" ' +
+          'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+          '<i class="fas fa-file-medical fa-2x" style="display:none"></i>'
+        : '<i class="fas fa-file-medical fa-2x"></i>';
+      const uploadDate = report.uploadDate ? new Date(String(report.uploadDate)).toLocaleString() : '—';
+      const latestBadge = (showLatestBadge && index === 0)
+        ? '<span class="latest-report-badge">Latest</span>'
+        : '';
+
+      return '<div class="report-item" data-report-url="' + fullReportPath + '">' +
+        '<div class="report-preview-container">' + imagePreview + '</div>' +
+        '<div class="report-name">' +
+        (reportPath || 'Medical report') + latestBadge +
+        '<div class="report-date">' + uploadDate + '</div>' +
+        '</div>' +
+        '<div class="report-actions">' +
+        '<button type="button" class="view-report-btn" data-open-report="' + fullReportPath + '">' +
+        (isImage ? 'View Image' : 'Open Report') +
+        '</button></div></div>';
+    }).join('');
+  }
+
+  function bindReportItemClicks(container) {
+    if (!container) return;
+    container.querySelectorAll('[data-open-report]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const url = btn.getAttribute('data-open-report');
+        if (url) window.open(url, '_blank');
+      });
+    });
+    container.querySelectorAll('.report-item[data-report-url]').forEach(function (item) {
+      item.addEventListener('click', function (e) {
+        if (e.target.closest('.view-report-btn')) return;
+        const url = item.getAttribute('data-report-url');
+        if (url) window.open(url, '_blank');
+      });
+    });
+  }
+
   async function fetchAndDisplayReports() {
     if (isRefreshing) return;
-    
+
     const refreshBtn = document.getElementById('refresh-btn');
     const reportsList = document.getElementById('reports-list');
-    
+    if (!reportsList) return;
+
     try {
         isRefreshing = true;
-        refreshBtn.classList.add('spinning');
-        
+        if (refreshBtn) refreshBtn.classList.add('spinning');
+
         const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
-        console.log('🔍 Fetching reports for room:', roomID);
-        
         if (!roomID) {
             throw new Error('Room ID not found');
         }
 
-        console.log('🌐 Making API request to:', `/api/reports/${roomID}`);
-        const response = await fetch(`/api/reports/${roomID}`);
-        
+        const response = await fetch('/api/reports/' + encodeURIComponent(roomID));
         if (!response.ok) {
-            const errorData = await response.json();
-            console.error('❌ API Error:', errorData);
+            const errorData = await response.json().catch(function () { return {}; });
             throw new Error(errorData.message || 'Failed to fetch reports');
         }
 
         const data = await response.json();
-        console.log('📄 Received data:', data);
-        
+        const consultationReports = data.consultationReports || data.reports || [];
+        const previousReports = data.previousReports || [];
         reportsList.innerHTML = '';
 
-        // Add payment info header (if available from reports API)
-        if (data.paymentInfo) {
+        if (data.patientInfo) {
             const paymentInfo = document.createElement('div');
             paymentInfo.className = 'payment-info';
-            paymentInfo.innerHTML = `
-                <h4>Patient Information (from Payment)</h4>
-                <p><strong>Name:</strong> ${data.paymentInfo.name || 'N/A'}</p>
-                <p><strong>Phone:</strong> ${data.paymentInfo.phone || 'N/A'}</p>
-                <p><strong>Address:</strong> ${data.paymentInfo.address || 'N/A'}</p>
-                <p><strong>Paid Total:</strong> ₹${data.paymentInfo.total || '0'}</p>
-                <p><strong>Date:</strong> ${new Date(data.paymentInfo.createdAt).toLocaleString()}</p>
-            `;
+            paymentInfo.innerHTML =
+              '<h4>Patient Information</h4>' +
+              '<p><strong>Name:</strong> ' + (data.patientInfo.name || 'N/A') + '</p>' +
+              '<p><strong>Phone:</strong> ' + (data.patientInfo.phone || 'N/A') + '</p>' +
+              (data.patientInfo.address ? '<p><strong>Address:</strong> ' + data.patientInfo.address + '</p>' : '') +
+              (data.paymentInfo
+                ? '<p><strong>Consultation paid:</strong> ₹' + (data.paymentInfo.total || '0') +
+                  ' · ' + new Date(data.paymentInfo.createdAt).toLocaleString() + '</p>'
+                : '');
             reportsList.appendChild(paymentInfo);
         }
 
-        // Add prescribed medicines header (if available from reports API)
-        if (data.prescribedItems && data.prescribedItems.length > 0) {
-            const prescribedSection = document.createElement('div');
-            prescribedSection.className = 'prescribed-items-section';
-            prescribedSection.innerHTML = `
-                <h4 style="margin-top: 20px;">Prescribed Medicines</h4>
-                <ul style="list-style: none; padding: 0;">
-                    ${data.prescribedItems.map(item => `
-                        <li style="padding: 5px 0; border-bottom: 1px dashed #eee;">
-                            <strong>${item.name}</strong> - ${item.selectedWeight.value}${item.selectedWeight.unit} x ${item.quantity} (₹${item.totalPrice})
-                        </li>
-                    `).join('')}
-                </ul>
-            `;
-            reportsList.appendChild(prescribedSection);
-        }
+        const consultationSection = document.createElement('div');
+        consultationSection.className = 'reports-container';
+        consultationSection.innerHTML =
+          '<h4 class="reports-section-title"><i class="fas fa-file-upload"></i> Reports for this consultation</h4>' +
+          renderReportItemsList(consultationReports, { showLatestBadge: true });
+        reportsList.appendChild(consultationSection);
 
+        const previousSection = document.createElement('div');
+        previousSection.className = 'reports-container';
+        previousSection.innerHTML =
+          '<h4 class="reports-section-title"><i class="fas fa-clock-rotate-left"></i> Previous submitted reports</h4>' +
+          renderReportItemsList(previousReports, { showLatestBadge: false });
+        reportsList.appendChild(previousSection);
 
-        if (data.reports && data.reports.length > 0) {
-            console.log('📋 Processing', data.reports.length, 'reports');
-            
-            const reportsContainer = document.createElement('div');
-            reportsContainer.className = 'reports-container';
-            
-            data.reports.forEach((report, index) => {
-                const reportItem = document.createElement('div');
-                reportItem.className = 'report-item';
-                
-                // Ensure report.path is a string before calling toLowerCase()
-                const reportPath = String(report.path || ''); // Explicitly cast to string
-                const isImage = /\.(jpg|jpeg|png|gif)$/i.test(reportPath.toLowerCase());
-                
-                // Ensure fullPath is a string for image src and window.open
-                const fullReportPath = String(report.fullPath || '');
+        bindReportItemClicks(reportsList);
 
-                console.log(`📎 Processing report ${index + 1}:`, {
-                    path: reportPath,
-                    fullPath: fullReportPath,
-                    isImage: isImage
-                });
-
-                // Create the report item HTML
-                const imagePreview = isImage ? 
-                    `<img src="${fullReportPath}" class="report-preview" 
-                         onclick="window.open('${fullReportPath}', '_blank')" 
-                         alt="Report preview"
-                         onerror="this.onerror=null; this.src='placeholder.jpg'; console.error('Failed to load image:', '${fullReportPath}')">` 
-                    : '<i class="fas fa-file-medical fa-2x"></i>';
-
-                reportItem.innerHTML = `
-                    <div class="report-preview-container">
-                        ${imagePreview}
-                    </div>
-                    <div class="report-name">
-                        ${reportPath || 'N/A'} <!-- Display 'N/A' if path is missing or empty -->
-                        ${index === 0 ? '<span class="latest-report-badge">Latest</span>' : ''}
-                        <div class="report-date">${new Date(String(report.uploadDate || '')).toLocaleString()}</div>
-                    </div>
-                    <div class="report-actions">
-                        <button class="view-report-btn" onclick="window.open('${fullReportPath}', '_blank')">
-                            ${isImage ? 'View Full Image' : 'View Report'}
-                        </button>
-                    </div>
-                `;
-
-                // Add click handler for the entire item
-                reportItem.addEventListener('click', (e) => {
-                    // Only open if not clicking the button (button has its own handler)
-                    if (!e.target.closest('.view-report-btn')) {
-                        window.open(fullReportPath, '_blank');
-                    }
-                });
-
-                reportsContainer.appendChild(reportItem);
-            });
-            
-            reportsList.appendChild(reportsContainer);
-        } else {
-            console.log('⚠️ No reports found in response');
-            reportsList.innerHTML += '<p style="text-align: center; color: #7f8c8d;">No reports available</p>';
+        if (!consultationReports.length && !previousReports.length) {
+          reportsList.innerHTML +=
+            '<p class="reports-empty-note">No medical reports submitted yet. Ask the patient to upload reports during booking or in the patient portal.</p>';
         }
     } catch (error) {
-        console.error('❌ Error in fetchAndDisplayReports:', error);
-        reportsList.innerHTML = `
-            <p style="text-align: center; color: #e74c3c;">
-                Error loading reports: ${error.message}<br>
-                Please try again.
-            </p>
-        `;
+        console.error('Error in fetchAndDisplayReports:', error);
+        reportsList.innerHTML =
+          '<p style="text-align: center; color: #e74c3c;">' +
+          'Error loading reports: ' + error.message + '<br>Please try again.</p>';
     } finally {
         isRefreshing = false;
-        refreshBtn.classList.remove('spinning');
+        if (refreshBtn) refreshBtn.classList.remove('spinning');
     }
   }
 
@@ -3606,60 +4101,8 @@ function handleWeightSelection(event) {
   */
 
   async function loadStores() {
-    if (storesLoading) return;
-    storesLoading = true;
-    try {
-        const response = await fetch('/api/stores');
-        if (!response.ok) {
-            const errorData = await response.json().catch(function () { return {}; });
-            throw new Error(errorData.message || 'Network response was not ok.');
-        }
-        let fetched = await response.json();
-
-        if (window.DgCatalogMerge) {
-            fetched = DgCatalogMerge.dedupeStores(fetched);
-            fetched.forEach(function (store) {
-                store.medicines = DgCatalogMerge.mergeProducts(store.medicines || [], store.name);
-            });
-        }
-
-        stores = applyVisibleStoreCatalog(fetched);
-        storesLoaded = true;
-
-        if (!Array.isArray(stores)) {
-            console.error("API response for stores is not an array:", stores);
-            showMessage('Received invalid data for stores.', 'error');
-            stores = [];
-        }
-
-        if (stores.length > 0) {
-            allMedicines = stores.flatMap(function (store) {
-                return (store.medicines || []).map(function (med) {
-                    return Object.assign({}, med, {
-                        storeId: store._id,
-                        storeName: store.name
-                    });
-                });
-            });
-            renderStoreButtons(stores);
-            displayStoresView();
-        } else {
-            if (storeButtonsContainer) {
-                storeButtonsContainer.innerHTML = '<p style="text-align: center; color: #7f8c8d;">No store products available right now. Items appear here once listed in the Ayurvedic store.</p>';
-            }
-            displayStoresView();
-        }
-    } catch (error) {
-        console.error('Error loading stores:', error);
-        showMessage('Failed to load stores: ' + error.message, 'error');
-        displayStoresView();
-        if (storeButtonsContainer) {
-            storeButtonsContainer.innerHTML = '<p style="text-align: center; color: #e74c3c; width:100%;">Could not load store. Check your connection and tap the store button to retry.</p>';
-        }
-    } finally {
-        storesLoading = false;
-    }
-}
+    await loadVcallCatalog('', false);
+  }
 function updateMedicineListTitle() {
     const prescriptionView = document.getElementById('prescription-view');
     const medicineListTitle = document.getElementById('medicine-list-title');
@@ -3779,18 +4222,7 @@ function renderStoreButtons(storesToRender) {
     }
 
     if (currentView === 'stores') {
-      // Search stores
-      const filteredStores = stores.filter(store => {
-        const name = (store.name || '').toLowerCase();
-        const desc = (store.description || '').toLowerCase();
-        return name.includes(lowerCaseSearchTerm) ||
-          desc.includes(lowerCaseSearchTerm) ||
-          name.split(' ').some(word => word.includes(lowerCaseSearchTerm));
-      });
-      renderStoreButtons(filteredStores);
-    } else if (currentView === 'medicines' && currentStore) {
-      // Search medicines within the current store
-      loadMedicines(currentStore._id, searchTerm);
+      loadVcallCatalog(searchTerm, false);
     }
   }
 //   document.getElementById('category-filter').addEventListener('change', (event) => {

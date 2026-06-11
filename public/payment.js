@@ -49,11 +49,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (phoneInput && loggedPhone && !phoneInput.value) phoneInput.value = loggedPhone.replace(/\D/g, '').slice(-10);
     if (addressInput && !addressInput.value) addressInput.placeholder = 'Full address for consultation records';
 
+    let followUpAccess = null;
+
+    async function checkConsultationAccess() {
+        if (!doctorName || !window.DgAuth || !DgAuth.authFetch) return;
+        try {
+            const phone = phoneInput ? phoneInput.value.trim() : localStorage.getItem('patientPhoneNumber') || '';
+            const qs = new URLSearchParams({ doctorName, phone });
+            const res = await DgAuth.authFetch('/api/consultations/access-check?' + qs.toString());
+            if (!res.ok) return;
+            followUpAccess = await res.json();
+            if (followUpAccess && followUpAccess.covered) {
+                if (razorpayFeeEl) {
+                    razorpayFeeEl.innerHTML = '<strong style="color:#16a34a;">Free follow-up</strong> — ' +
+                        (followUpAccess.message || 'Included in your 15-day plan with this doctor.');
+                }
+                if (payBtn) payBtn.textContent = 'Start free follow-up call';
+                selectedDoctorFeeInput.value = '0';
+            }
+        } catch (e) {
+            console.warn('Access check failed', e);
+        }
+    }
+
     if (razorpayFeeEl) {
         razorpayFeeEl.textContent = consultationAmount > 0
             ? 'Amount: ₹' + consultationAmount.toFixed(2)
             : 'Free consultation';
     }
+    checkConsultationAccess();
     const hasAuth = window.DgAuth && DgAuth.getToken && DgAuth.getToken();
     if (!hasAuth && razorpayLoginHint) {
         razorpayLoginHint.style.display = 'block';
@@ -174,6 +198,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    function formatRefundStatus(data, fallback) {
+        if (!data) return fallback;
+        if (data.message && (data.refunded || data.alreadyRefunded)) return data.message;
+        if (data.refunded && data.amount > 0) {
+            return fallback + ` A refund of ₹${data.amount} has been initiated to your original payment method.`;
+        }
+        if (data.refunded) return fallback + ' Your refund has been initiated.';
+        return fallback;
+    }
+
+    async function requestRoomRefund(roomId, reason) {
+        if (!roomId) return null;
+        try {
+            const res = await fetch(`/api/video-room/${encodeURIComponent(roomId)}/refund`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reason })
+            });
+            return await res.json();
+        } catch (e) {
+            console.warn('Refund request failed', e);
+            return null;
+        }
+    }
+
     function goToVideoCall(roomId) {
         localStorage.setItem('userRole', 'patient');
         localStorage.setItem('videoRoomId', roomId);
@@ -202,7 +251,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             timeLeft--;
             if (timeLeft < 0) {
                 clearWaitCountdown();
-                consultWaitStatus.textContent = 'Request timed out. Please try booking again.';
+                requestRoomRefund(roomId, 'doctor_timeout').then((data) => {
+                    consultWaitStatus.textContent = formatRefundStatus(
+                        data,
+                        'Request timed out. Please try booking again.'
+                    );
+                });
             }
         }, 1000);
 
@@ -214,17 +268,28 @@ document.addEventListener('DOMContentLoaded', async () => {
                 consultWaitStatus.textContent = 'Doctor accepted! Joining video call…';
                 setTimeout(() => goToVideoCall(data.roomId || roomId), 800);
             });
-            DgRealtime.onConsultationRejected(() => {
+            DgRealtime.onConsultationRejected((data) => {
                 clearWaitCountdown();
-                consultWaitStatus.textContent = 'Doctor declined. You may book another consultation.';
+                consultWaitStatus.textContent = formatRefundStatus(
+                    data,
+                    'Doctor declined this consultation.'
+                );
             });
-            DgRealtime.onConsultationTimeout(() => {
+            DgRealtime.onConsultationTimeout((data) => {
                 clearWaitCountdown();
-                consultWaitStatus.textContent = 'Doctor did not respond in time.';
+                consultWaitStatus.textContent = formatRefundStatus(
+                    data,
+                    'Doctor did not respond in time.'
+                );
             });
             DgRealtime.onConsultationCancelled(() => {
                 clearWaitCountdown();
-                consultWaitStatus.textContent = 'Consultation cancelled.';
+                requestRoomRefund(roomId, 'consultation_cancelled').then((data) => {
+                    consultWaitStatus.textContent = formatRefundStatus(
+                        data,
+                        'Consultation cancelled.'
+                    );
+                });
             });
         }
         pollConsultationStatus(activeConsultationId, roomId);
@@ -250,17 +315,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                     redirected = true;
                     clearInterval(poll);
                     clearWaitCountdown();
-                    consultWaitStatus.textContent = 'Doctor declined. You may book another consultation.';
+                    const refundData = await requestRoomRefund(roomId, 'doctor_rejected');
+                    consultWaitStatus.textContent = formatRefundStatus(
+                        refundData,
+                        'Doctor declined this consultation.'
+                    );
                 } else if (data.status === 'timeout') {
                     redirected = true;
                     clearInterval(poll);
                     clearWaitCountdown();
-                    consultWaitStatus.textContent = 'Doctor did not respond in time.';
+                    const refundData = await requestRoomRefund(roomId, 'doctor_timeout');
+                    consultWaitStatus.textContent = formatRefundStatus(
+                        refundData,
+                        'Doctor did not respond in time.'
+                    );
                 } else if (data.status === 'cancelled') {
                     redirected = true;
                     clearInterval(poll);
                     clearWaitCountdown();
-                    consultWaitStatus.textContent = 'Consultation cancelled.';
+                    const refundData = await requestRoomRefund(roomId, 'consultation_cancelled');
+                    consultWaitStatus.textContent = formatRefundStatus(
+                        refundData,
+                        'Consultation cancelled.'
+                    );
                 }
             } catch (e) { /* retry */ }
         }, 3000);
@@ -296,6 +373,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             if (payBtn) payBtn.disabled = true;
+            if (followUpAccess && followUpAccess.covered) {
+                showMessage('Starting your free follow-up consultation…', 'info');
+                await confirmFreeConsultation(name, phone, address);
+                if (payBtn) payBtn.disabled = false;
+                return;
+            }
             if (consultationAmount <= 0) {
                 showMessage('Confirming free consultation…', 'info');
                 await confirmFreeConsultation(name, phone, address);

@@ -8,6 +8,10 @@ const PrescribedCartSchema = new mongoose.Schema({
       medicineId: { type: String },
       storeId: { type: String },
       name: { type: String },
+      description: { type: String },
+      imageUrl: { type: String },
+      storeName: { type: String },
+      category: { type: String },
       selectedWeight: {
         value: Number,
         unit: String

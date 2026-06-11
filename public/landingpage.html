@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Get Started — DHEERGAYUSH</title>
-    <meta name="description" content="Join DHEERGAYUSH as a doctor or patient. Register for Ayurvedic telemedicine or sign in to your account.">
+    <meta name="description" content="Sign in or register on DHEERGAYUSH to book Ayurvedic consultations, manage your health, and connect with certified doctors.">
     <meta name="robots" content="index, follow">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/dheergayush-theme.css">
     <link rel="stylesheet" href="css/dg-premium-icons.css?v=3">
-    <link rel="stylesheet" href="css/dg-landing.css?v=4">
+    <link rel="stylesheet" href="css/dg-landing.css?v=5">
     <link rel="stylesheet" href="css/dheergayush-forms.css">
 </head>
 <body class="dg-page dg-landing-page">
@@ -86,68 +86,11 @@
         </section>
 
         <section class="dg-landing-panel-wrap" aria-label="Account options">
-            <div class="dg-landing-progress" aria-hidden="true">
-                <div class="dg-landing-progress-track">
-                    <div class="dg-landing-progress-fill" id="landingProgressFill"></div>
-                </div>
-                <p class="dg-landing-progress-label" id="landingStepLabel">Step 1 of 2</p>
-            </div>
-
-            <div class="dg-landing-panel visible" id="mainCard" role="region" aria-label="Choose your role">
-                <p class="dg-landing-step"><i class="fas fa-circle-dot" aria-hidden="true"></i> Getting started</p>
-                <h2 class="dg-landing-panel-title">Join us as</h2>
-                <p class="dg-landing-panel-sub">Choose how you would like to access DHEERGAYUSH</p>
-
-                <button type="button" class="dg-landing-role-btn" id="doctorBtn">
-                    <span class="dg-icon-badge dg-icon-badge--sm"><i class="fas fa-user-md" aria-hidden="true"></i></span>
-                    <span class="dg-landing-role-copy">
-                        <strong>Doctor</strong>
-                        <span>Register or sign in to your practitioner account</span>
-                    </span>
-                    <i class="fas fa-chevron-right dg-landing-chevron" aria-hidden="true"></i>
-                </button>
-
-                <div class="dg-landing-or" role="separator">OR</div>
-
-                <button type="button" class="dg-landing-role-btn" id="patientBtn">
-                    <span class="dg-icon-badge dg-icon-badge--sm"><i class="fas fa-user" aria-hidden="true"></i></span>
-                    <span class="dg-landing-role-copy">
-                        <strong>Patient</strong>
-                        <span>Book consultations and manage your health digitally</span>
-                    </span>
-                    <i class="fas fa-chevron-right dg-landing-chevron" aria-hidden="true"></i>
-                </button>
-            </div>
-
-            <div class="dg-landing-panel hidden" id="doctorOptionsCard" role="region" aria-label="Doctor account options" aria-hidden="true">
-                <button type="button" class="dg-landing-back" id="doctorBackBtn" aria-label="Go back to role selection">
-                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Back
-                </button>
-                <span class="dg-landing-role-tag"><i class="fas fa-user-md" aria-hidden="true"></i> Doctor</span>
-                <h2 class="dg-landing-panel-title">Welcome, Vaidya</h2>
-                <p class="dg-landing-panel-sub">Create a new profile or access your existing account</p>
-
-                <div class="dg-landing-action-row">
-                    <button type="button" class="dg-landing-action-btn dg-landing-action-btn--register register-btn" data-role="doctor">
-                        <span class="dg-icon-badge dg-icon-badge--sm"><i class="fas fa-user-plus" aria-hidden="true"></i></span>
-                        <strong>Register</strong>
-                        <span>New practitioner</span>
-                    </button>
-                    <button type="button" class="dg-landing-action-btn dg-landing-action-btn--login login-btn" data-role="doctor">
-                        <span class="dg-icon-badge dg-icon-badge--sm"><i class="fas fa-right-to-bracket" aria-hidden="true"></i></span>
-                        <strong>Login</strong>
-                        <span>Existing account</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="dg-landing-panel hidden" id="patientOptionsCard" role="region" aria-label="Patient account options" aria-hidden="true">
-                <button type="button" class="dg-landing-back" id="patientBackBtn" aria-label="Go back to role selection">
-                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Back
-                </button>
+            <div class="dg-landing-panel visible" id="patientAuthCard" role="region" aria-label="Patient account options">
+                <p class="dg-landing-step"><i class="fas fa-circle-dot" aria-hidden="true"></i> Get started</p>
                 <span class="dg-landing-role-tag"><i class="fas fa-user" aria-hidden="true"></i> Patient</span>
                 <h2 class="dg-landing-panel-title">Welcome</h2>
-                <p class="dg-landing-panel-sub">Start your Ayurvedic care journey in minutes</p>
+                <p class="dg-landing-panel-sub">Sign in or create your account to book consultations and manage your health</p>
 
                 <div class="dg-landing-action-row">
                     <button type="button" class="dg-landing-action-btn dg-landing-action-btn--register register-btn" data-role="patient">
@@ -164,6 +107,20 @@
             </div>
         </section>
     </main>
+
+    <section class="dg-landing-doctor-cta" aria-label="Join as a doctor">
+        <div class="dg-landing-doctor-cta-inner">
+            <div class="dg-landing-doctor-cta-copy">
+                <p class="dg-landing-doctor-cta-eyebrow"><i class="fas fa-user-md" aria-hidden="true"></i> For healthcare practitioners</p>
+                <h2 class="dg-landing-doctor-cta-title">Join Doctors with DHEERGAYUSH</h2>
+                <p class="dg-landing-doctor-cta-text">Register as a certified Ayurvedic doctor, offer video consultations, and grow your practice on our trusted platform.</p>
+            </div>
+            <a href="doctor-auth.html" class="dg-landing-doctor-cta-btn">
+                <i class="fas fa-stethoscope" aria-hidden="true"></i>
+                Join as Doctor
+            </a>
+        </div>
+    </section>
 
     <footer class="dg-landing-footer">
         <div class="dg-landing-footer-inner">
@@ -182,6 +139,7 @@
         </div>
     </footer>
 
+    <script src="js/dg-auth.js"></script>
     <script src="script1.js"></script>
     <script src="js/dg-responsive-nav.js"></script>
 </body>

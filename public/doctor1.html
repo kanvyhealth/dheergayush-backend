@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>Doctor Dashboard — Dheergayush</title>
   <link rel="stylesheet" href="css/dheergayush-theme.css">
   <link rel="stylesheet" href="css/dg-platform.css">
@@ -187,6 +187,42 @@
         <p style="font-size:0.85rem;color:#888;">When patients book and pay, their sessions will appear here.</p>
       </div>
     </section>
+
+    <section class="dg-doc-panel" id="dgDocRxPanel">
+      <div class="dg-doc-panel-header">
+        <div>
+          <h3>Prescriptions issued</h3>
+          <p>Medicines you prescribed during video consultations.</p>
+        </div>
+        <button type="button" class="dg-doc-refresh" id="dgDocRxRefresh" title="Refresh prescriptions"><i class="fas fa-sync-alt"></i></button>
+      </div>
+      <div class="dg-doc-loading" id="dgDocRxLoading" style="display:none;"><div class="dg-doc-spinner"></div><p>Loading prescriptions…</p></div>
+      <div class="dg-doc-table-wrap" id="dgDocRxTableWrap" style="display:none;">
+        <table class="dg-doc-table">
+          <thead><tr><th>Patient</th><th>Medicines</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody id="dgDocRxTbody"></tbody>
+        </table>
+      </div>
+      <div class="dg-doc-empty" id="dgDocRxEmpty" style="display:none;"><p><strong>No prescriptions yet</strong></p></div>
+    </section>
+
+    <section class="dg-doc-panel" id="dgDocOrdersPanel">
+      <div class="dg-doc-panel-header">
+        <div>
+          <h3>Store orders from prescriptions</h3>
+          <p>Orders patients placed from your prescribed medicines.</p>
+        </div>
+        <button type="button" class="dg-doc-refresh" id="dgDocOrdersRefresh" title="Refresh orders"><i class="fas fa-sync-alt"></i></button>
+      </div>
+      <div class="dg-doc-loading" id="dgDocOrdersLoading" style="display:none;"><div class="dg-doc-spinner"></div><p>Loading orders…</p></div>
+      <div class="dg-doc-table-wrap" id="dgDocOrdersTableWrap" style="display:none;">
+        <table class="dg-doc-table">
+          <thead><tr><th>Patient</th><th>Items</th><th>Total</th><th>Order status</th><th>Date</th></tr></thead>
+          <tbody id="dgDocOrdersTbody"></tbody>
+        </table>
+      </div>
+      <div class="dg-doc-empty" id="dgDocOrdersEmpty" style="display:none;"><p><strong>No linked orders yet</strong></p></div>
+    </section>
   </div>
 
   <!-- Profile modal -->
@@ -272,17 +308,17 @@
       if (window.DgApi) DgApi.bootstrapApp({ skipOnLocalhost: true });
       const token = window.DgAuth && DgAuth.getToken();
       if (!token) {
-        window.location.href = 'doctor.html';
+        window.location.href = 'doctor-auth.html';
         return;
       }
       try {
         const res = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } });
         if (!res.ok) {
           if (window.DgAuth) DgAuth.clearSession();
-          window.location.href = 'doctor.html';
+          window.location.href = 'doctor-auth.html';
         }
       } catch (_) {
-        window.location.href = 'doctor.html';
+        window.location.href = 'doctor-auth.html';
       }
     });
 

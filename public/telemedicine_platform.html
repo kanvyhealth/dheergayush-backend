@@ -1780,7 +1780,12 @@ let deliveryStep = 0;
                 document.getElementById('doctorsSection').style.display = 'none';
             }
 
-            // Show only the relevant registration form if regRole is set
+            const urlRole = new URLSearchParams(window.location.search).get('role');
+            if (urlRole === 'doctor' || urlRole === 'patient') {
+                localStorage.setItem('regRole', urlRole);
+                localStorage.setItem('userRole', urlRole);
+            }
+
             const regRole = localStorage.getItem('regRole') || 'patient';
             showRegistrationForm(regRole);
 
@@ -1796,9 +1801,14 @@ let deliveryStep = 0;
         function showRegistrationForm(role) {
             const doctorForm = document.getElementById('doctorRegForm');
             const patientForm = document.getElementById('patientRegForm');
+            const roleTabs = document.getElementById('regRoleTabs');
+            const urlRole = new URLSearchParams(window.location.search).get('role');
             const activeRole = role === 'doctor' ? 'doctor' : 'patient';
             if (doctorForm) doctorForm.classList.toggle('active', activeRole === 'doctor');
             if (patientForm) patientForm.classList.toggle('active', activeRole === 'patient');
+            if (roleTabs) {
+                roleTabs.style.display = (urlRole === 'doctor' || urlRole === 'patient') ? 'none' : '';
+            }
             document.querySelectorAll('.reg-role-tab').forEach(function (tab) {
                 tab.classList.toggle('active', tab.getAttribute('data-reg-role') === activeRole);
             });
