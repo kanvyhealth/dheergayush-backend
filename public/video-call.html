@@ -1037,6 +1037,14 @@ html, body {
     .dg-rx-workspace--browse-only {
       display: block;
     }
+    /* Doctor prescribe mode: show cart + store side-by-side (not tab-hidden) */
+    .dg-rx-workspace:not(.dg-rx-workspace--browse-only) .dg-rx-cart-panel #shop-prescription,
+    .dg-rx-workspace:not(.dg-rx-workspace--browse-only) .dg-rx-store-panel #stores {
+      display: flex !important;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
     .dg-rx-store-panel {
       flex: 1.4;
       min-width: 0;
@@ -4067,7 +4075,14 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
         ? '<i class="fa-solid fa-store"></i> Ayurvedic Store'
         : '<i class="fa-solid fa-prescription-bottle-medical"></i> Prescribe Medicines';
     }
-    if (isBrowseOnlyMode) {
+    const cartTabContent = document.getElementById('shop-prescription');
+    const storeTabContent = document.getElementById('stores');
+    if (!isBrowseOnlyMode) {
+      cartTabContent?.classList.add('active');
+      storeTabContent?.classList.add('active');
+    } else {
+      cartTabContent?.classList.remove('active');
+      storeTabContent?.classList.add('active');
       document.querySelector('.tab-btn[data-tab="stores"]')?.click();
     }
   }
@@ -4082,35 +4097,56 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
       : (shown + ' product' + (shown === 1 ? '' : 's'));
   }
 
+  function safeVcallCardCartQty(idx, med) {
+    try {
+      return getVcallCardCartQty(idx, med);
+    } catch (err) {
+      console.warn('Cart qty lookup failed for product', idx, err);
+      return 0;
+    }
+  }
+
   async function loadVcallCatalog(searchTerm, append) {
     const brandsStrip = document.getElementById('vcall-brands-strip');
-    const medicineList = document.getElementById('medicine-list');
+    const medicineListEl = document.getElementById('medicine-list');
     const loadMoreBtn = document.getElementById('vcall-load-more-btn');
-    if (!window.DgVcallStore) return;
+    if (!window.DgVcallStore) {
+      if (medicineListEl) {
+        medicineListEl.innerHTML = '<p class="vcall-empty-catalog">Store module failed to load. Refresh the page.</p>';
+      }
+      return;
+    }
 
     if (!append) {
       DgVcallStore.resetCatalog();
-      if (medicineList) {
-        medicineList.innerHTML = '<p class="vcall-empty-catalog"><i class="fas fa-spinner fa-spin"></i> Loading products…</p>';
+      if (medicineListEl) {
+        medicineListEl.innerHTML = '<p class="vcall-empty-catalog"><i class="fas fa-spinner fa-spin"></i> Loading products…</p>';
       }
     }
 
-    if (!storesLoaded) {
-      await DgVcallStore.loadSummary();
-      stores = DgVcallStore.getStores();
-      storesLoaded = true;
-      DgVcallStore.renderBrandChips(brandsStrip, function () {
-        searchInput.value = '';
-        loadVcallCatalog('', false);
-      });
-    }
+    try {
+      if (!storesLoaded) {
+        await DgVcallStore.loadSummary();
+        stores = DgVcallStore.getStores();
+        storesLoaded = true;
+        DgVcallStore.renderBrandChips(brandsStrip, function () {
+          if (searchInput) searchInput.value = '';
+          loadVcallCatalog('', false);
+        });
+      }
 
-    await DgVcallStore.fetchProductsPage(1, searchTerm || '', !!append);
-    DgVcallStore.renderProductGrid(medicineList, isBrowseOnlyMode, getVcallCardCartQty);
-    updateVcallProductCount();
+      await DgVcallStore.fetchProductsPage(1, searchTerm || '', !!append);
+      DgVcallStore.renderProductGrid(medicineListEl, isBrowseOnlyMode, safeVcallCardCartQty);
+      updateVcallProductCount();
 
-    if (loadMoreBtn) {
-      loadMoreBtn.style.display = DgVcallStore.hasMore() ? 'block' : 'none';
+      if (loadMoreBtn) {
+        loadMoreBtn.style.display = DgVcallStore.hasMore() ? 'block' : 'none';
+      }
+    } catch (err) {
+      console.error('loadVcallCatalog failed:', err);
+      if (medicineListEl) {
+        medicineListEl.innerHTML = '<p class="vcall-empty-catalog">Could not load store products. Check connection and try again.</p>';
+      }
     }
   }
 
@@ -4184,14 +4220,21 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
   }
 
   function getVcallCardCartQty(idx, med) {
+    if (!med) return 0;
     const card = document.querySelector('.vcall-product-card[data-idx="' + idx + '"]');
-    const parts = card ? getVcallWeightParts(card) : null;
-    if (!parts && med && med.weights && med.weights[0]) {
+    let parts = card ? getVcallWeightParts(card) : null;
+    if (!parts && med.weights && med.weights.length) {
       const w = med.weights[0];
       parts = {
         medicineId: w.medicineId || med._id,
         value: w.value,
         unit: w.unit
+      };
+    } else if (!parts && med._id) {
+      parts = {
+        medicineId: med._id,
+        value: med.weightValue || '1',
+        unit: med.weightUnit || 'unit'
       };
     }
     const line = findCartItemForVcallParts(med, parts);

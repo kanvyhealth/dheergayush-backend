@@ -172,7 +172,7 @@
   }
 
   async function fetchProductsPage(page, searchTerm, append) {
-    if (loading) return { items: [], hasMore: false };
+    if (loading) return { items: products.slice(), hasMore: hasMore };
     loading = true;
     var targetPage = append ? (currentPage + 1) : (page || 1);
     if (!append) {
@@ -258,6 +258,9 @@
     container.querySelectorAll('.vcall-brand-chip').forEach(function (btn) {
       btn.addEventListener('click', function () {
         currentBrand = btn.getAttribute('data-brand') || 'all';
+        container.querySelectorAll('.vcall-brand-chip').forEach(function (chip) {
+          chip.classList.toggle('active', chip.getAttribute('data-brand') === currentBrand);
+        });
         if (typeof onChange === 'function') onChange(currentBrand);
       });
     });
