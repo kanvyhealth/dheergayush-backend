@@ -1,4 +1,14 @@
 (function (global) {
+  function orderRequestHeaders() {
+    var headers = { 'Content-Type': 'application/json' };
+    var token = '';
+    try {
+      token = localStorage.getItem('firebaseIdToken') || '';
+    } catch (_) { /* ignore */ }
+    if (token) headers.Authorization = 'Bearer ' + token;
+    return headers;
+  }
+
   async function placePaidOrder(opts) {
     var doFetch = opts.fetchFn || fetch;
     var paymentMethod = 'razorpay';
@@ -7,7 +17,7 @@
     }
     var res = await doFetch('/api/orders', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: orderRequestHeaders(),
       body: JSON.stringify({
         orderData: Object.assign({}, opts.orderData, {
           paymentMethod: paymentMethod,

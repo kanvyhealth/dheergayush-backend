@@ -16,7 +16,10 @@
   var cartToastTimer = null;
   var legacyMode = false;
   var legacyFiltered = [];
-  var isDoctor = localStorage.getItem('isDoctor') === '1';
+  var DOCTOR_DISCOUNT_RATE = 0.2;
+  var DOCTOR_DISCOUNT_PERCENT = 20;
+  var isDoctor = localStorage.getItem('isDoctor') === '1' ||
+    localStorage.getItem('userRole') === 'doctor';
   var consultationContext = { appointmentId: '', prescriptionId: '' };
 
   (function readConsultationContextFromUrl() {
@@ -655,7 +658,7 @@
 
   function computeCartTotals() {
     var subtotal = cart.reduce(function (t, i) { return t + i.pricePerUnit * i.quantity; }, 0);
-    var discount = isDoctor ? Math.round(subtotal * 0.1) : 0;
+    var discount = isDoctor ? Math.round(subtotal * DOCTOR_DISCOUNT_RATE) : 0;
     var after = subtotal - discount;
     var delivery = isTestOnlyCart() ? 0 : (after > 1000 ? 0 : 150);
     var total = after + delivery;
@@ -685,7 +688,7 @@
       '<div class="checkout-bill-title">Order summary</div>' +
       itemLines +
       '<div class="sum-row"><span>Subtotal</span><span>₹' + totals.subtotal + '</span></div>' +
-      (isDoctor ? '<div class="sum-row discount"><span>Doctor discount (10%)</span><span>-₹' + totals.discount + '</span></div>' : '') +
+      (isDoctor ? '<div class="sum-row discount"><span>Doctor discount (' + DOCTOR_DISCOUNT_PERCENT + '%)</span><span>-₹' + totals.discount + '</span></div>' : '') +
       '<div class="sum-row"><span>Delivery</span><span>' + (totals.delivery ? '₹' + totals.delivery : 'FREE') + '</span></div>' +
       '<div class="sum-row total"><span>Total payable</span><span>₹' + totals.total + '</span></div>';
   }
@@ -715,13 +718,13 @@
         '<button type="button" class="cart-remove" data-i="' + i + '" aria-label="Remove">&times;</button></div>';
     }).join('');
     var subtotal = cart.reduce(function (t, i) { return t + i.pricePerUnit * i.quantity; }, 0);
-    var discount = isDoctor ? Math.round(subtotal * 0.1) : 0;
+    var discount = isDoctor ? Math.round(subtotal * DOCTOR_DISCOUNT_RATE) : 0;
     var after = subtotal - discount;
     var delivery = isTestOnlyCart() ? 0 : (after > 1000 ? 0 : 150);
     var total = after + delivery;
     els.cartTotal.innerHTML =
       '<div class="sum-row"><span>Subtotal</span><span>₹' + subtotal + '</span></div>' +
-      (isDoctor ? '<div class="sum-row discount"><span>Doctor discount (10%)</span><span>-₹' + discount + '</span></div>' : '') +
+      (isDoctor ? '<div class="sum-row discount"><span>Doctor discount (' + DOCTOR_DISCOUNT_PERCENT + '%)</span><span>-₹' + discount + '</span></div>' : '') +
       '<div class="sum-row"><span>Delivery</span><span>' + (delivery ? '₹' + delivery : 'FREE') + '</span></div>' +
       '<div class="sum-row total"><span>Total</span><span>₹' + total + '</span></div>';
     els.checkoutBtn.disabled = false;
@@ -867,6 +870,12 @@
     if (els.placeOrderBtn) els.placeOrderBtn.disabled = true;
     setCheckoutStatus('Opening Razorpay…', false);
     try {
+      if (isDoctor && window.DgAuth && DgAuth.ensureValidToken) {
+        var doctorToken = await DgAuth.ensureValidToken();
+        if (!doctorToken) {
+          throw new Error('Doctor session expired. Log in again from the doctor dashboard.');
+        }
+      }
       setCheckoutStatus('Complete payment in the Razorpay window…', false);
       await DgStorePayment.checkoutCartOrder({
         orderData: orderData,
@@ -895,7 +904,7 @@
   if (isDoctor) {
     var banner = document.createElement('div');
     banner.className = 'doctor-banner';
-    banner.textContent = 'Doctor discount: 10% applied at checkout';
+    banner.textContent = 'Doctor discount: ' + DOCTOR_DISCOUNT_PERCENT + '% applied at checkout';
     document.querySelector('.shop-layout').prepend(banner);
   }
 

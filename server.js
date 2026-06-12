@@ -104,8 +104,10 @@ const {
   requirePatientPhoneAccess,
   requireDoctorNameAccess,
   requireConsultationDoctor,
-  requireDoctorSession
+  requireDoctorSession,
+  resolveFirebaseSession
 } = require('./lib/workflowAuth');
+const { applyDoctorStorePricing } = require('./lib/doctorStoreDiscount');
 const {
   extractDoctorPaymentDetails,
   validatePaymentDetailsInput,
@@ -4271,7 +4273,7 @@ app.post('/api/orders', upload.single('paymentProof'), async (req, res) => {
             });
         }
 
-        await verifyAndFetchPayment({
+        const payment = await verifyAndFetchPayment({
             orderId: razorpayOrderId,
             paymentId: razorpayPaymentId,
             signature: razorpaySignature
@@ -4298,12 +4300,18 @@ app.post('/api/orders', upload.single('paymentProof'), async (req, res) => {
         }
 
         orderData.items = validatedItems.items;
-        if (!orderData.subtotal || Number(orderData.subtotal) <= 0) {
-            orderData.subtotal = validatedItems.subtotal;
-        }
-        const deliveryFee = Number(orderData.deliveryFee || 0);
-        if (!orderData.totalAmount || Number(orderData.totalAmount) <= 0) {
-            orderData.totalAmount = validatedItems.subtotal + deliveryFee;
+        orderData.subtotal = validatedItems.subtotal;
+
+        const session = await resolveFirebaseSession(req);
+        const isDoctorOrder = !!session?.doctor;
+        applyDoctorStorePricing(orderData, isDoctorOrder);
+
+        const expectedPaise = Math.max(100, Math.round(Number(orderData.totalAmount) * 100));
+        if (Math.abs(Number(payment.amount) - expectedPaise) > 100) {
+            return res.status(400).json({
+                success: false,
+                message: 'Payment amount does not match order total. Refresh and try checkout again.'
+            });
         }
 
         if (orderData.appointmentId || orderData.prescriptionId) {
