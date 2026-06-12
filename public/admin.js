@@ -530,7 +530,7 @@ function showEditModal(type, item) {
                 </div>
                 <div class="form-group">
                     <label for="consultationFee">Consultation fee (₹)</label>
-                    <input type="number" id="consultationFee" min="0" step="1" value="${item.fee != null ? item.fee : (item.consultationFee || '')}">
+                    <input type="number" id="consultationFee" min="0" step="1" value="${item.approvedConsultationFee != null ? item.approvedConsultationFee : (item.fee != null ? item.fee : (item.consultationFee || ''))}">
                     <small>Admin changes apply immediately and clear any pending doctor request.</small>
                 </div>
                 <div class="form-group">
@@ -825,6 +825,15 @@ editForm.addEventListener('submit', async (e) => {
         }
         // Default for other types
         inputs.forEach(input => {
+            if (input.id === 'itemId') return;
+            if (currentAction === 'doctors' && input.id === 'consultationFee') {
+                const fee = parseFloat(input.value);
+                if (!Number.isNaN(fee) && fee >= 0) {
+                    formData.consultationFee = fee;
+                    formData.fee = fee;
+                }
+                return;
+            }
             formData[input.id] = input.value;
         });
         const response = await DgApi.apiFetch(`/api/admin/${currentAction}/${itemId}`, {

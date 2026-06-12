@@ -121,6 +121,7 @@ const {
   buildPendingFeeRequestPatch,
   buildApprovedFeePatch,
   buildRejectedFeePatch,
+  buildAdminApprovedFeePatch,
   enrichDoctorFeeFields,
   reconcileDoctorFeeAndPersist
 } = require('./lib/doctorFeeApproval');
@@ -3140,29 +3141,29 @@ app.put('/api/admin/doctors/:id', async (req, res) => {
             return res.status(400).json({ message: adminFeeCheck.error });
         }
         if (!adminFeeCheck.skipped) {
-            profile.fee = adminFeeCheck.fee;
-            profile.consultationFee = adminFeeCheck.fee;
-            profile.approvedConsultationFee = adminFeeCheck.fee;
-            profile.pendingConsultationFee = null;
-            profile.pendingFeeRequestedAt = null;
-            profile.pendingFeePreviousFee = null;
-            profile.pendingFeeApprovedAt = new Date();
-            profile.pendingFeeRejectedAt = null;
-            profile._skipFeeApproval = true;
+            const feePatch = buildAdminApprovedFeePatch(adminFeeCheck.fee);
+            if (!feePatch.ok) {
+                return res.status(400).json({ message: feePatch.error });
+            }
+            Object.assign(profile, feePatch.patch);
         }
 
-        doctor = await Doctor.findByIdAndUpdate(id, { $set: profile }, { new: true });
+        delete profile.itemId;
+        delete profile.id;
+        delete profile._id;
+        profile.updatedAt = new Date();
+
+        doctor = await syncDoctorRecordsUpdate(doctor, profile);
+        if (!doctor) {
+            return res.status(404).json({ message: 'Doctor not found' });
+        }
 
         if (approval && ['pending', 'approved', 'rejected'].includes(String(approval).toLowerCase())) {
             const check = validateApprovalTransition(doctor, approval);
             if (!check.ok) {
                 return res.status(403).json({ message: check.error });
             }
-            doctor = await Doctor.findByIdAndUpdate(
-                id,
-                { $set: buildApprovalUpdate(approval) },
-                { new: true }
-            );
+            doctor = await syncDoctorRecordsUpdate(doctor, buildApprovalUpdate(approval));
             const doctorUid = doctor?.uid || doctor?._id;
             if (doctorUid) {
                 await User.findByIdAndUpdate(
@@ -3188,6 +3189,42 @@ app.put('/api/admin/doctors/:id', async (req, res) => {
     } catch (error) {
         console.error('Error updating doctor:', error);
         res.status(500).json({ message: 'Error updating doctor', error: error.message });
+    }
+});
+
+app.put('/api/admin/doctors/:id/fee', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const adminFeeCheck = parseConsultationFeeInput(req.body);
+        if (!adminFeeCheck.ok) {
+            return res.status(400).json({ message: adminFeeCheck.error });
+        }
+        if (adminFeeCheck.skipped) {
+            return res.status(400).json({ message: 'consultationFee is required.' });
+        }
+
+        let doctor = await findDoctorById(id);
+        if (!doctor) {
+            return res.status(404).json({ message: 'Doctor not found' });
+        }
+
+        const result = buildAdminApprovedFeePatch(adminFeeCheck.fee);
+        if (!result.ok) {
+            return res.status(400).json({ message: result.error });
+        }
+
+        doctor = await syncDoctorRecordsUpdate(doctor, result.patch);
+        if (!doctor) {
+            return res.status(404).json({ message: 'Doctor not found' });
+        }
+
+        return res.json({
+            message: `Consultation fee updated to ₹${result.approvedFee}.`,
+            doctor: enrichDoctorRow(doctor)
+        });
+    } catch (error) {
+        console.error('Error updating doctor fee:', error);
+        return res.status(500).json({ message: 'Error updating doctor fee', error: error.message });
     }
 });
 
