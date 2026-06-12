@@ -2924,7 +2924,10 @@ html, body {
                 roomStatusPollInterval = null;
             }
         }
-        function startRoomStatusPoll() {
+        let postPaymentAutoJoinTimer = null;
+
+        function startRoomStatusPoll(opts) {
+            const options = opts || {};
             const role = localStorage.getItem('userRole') || callIdentity?.role || 'patient';
             if (role === 'doctor' || !roomID) return;
             stopRoomStatusPoll();
@@ -2934,13 +2937,33 @@ html, body {
                     const data = await res.json();
                     if (data.consultationStatus === 'ringing' || data.consultationStatus === 'waiting') {
                         setCallStatus('Waiting for doctor to accept…', 'reconnecting');
-                    } else if (data.consultationStatus === 'accepted') {
-                        setCallStatus('Doctor accepted — waiting for them to join…', 'connected');
+                    } else if (data.consultationStatus === 'accepted' || (data.canJoin && data.consultationStatus === 'accepted')) {
+                        setCallStatus('Doctor accepted! Joining video call…', 'connected');
+                        if (options.autoJoinOnAccept && joinButton && !postPaymentAutoJoinTimer) {
+                            postPaymentAutoJoinTimer = setTimeout(function () {
+                                postPaymentAutoJoinTimer = null;
+                                joinButton.click();
+                            }, 1200);
+                        }
+                    } else if (data.consultationStatus === 'rejected' || data.consultationStatus === 'timeout' || data.consultationStatus === 'refunded') {
+                        stopRoomStatusPoll();
+                        handleConsultationFailure(
+                            'Consultation unavailable',
+                            data.message || 'This consultation is no longer available.',
+                            data.consultationStatus === 'timeout' ? 'doctor_timeout' : 'doctor_rejected'
+                        );
                     } else if (!data.canJoin && data.consultationStatus === 'completed') {
                         stopRoomStatusPoll();
                     }
                 } catch (_) { /* ignore poll errors */ }
             }, 4000);
+        }
+
+        async function initPostPaymentWaiting() {
+            const role = callIdentity.role || localStorage.getItem('userRole') || 'patient';
+            if (role !== 'patient' || !roomID) return;
+            setCallStatus('Payment successful. Waiting for doctor to accept…', 'reconnecting');
+            startRoomStatusPoll({ autoJoinOnAccept: true });
         }
 
         function startNoPeerRefundWatchdog() {
@@ -3122,6 +3145,9 @@ html, body {
             const token = await resolveFirebaseTokenForCall();
             if (!token && joinButton) {
                 joinButton.title = 'Log in first — session required for video call';
+            }
+            if (getUrlParams().get('fromPayment') === '1') {
+                await initPostPaymentWaiting();
             }
         })();
 

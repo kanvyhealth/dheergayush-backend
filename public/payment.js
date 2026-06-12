@@ -223,7 +223,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function goToVideoCall(roomId) {
+    function resolveConsultationId(data) {
+        if (!data) return '';
+        const consultation = data.consultation || {};
+        const payment = data.payment || {};
+        return String(
+            consultation._id ||
+            consultation.id ||
+            payment.consultationId ||
+            payment.appointmentId ||
+            ''
+        ).trim();
+    }
+
+    function goToVideoCall(roomId, opts) {
+        const options = opts || {};
         localStorage.setItem('userRole', 'patient');
         localStorage.setItem('videoRoomId', roomId);
         const token = window.DgAuth && DgAuth.getToken ? DgAuth.getToken() : localStorage.getItem('firebaseIdToken');
@@ -232,7 +246,33 @@ document.addEventListener('DOMContentLoaded', async () => {
             const refresh = localStorage.getItem('firebaseRefreshToken');
             if (refresh) sessionStorage.setItem('firebaseRefreshToken', refresh);
         }
-        window.location.href = `video-call.html?roomID=${encodeURIComponent(roomId)}&role=patient`;
+        const qs = new URLSearchParams({
+            roomID: roomId,
+            role: 'patient'
+        });
+        if (options.fromPayment) qs.set('fromPayment', '1');
+        window.location.href = '/video-call.html?' + qs.toString();
+    }
+
+    async function refundFailedBooking(paymentResponse) {
+        if (!paymentResponse || !paymentResponse.razorpay_payment_id || !window.DgAuth || !DgAuth.authFetch) {
+            return null;
+        }
+        try {
+            const res = await DgAuth.authFetch('/api/payments/razorpay/refund-failed-booking', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    razorpay_order_id: paymentResponse.razorpay_order_id,
+                    razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                    razorpay_signature: paymentResponse.razorpay_signature
+                })
+            });
+            return await res.json();
+        } catch (e) {
+            console.warn('Refund request failed', e);
+            return null;
+        }
     }
 
     function showConsultationWaitingRoom(consultation, roomId) {
@@ -374,6 +414,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             ? document.getElementById('patientSymptoms').value.trim()
             : '';
 
+        let paymentResponse = null;
         try {
             if (payBtn) payBtn.disabled = true;
             if (followUpAccess && followUpAccess.covered) {
@@ -399,7 +440,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 fetchFn: authFetch
             });
 
-            const paymentResponse = await DgRazorpayCheckout.openCheckout({
+            paymentResponse = await DgRazorpayCheckout.openCheckout({
                 keyId: orderData.key_id,
                 orderId: orderData.order_id,
                 amount: orderData.amount,
@@ -445,6 +486,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error('Payment verified but booking response was invalid.');
             }
             if (!confirmRes.ok) {
+                if (!data.refunded && paymentResponse) {
+                    const refundData = await refundFailedBooking(paymentResponse);
+                    if (refundData && (refundData.refunded || refundData.alreadyRefunded)) {
+                        throw new Error(refundData.message || data.message || 'Consultation booking failed. Refund initiated.');
+                    }
+                }
                 throw new Error(data.message || 'Consultation booking failed');
             }
             await handlePaymentSuccess(data, name, phone);
@@ -453,6 +500,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const msg = err.message || 'Payment failed.';
             if (msg.indexOf('cancelled') !== -1) {
                 showMessage('Payment cancelled.', 'info');
+            } else if (paymentResponse && paymentResponse.razorpay_payment_id && !/refund/i.test(msg)) {
+                const refundData = await refundFailedBooking(paymentResponse);
+                if (refundData && (refundData.refunded || refundData.alreadyRefunded)) {
+                    showMessage(refundData.message || 'Payment received but booking failed. Refund initiated.', 'error');
+                } else {
+                    showMessage(msg, 'error');
+                }
             } else {
                 showMessage(msg, 'error');
             }
@@ -475,13 +529,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        const consultationId = resolveConsultationId(data);
         localStorage.setItem('videoRoomId', consultationRoomId);
         localStorage.setItem('currentPaymentId', data.payment._id || data.payment?.id);
+        if (consultationId) localStorage.setItem('currentConsultationId', consultationId);
         localStorage.setItem('patientId', name);
         localStorage.setItem('patientPhoneNumber', phone);
-        showMessage('Payment successful! Waiting for doctor…', 'success');
-
-        showConsultationWaitingRoom(data.consultation || { _id: data.payment?.consultationId }, consultationRoomId);
+        showMessage('Payment successful! Opening video consultation…', 'success');
 
         if (typeof downloadReceipt === 'function') {
             downloadReceipt({
@@ -494,6 +548,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 totalPaid: displayDoctorFee.textContent
             }).catch(function () {});
         }
+
+        setTimeout(function () {
+            goToVideoCall(consultationRoomId, { fromPayment: true });
+        }, 600);
     }
 
     async function confirmFreeConsultation(name, phone, address, symptomsText) {

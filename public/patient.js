@@ -199,6 +199,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
     }
 
+    function getAccessDaysRemaining(doctorName, accessPlans) {
+        const row = (accessPlans || []).find(
+            (p) => p.active && String(p.doctorName || '').trim() === String(doctorName || '').trim()
+        );
+        return row ? Number(row.daysRemaining) || 0 : 0;
+    }
+
     async function startFreeFollowUp(doctorName) {
         const name = localStorage.getItem('patientId') || '';
         const phone = localStorage.getItem('patientPhoneNumber') || '';
@@ -227,7 +234,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.setItem('videoRoomId', roomId);
         localStorage.setItem('userRole', 'patient');
         showMessage('Follow-up started! Opening video room — your doctor will join after accepting.', 'success', 'dashboard');
-        window.location.href = `video-call.html?roomID=${encodeURIComponent(roomId)}&role=patient`;
+        window.location.href = `/video-call.html?roomID=${encodeURIComponent(roomId)}&role=patient&fromPayment=1`;
     }
 
     function bindStartCallButtons(container, accessPlans) {
@@ -314,14 +321,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             card.classList.add('dg-record-card');
             const createdAtDate = new Date(appointment.createdAt);
             const consultationFee = appointment.selectedDoctorFee || `₹${appointment.amount}`;
-            const daysRemaining = Math.ceil((15 - (new Date() - createdAtDate) / (1000 * 60 * 60 * 24)));
-            const isExpired = daysRemaining <= 0;
             const doctorName = appointment.selectedDoctorName || appointment.doctorName || '';
             const hasAccess = doctorHasActiveAccess(doctorName, accessPlans);
+            const daysRemaining = hasAccess ? getAccessDaysRemaining(doctorName, accessPlans) : 0;
+            const isExpired = !hasAccess;
             if (isExpired) card.classList.add('expired');
             const safeDoctor = doctorName.replace(/"/g, '&quot;');
             card.innerHTML = `
-                <div class="timer">${isExpired ? 'Expired' : `${daysRemaining} days left`}</div>
+                <div class="timer">${hasAccess ? `${daysRemaining} day(s) free follow-up left` : '15-day plan expired'}</div>
                 <h3>Appointment ${index + 1}</h3>
                 <p><strong>Doctor:</strong> ${doctorName}</p>
                 <p><strong>Date:</strong> ${createdAtDate.toLocaleDateString()}</p>

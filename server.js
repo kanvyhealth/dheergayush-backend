@@ -114,6 +114,13 @@ const {
   parseDoctorSelfServiceProfile,
   mergePaymentBodyWithExisting
 } = require('./lib/doctorPaymentDetails');
+const {
+  getActiveConsultationFee,
+  buildPendingFeeRequestPatch,
+  buildApprovedFeePatch,
+  buildRejectedFeePatch,
+  enrichDoctorFeeFields
+} = require('./lib/doctorFeeApproval');
 const { findCustomerByPhone, findCustomerByUid, listCustomers, findDoctorByUid, findDoctorById, findDoctorByEmail, listDoctors } = require('./lib/userQueries');
 const {
   getPublicKeyId,
@@ -147,7 +154,7 @@ const {
   hasLiveActiveConsultation,
   autoHealStaleRoomContext
 } = require('./lib/consultationSessionCleanup');
-const { refundConsultationForRoom } = require('./lib/consultationRefund');
+const { refundConsultationForRoom, refundCapturedRazorpayPayment } = require('./lib/consultationRefund');
 const {
   findActiveAccess,
   grantConsultationAccess,
@@ -989,11 +996,10 @@ function enrichDoctorRow(d) {
     const { enrichDoctorApiFields } = require('./lib/doctorFields');
     const row = enrichDoctorApiFields(d);
     const payment = extractDoctorPaymentDetails(row);
-    const fee = row.fee != null ? row.fee : row.consultationFee;
+    const feeFields = enrichDoctorFeeFields(row);
     return {
         ...row,
-        fee,
-        consultationFee: fee,
+        ...feeFields,
         paymentDetails: payment,
         upiId: payment.upiId || row.upiId || '',
         bankName: payment.bankName || row.bankName || '',
@@ -1108,6 +1114,16 @@ app.put(
                 updatedAt: new Date()
             };
 
+            let feeMessage = '';
+            if (!feeCheck.skipped && feeCheck.fee !== getActiveConsultationFee(doctor)) {
+                const pendingFee = buildPendingFeeRequestPatch(doctor, feeCheck.fee);
+                if (!pendingFee.ok) {
+                    return res.status(400).json({ message: pendingFee.error });
+                }
+                Object.assign(updates, pendingFee.patch);
+                feeMessage = ' Fee change submitted for admin approval.';
+            }
+
             doctor = await syncDoctorRecordsUpdate(doctor, updates);
             if (!doctor) {
                 return res.status(404).json({ message: 'Doctor profile not found.' });
@@ -1115,7 +1131,7 @@ app.put(
 
             const rows = await enrichDoctorPhotos([enrichDoctorRow(doctor)]);
             return res.json({
-                message: 'Profile updated successfully.',
+                message: 'Profile updated successfully.' + feeMessage,
                 doctor: rows[0] || enrichDoctorRow(doctor)
             });
         } catch (err) {
@@ -1144,22 +1160,25 @@ app.put('/api/doctor/consultation-fee', requireDoctorSession(), async (req, res)
             return res.status(404).json({ message: 'Doctor profile not found.' });
         }
 
-        const updates = {
-            fee: feeCheck.fee,
-            consultationFee: feeCheck.fee,
-            updatedAt: new Date()
-        };
-        doctor = await syncDoctorRecordsUpdate(doctor, updates);
+        const pendingFee = buildPendingFeeRequestPatch(doctor, feeCheck.fee);
+        if (!pendingFee.ok) {
+            return res.status(400).json({ message: pendingFee.error });
+        }
+
+        doctor = await syncDoctorRecordsUpdate(doctor, pendingFee.patch);
         if (!doctor) {
             return res.status(404).json({ message: 'Doctor profile not found.' });
         }
 
         const rows = await enrichDoctorPhotos([enrichDoctorRow(doctor)]);
+        const enriched = rows[0] || enrichDoctorRow(doctor);
         return res.json({
-            message: 'Consultation fee updated.',
-            fee: feeCheck.fee,
-            consultationFee: feeCheck.fee,
-            doctor: rows[0] || enrichDoctorRow(doctor)
+            message: 'Fee change submitted for admin approval. Your current fee stays active until approved.',
+            pending: true,
+            fee: enriched.fee,
+            consultationFee: enriched.consultationFee,
+            pendingConsultationFee: enriched.pendingConsultationFee,
+            doctor: enriched
         });
     } catch (err) {
         console.error('PUT /api/doctor/consultation-fee failed:', err);
@@ -1750,6 +1769,24 @@ async function completeWebsiteConsultationCheckout({
   razorpayPaymentId,
   razorpaySignature
 }) {
+  if (razorpayPaymentId) {
+    const priorPayment = await Payment.findOne({ razorpayPaymentId: String(razorpayPaymentId) });
+    if (priorPayment) {
+      const appointmentId = priorPayment.consultationId || priorPayment.appointmentId;
+      let consultation = appointmentId ? await ConsultationRequest.findById(appointmentId) : null;
+      if (!consultation) {
+        consultation = await ConsultationRequest.findOne({ paymentId: priorPayment._id || priorPayment.id });
+      }
+      const videoRoomId =
+        priorPayment.videoRoomId ||
+        priorPayment.roomName ||
+        consultation?.videoRoomId ||
+        consultation?.roomId ||
+        (appointmentId ? videoRoomIdForAppointment(appointmentId) : '');
+      return { savedPayment: priorPayment, consultation, videoRoomId, duplicate: true };
+    }
+  }
+
   const doctor = await findDoctorByName(selectedDoctorName);
   if (!doctor) {
     throw Object.assign(new Error('Doctor not found.'), { status: 404 });
@@ -1992,7 +2029,12 @@ async function completeWebsiteConsultationCheckout({
     console.warn('Customer reports update skipped:', customerUpdateErr.message);
   }
 
-  return { savedPayment, consultation, videoRoomId };
+  const refreshedConsultation = await ConsultationRequest.findById(appointmentId);
+  return {
+    savedPayment,
+    consultation: formatConsultationResponse(refreshedConsultation || consultation),
+    videoRoomId
+  };
 }
 
 app.post(
@@ -2053,10 +2095,60 @@ app.post(
       });
     } catch (err) {
       console.error('Razorpay confirm error:', err.message);
-      res.status(err.status || 500).json({ message: err.message || 'Payment confirmation failed' });
+      const amountNum = parseFloat(String(req.body?.amount ?? '').replace(/[^\d.]/g, ''));
+      let refundResult = null;
+      if (
+        amountNum > 0 &&
+        req.body?.razorpay_payment_id &&
+        req.body?.razorpay_order_id &&
+        req.body?.razorpay_signature
+      ) {
+        try {
+          refundResult = await refundCapturedRazorpayPayment({
+            razorpayPaymentId: req.body.razorpay_payment_id,
+            razorpayOrderId: req.body.razorpay_order_id,
+            razorpaySignature: req.body.razorpay_signature,
+            reason: 'booking_failed'
+          });
+        } catch (refundErr) {
+          console.error('Post-booking refund error:', refundErr.message);
+        }
+      }
+      const message = refundResult?.refunded
+        ? refundResult.message
+        : (err.message || 'Payment confirmation failed');
+      res.status(err.status || 500).json({
+        message,
+        refunded: !!refundResult?.refunded,
+        refundError: refundResult && !refundResult.ok ? refundResult.message : undefined
+      });
     }
   }
 );
+
+app.post('/api/payments/razorpay/refund-failed-booking', requireFirebaseAuth(), async (req, res) => {
+  try {
+    const razorpayPaymentId = req.body?.razorpay_payment_id || req.body?.razorpayPaymentId;
+    const razorpayOrderId = req.body?.razorpay_order_id || req.body?.razorpayOrderId;
+    const razorpaySignature = req.body?.razorpay_signature || req.body?.razorpaySignature;
+    if (!razorpayPaymentId || !razorpayOrderId || !razorpaySignature) {
+      return res.status(400).json({ message: 'Razorpay payment verification data is required.' });
+    }
+    const result = await refundCapturedRazorpayPayment({
+      razorpayPaymentId,
+      razorpayOrderId,
+      razorpaySignature,
+      reason: 'booking_failed'
+    });
+    if (!result.ok) {
+      return res.status(result.status || 500).json({ message: result.message || 'Refund failed' });
+    }
+    return res.json(result);
+  } catch (err) {
+    console.error('refund-failed-booking error:', err.message);
+    return res.status(err.status || 500).json({ message: err.message || 'Refund failed' });
+  }
+});
 
 // Legacy UPI proof upload — disabled; use Razorpay
 app.post('/api/payment', upload.fields([
@@ -3034,6 +3126,20 @@ app.put('/api/admin/doctors/:id', async (req, res) => {
                 .filter(Boolean);
         }
 
+        const adminFeeCheck = parseConsultationFeeInput(req.body);
+        if (!adminFeeCheck.ok) {
+            return res.status(400).json({ message: adminFeeCheck.error });
+        }
+        if (!adminFeeCheck.skipped) {
+            profile.fee = adminFeeCheck.fee;
+            profile.consultationFee = adminFeeCheck.fee;
+            profile.pendingConsultationFee = null;
+            profile.pendingFeeRequestedAt = null;
+            profile.pendingFeePreviousFee = null;
+            profile.pendingFeeApprovedAt = new Date();
+            profile.pendingFeeRejectedAt = null;
+        }
+
         doctor = await Doctor.findByIdAndUpdate(id, { $set: profile }, { new: true });
 
         if (approval && ['pending', 'approved', 'rejected'].includes(String(approval).toLowerCase())) {
@@ -3071,6 +3177,47 @@ app.put('/api/admin/doctors/:id', async (req, res) => {
     } catch (error) {
         console.error('Error updating doctor:', error);
         res.status(500).json({ message: 'Error updating doctor', error: error.message });
+    }
+});
+
+app.put('/api/admin/doctors/:id/fee-request', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const action = String(req.body?.action || '').trim().toLowerCase();
+
+        if (!['approve', 'reject'].includes(action)) {
+            return res.status(400).json({ message: 'action must be approve or reject.' });
+        }
+
+        let doctor = await findDoctorById(id);
+        if (!doctor) {
+            return res.status(404).json({ message: 'Doctor not found' });
+        }
+
+        const result = action === 'approve'
+            ? buildApprovedFeePatch(doctor)
+            : buildRejectedFeePatch();
+
+        if (!result.ok) {
+            return res.status(400).json({ message: result.error });
+        }
+
+        doctor = await syncDoctorRecordsUpdate(doctor, result.patch);
+        if (!doctor) {
+            return res.status(404).json({ message: 'Doctor not found' });
+        }
+
+        const message = action === 'approve'
+            ? `Consultation fee updated to ₹${result.approvedFee}.`
+            : 'Pending fee change rejected.';
+
+        return res.json({
+            message,
+            doctor: enrichDoctorRow(doctor)
+        });
+    } catch (error) {
+        console.error('Error updating doctor fee request:', error);
+        return res.status(500).json({ message: 'Error updating fee request', error: error.message });
     }
 });
 
@@ -3190,8 +3337,9 @@ async function validateVideoRoomAccess(roomId, role) {
 
     if (!withinRoomWindow) {
       let accessAllowed = false;
-      if (isFollowUp && doctorName && patientPhone) {
+      if (doctorName && (patientPhone || consultation?.patientId || consultation?.userId || payment?.patientId)) {
         const access = await findActiveAccess({
+          patientUid: consultation?.patientId || consultation?.userId || payment?.patientId || '',
           patientPhone,
           doctorName
         });
@@ -3200,7 +3348,7 @@ async function validateVideoRoomAccess(roomId, role) {
       if (!accessAllowed) {
         const msg = isFollowUp
           ? 'Your 15-day free follow-up plan has expired. Please book a new consultation from your dashboard.'
-          : 'Consultation access has expired (15 days from booking). Please book a new consultation.';
+          : 'Consultation access has expired (15 days from booking). Please book a new consultation or use your active 15-day plan.';
         return { ok: false, status: 403, message: msg, payment, consultation };
       }
     }
@@ -3775,9 +3923,11 @@ app.post('/api/consultations/:id/accept', requireConsultationDoctor(), async (re
       if (payload) emitDoctorStatus(doctor.name, payload);
     }
 
+    const acceptedRoomId = consultation.roomId || consultation.videoRoomId || '';
     const payload = {
       consultationId: String(consultation._id),
-      roomId: consultation.roomId,
+      roomId: acceptedRoomId,
+      videoRoomId: acceptedRoomId,
       patientName: consultation.patientName,
       status: 'accepted'
     };
