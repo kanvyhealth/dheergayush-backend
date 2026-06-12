@@ -121,7 +121,8 @@ const {
   buildPendingFeeRequestPatch,
   buildApprovedFeePatch,
   buildRejectedFeePatch,
-  enrichDoctorFeeFields
+  enrichDoctorFeeFields,
+  reconcileDoctorFeeAndPersist
 } = require('./lib/doctorFeeApproval');
 const { findCustomerByPhone, findCustomerByUid, listCustomers, findDoctorByUid, findDoctorById, findDoctorByEmail, listDoctors } = require('./lib/userQueries');
 const {
@@ -957,6 +958,8 @@ app.post('/api/register-doctor', upload.fields([
             degree: String(degree || '').trim() || trimmedSpec,
             email: authEmail,
             fee: feeNum,
+            consultationFee: feeNum,
+            approvedConsultationFee: feeNum,
             bio: trimmedBio,
             about: trimmedBio,
             experience: expNum,
@@ -1033,10 +1036,11 @@ function serializeDoctorSession(doctor) {
 app.get('/api/doctor/profile', requireDoctorSession(), async (req, res) => {
     try {
         const id = req.doctor._id || req.doctor.id;
-        const fresh = id ? await Doctor.findById(id) : req.doctor;
+        let fresh = id ? await Doctor.findById(id) : req.doctor;
         if (!fresh) {
             return res.status(404).json({ message: 'Doctor profile not found.' });
         }
+        fresh = (await reconcileDoctorFeeAndPersist(fresh)) || fresh;
         const rows = await enrichDoctorPhotos([enrichDoctorRow(fresh)]);
         return res.json({ doctor: rows[0] || enrichDoctorRow(fresh) });
     } catch (err) {
@@ -2880,7 +2884,11 @@ app.get('/api/admin/doctors', async (req, res) => {
             return res.status(503).json({ message: 'Database not connected. Check Firebase credentials on the server.' });
         }
         const doctors = await listDoctors();
-        res.json(await enrichDoctorRows(doctors));
+        const reconciled = [];
+        for (const doctor of doctors) {
+            reconciled.push((await reconcileDoctorFeeAndPersist(doctor)) || doctor);
+        }
+        res.json(await enrichDoctorRows(reconciled));
     } catch (error) {
         adminDbErrorResponse(res, 'doctors', error);
     }
@@ -3134,11 +3142,13 @@ app.put('/api/admin/doctors/:id', async (req, res) => {
         if (!adminFeeCheck.skipped) {
             profile.fee = adminFeeCheck.fee;
             profile.consultationFee = adminFeeCheck.fee;
+            profile.approvedConsultationFee = adminFeeCheck.fee;
             profile.pendingConsultationFee = null;
             profile.pendingFeeRequestedAt = null;
             profile.pendingFeePreviousFee = null;
             profile.pendingFeeApprovedAt = new Date();
             profile.pendingFeeRejectedAt = null;
+            profile._skipFeeApproval = true;
         }
 
         doctor = await Doctor.findByIdAndUpdate(id, { $set: profile }, { new: true });
