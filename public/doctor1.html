@@ -51,6 +51,26 @@
     .dg-profile-status.success { color: #16a34a; }
     .dg-profile-status.info { color: #2563eb; }
     .dg-profile-section { margin-top: 16px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
+    .dg-doc-fee-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+      padding: 16px 18px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #fff7f0 0%, #f8fafc 100%);
+      border: 1px solid rgba(242, 103, 39, 0.18);
+    }
+    .dg-doc-fee-card strong { display: block; font-size: 0.95rem; color: #3c3c3c; }
+    .dg-doc-fee-amount {
+      margin: 4px 0 0;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #f26727;
+    }
+    .dg-doc-fee-note { margin: 4px 0 0; font-size: 0.8rem; color: #6b7280; }
   </style>
 </head>
 <body class="dg-doctor-dashboard dg-role-pending">
@@ -80,6 +100,17 @@
         <h2>Clinical workspace</h2>
         <p>Manage video consultations, review patient history, and prescribe from the Ayurvedic store — all in one place.</p>
         <p id="doctorLicense" style="margin-top:10px;font-size:0.82rem;color:#888;"></p>
+
+        <div class="dg-doc-fee-card" id="doctorFeeCard">
+          <div>
+            <strong>Consultation fee</strong>
+            <p class="dg-doc-fee-amount" id="doctorFeeDisplay">₹ —</p>
+            <p class="dg-doc-fee-note">Patients pay this amount when booking a video consultation. You can change it anytime.</p>
+          </div>
+          <button type="button" class="dg-doc-btn dg-doc-btn--primary" id="openDoctorFeeBtn">
+            <i class="fas fa-rupee-sign"></i><span class="label">Change fee</span>
+          </button>
+        </div>
 
         <div class="dg-doc-stats">
           <div class="dg-doc-stat">
@@ -226,6 +257,21 @@
     </section>
   </div>
 
+  <!-- Consultation fee modal -->
+  <div class="dg-profile-modal" id="doctorFeeModal" role="dialog" aria-labelledby="doctorFeeTitle">
+    <div class="dg-profile-card" style="max-width:420px;">
+      <h2 id="doctorFeeTitle">Change consultation fee</h2>
+      <p style="color:#666;font-size:0.9rem;margin:0 0 16px;">Set the amount patients pay when they book a video consultation with you.</p>
+      <label for="quickFeeInput">Fee amount (₹)</label>
+      <input id="quickFeeInput" type="number" min="0" step="1" placeholder="e.g. 500" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-family:inherit;box-sizing:border-box;">
+      <div id="doctorFeeStatus" class="dg-profile-status"></div>
+      <div class="dg-profile-actions">
+        <button type="button" class="dg-doc-btn dg-doc-btn--primary" id="saveDoctorFeeBtn">Save fee</button>
+        <button type="button" class="dg-doc-btn dg-doc-btn--ghost" id="closeDoctorFeeBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Profile modal -->
   <div class="dg-profile-modal" id="doctorProfileEditModal" role="dialog" aria-labelledby="doctorProfileTitle">
     <div class="dg-profile-card">
@@ -240,7 +286,7 @@
         <div><label for="profileLocation">Location</label><input id="profileLocation" type="text"></div>
         <div><label for="profileAvailableTime">Consultation time slot</label><input id="profileAvailableTime" type="text" placeholder="e.g. 10:00 AM - 11:00 AM"></div>
         <div><label for="profileLanguages">Languages (comma-separated)</label><input id="profileLanguages" type="text"></div>
-        <div><label for="profileFee">Consultation fee (₹)</label><input id="profileFee" type="number" min="0" step="1"></div>
+        <div><label for="profileFee">Consultation fee (₹)</label><input id="profileFee" type="number" min="0" step="1" placeholder="e.g. 500"><small style="display:block;margin-top:4px;color:#6b7280;">Updates what patients pay for video consultations.</small></div>
         <div><label for="profileExperience">Years of experience</label><input id="profileExperience" type="number" min="0" step="1"></div>
         <div><label for="profileBio">Bio</label><textarea id="profileBio" rows="3"></textarea></div>
         <div class="dg-profile-section">

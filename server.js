@@ -31,6 +31,7 @@ const {
 const { getEffectiveStatus, normalizeDbStatus, getScheduleStatus } = require('./lib/doctorAvailability');
 const {
   updateDoctorPresence,
+  syncDoctorRecordsUpdate,
   findDoctorByName,
   buildPresenceUpdate,
   buildApprovalUpdate,
@@ -109,6 +110,7 @@ const {
   extractDoctorPaymentDetails,
   validatePaymentDetailsInput,
   buildPaymentDetailsPatch,
+  parseConsultationFeeInput,
   parseDoctorSelfServiceProfile,
   mergePaymentBodyWithExisting
 } = require('./lib/doctorPaymentDetails');
@@ -987,8 +989,11 @@ function enrichDoctorRow(d) {
     const { enrichDoctorApiFields } = require('./lib/doctorFields');
     const row = enrichDoctorApiFields(d);
     const payment = extractDoctorPaymentDetails(row);
+    const fee = row.fee != null ? row.fee : row.consultationFee;
     return {
         ...row,
+        fee,
+        consultationFee: fee,
         paymentDetails: payment,
         upiId: payment.upiId || row.upiId || '',
         bankName: payment.bankName || row.bankName || '',
@@ -1048,6 +1053,10 @@ app.put(
             }
 
             const profile = parseDoctorSelfServiceProfile(req.body);
+            const feeCheck = parseConsultationFeeInput(req.body);
+            if (!feeCheck.ok) {
+                return res.status(400).json({ message: feeCheck.error });
+            }
             const trimmedTime = String(profile.availableTime || profile.slotTime || '').trim();
             if (trimmedTime && !trimmedTime.includes('Select a time')) {
                 profile.availableTime = trimmedTime;
@@ -1099,8 +1108,10 @@ app.put(
                 updatedAt: new Date()
             };
 
-            doctor = await Doctor.findByIdAndUpdate(id, { $set: updates }, { new: true });
-            await mirrorDoctorToAuthUid(doctor);
+            doctor = await syncDoctorRecordsUpdate(doctor, updates);
+            if (!doctor) {
+                return res.status(404).json({ message: 'Doctor profile not found.' });
+            }
 
             const rows = await enrichDoctorPhotos([enrichDoctorRow(doctor)]);
             return res.json({
@@ -1113,6 +1124,48 @@ app.put(
         }
     }
 );
+
+app.put('/api/doctor/consultation-fee', requireDoctorSession(), async (req, res) => {
+    try {
+        const feeCheck = parseConsultationFeeInput(req.body);
+        if (!feeCheck.ok) {
+            return res.status(400).json({ message: feeCheck.error });
+        }
+        if (feeCheck.skipped) {
+            return res.status(400).json({ message: 'Consultation fee is required.' });
+        }
+
+        let doctor = req.doctor;
+        const id = doctor?._id || doctor?.id;
+        if (id) {
+            doctor = (await Doctor.findById(id)) || doctor;
+        }
+        if (!doctor) {
+            return res.status(404).json({ message: 'Doctor profile not found.' });
+        }
+
+        const updates = {
+            fee: feeCheck.fee,
+            consultationFee: feeCheck.fee,
+            updatedAt: new Date()
+        };
+        doctor = await syncDoctorRecordsUpdate(doctor, updates);
+        if (!doctor) {
+            return res.status(404).json({ message: 'Doctor profile not found.' });
+        }
+
+        const rows = await enrichDoctorPhotos([enrichDoctorRow(doctor)]);
+        return res.json({
+            message: 'Consultation fee updated.',
+            fee: feeCheck.fee,
+            consultationFee: feeCheck.fee,
+            doctor: rows[0] || enrichDoctorRow(doctor)
+        });
+    } catch (err) {
+        console.error('PUT /api/doctor/consultation-fee failed:', err);
+        return res.status(500).json({ message: 'Failed to update consultation fee.', error: err.message });
+    }
+});
 
 async function enrichDoctorRows(doctors) {
     const rows = (Array.isArray(doctors) ? doctors : []).map(enrichDoctorRow);

@@ -9,11 +9,34 @@
     return headers;
   }
 
-  function setStatus(msg, type) {
-    const el = document.getElementById('doctorProfileStatus');
+  function setStatus(msg, type, targetId) {
+    const el = document.getElementById(targetId || 'doctorProfileStatus');
     if (!el) return;
     el.textContent = msg || '';
     el.className = 'dg-profile-status' + (type ? ' ' + type : '');
+  }
+
+  function getDoctorFeeAmount(doctor) {
+    if (!doctor) return null;
+    const raw = doctor.consultationFee != null ? doctor.consultationFee : doctor.fee;
+    if (raw == null || raw === '') return null;
+    const feeNum = parseFloat(String(raw).replace(/[^\d.]/g, ''));
+    return Number.isNaN(feeNum) ? null : feeNum;
+  }
+
+  function formatDoctorFee(amount) {
+    if (amount == null) return '₹ —';
+    return '₹' + Math.round(amount).toLocaleString('en-IN');
+  }
+
+  function updateFeeDisplay(doctor) {
+    const display = document.getElementById('doctorFeeDisplay');
+    const quickInput = document.getElementById('quickFeeInput');
+    const profileFee = document.getElementById('profileFee');
+    const fee = getDoctorFeeAmount(doctor);
+    if (display) display.textContent = formatDoctorFee(fee);
+    if (quickInput && fee != null) quickInput.value = String(Math.round(fee));
+    if (profileFee && fee != null) profileFee.value = String(Math.round(fee));
   }
 
   function togglePaymentMode(mode) {
@@ -58,6 +81,8 @@
     if (specEl && map.profileSpec) specEl.textContent = map.profileSpec;
     const licEl = document.getElementById('doctorLicense');
     if (licEl && map.profileLicense) licEl.textContent = 'License: ' + map.profileLicense;
+
+    updateFeeDisplay(doctor);
 
     if (global.DgAuth && DgAuth.hydrateDoctorPortal) {
       DgAuth.hydrateDoctorPortal({ portal: 'doctor', role: 'Doctor', doctor: doctor });
@@ -113,7 +138,7 @@
     if (docs && docs.files.length) {
       Array.from(docs.files).forEach((f) => form.append('documents', f));
     }
-    setStatus('Saving profile…', 'info');
+    setStatus('Saving profile…', 'info', 'doctorProfileStatus');
     const res = await fetch('/api/doctor/profile', {
       method: 'PUT',
       headers: authHeaders(),
@@ -122,8 +147,61 @@
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Save failed');
     fillProfileForm(data.doctor);
-    setStatus('Profile saved successfully.', 'success');
+    setStatus('Profile saved successfully.', 'success', 'doctorProfileStatus');
     return data.doctor;
+  }
+
+  async function updateConsultationFee(fee) {
+    const feeNum = parseFloat(String(fee).replace(/[^\d.]/g, ''));
+    if (Number.isNaN(feeNum) || feeNum < 0) {
+      throw new Error('Enter a valid consultation fee (₹0 or more).');
+    }
+    setStatus('Saving fee…', 'info', 'doctorFeeStatus');
+    const res = await fetch('/api/doctor/consultation-fee', {
+      method: 'PUT',
+      headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
+      body: JSON.stringify({ consultationFee: feeNum })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Could not update fee');
+    fillProfileForm(data.doctor);
+    setStatus('Consultation fee updated.', 'success', 'doctorFeeStatus');
+    return data.doctor;
+  }
+
+  function bindFeeModal() {
+    const modal = document.getElementById('doctorFeeModal');
+    const openBtn = document.getElementById('openDoctorFeeBtn');
+    const closeBtn = document.getElementById('closeDoctorFeeBtn');
+    const saveBtn = document.getElementById('saveDoctorFeeBtn');
+    const input = document.getElementById('quickFeeInput');
+    if (!modal) return;
+
+    if (openBtn) {
+      openBtn.addEventListener('click', async () => {
+        modal.classList.add('show');
+        setStatus('', '', 'doctorFeeStatus');
+        const doctor = await loadDoctorProfile();
+        if (doctor) updateFeeDisplay(doctor);
+        if (input) input.focus();
+      });
+    }
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => modal.classList.remove('show'));
+    }
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.remove('show');
+    });
+    if (saveBtn) {
+      saveBtn.addEventListener('click', async () => {
+        try {
+          await updateConsultationFee(input ? input.value : '');
+          setTimeout(() => modal.classList.remove('show'), 600);
+        } catch (err) {
+          setStatus(err.message || 'Could not update fee.', 'error', 'doctorFeeStatus');
+        }
+      });
+    }
   }
 
   function bindProfileModal() {
@@ -162,6 +240,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    bindFeeModal();
     bindProfileModal();
     loadDoctorProfile();
   });
@@ -169,6 +248,8 @@
   global.DgDoctorProfile = {
     loadDoctorProfile,
     saveDoctorProfile,
-    fillProfileForm
+    updateConsultationFee,
+    fillProfileForm,
+    updateFeeDisplay
   };
 })(window);
