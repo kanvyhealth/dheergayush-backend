@@ -29,14 +29,31 @@
     return '₹' + Math.round(amount).toLocaleString('en-IN');
   }
 
+  function getPendingFeeAmount(doctor) {
+    if (!doctor || doctor.pendingConsultationFee == null || doctor.pendingConsultationFee === '') return null;
+    const feeNum = parseFloat(String(doctor.pendingConsultationFee).replace(/[^\d.]/g, ''));
+    return Number.isNaN(feeNum) ? null : feeNum;
+  }
+
   function updateFeeDisplay(doctor) {
     const display = document.getElementById('doctorFeeDisplay');
     const quickInput = document.getElementById('quickFeeInput');
     const profileFee = document.getElementById('profileFee');
+    const pendingNote = document.getElementById('doctorFeePendingNote');
     const fee = getDoctorFeeAmount(doctor);
+    const pendingFee = getPendingFeeAmount(doctor);
     if (display) display.textContent = formatDoctorFee(fee);
     if (quickInput && fee != null) quickInput.value = String(Math.round(fee));
     if (profileFee && fee != null) profileFee.value = String(Math.round(fee));
+    if (pendingNote) {
+      if (doctor && (doctor.feeChangePending || doctor.feePendingApproval) && pendingFee != null) {
+        pendingNote.textContent = formatDoctorFee(pendingFee) + ' requested — awaiting admin approval';
+        pendingNote.style.display = 'block';
+      } else {
+        pendingNote.textContent = '';
+        pendingNote.style.display = 'none';
+      }
+    }
   }
 
   function togglePaymentMode(mode) {
@@ -156,16 +173,16 @@
     if (Number.isNaN(feeNum) || feeNum < 0) {
       throw new Error('Enter a valid consultation fee (₹0 or more).');
     }
-    setStatus('Saving fee…', 'info', 'doctorFeeStatus');
+    setStatus('Submitting fee change…', 'info', 'doctorFeeStatus');
     const res = await fetch('/api/doctor/consultation-fee', {
       method: 'PUT',
       headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
       body: JSON.stringify({ consultationFee: feeNum })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Could not update fee');
+    if (!res.ok) throw new Error(data.message || 'Could not submit fee change');
     fillProfileForm(data.doctor);
-    setStatus('Consultation fee updated.', 'success', 'doctorFeeStatus');
+    setStatus(data.message || 'Fee change submitted for admin approval.', 'success', 'doctorFeeStatus');
     return data.doctor;
   }
 

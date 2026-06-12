@@ -218,6 +218,17 @@ function updateTable(tabName, data) {
                         }
                     </td>
                     <td>${item.availableTime || ''}</td>
+                    <td>₹${item.fee != null ? item.fee : (item.consultationFee != null ? item.consultationFee : '—')}</td>
+                    <td>
+                        ${item.feeChangePending && item.pendingConsultationFee != null
+                            ? `<span class="status-badge pending">₹${item.pendingConsultationFee}</span>
+                               <small class="status-meta">from ₹${item.pendingFeePreviousFee != null ? item.pendingFeePreviousFee : item.fee || '—'}</small>
+                               <div class="actions-group" style="margin-top:6px;">
+                                 <button type="button" class="action-btn approve-btn" onclick='approveDoctorFee("${item._id}")'>Approve fee</button>
+                                 <button type="button" class="action-btn reject-btn" onclick='rejectDoctorFee("${item._id}")'>Reject</button>
+                               </div>`
+                            : '<span class="text-muted">—</span>'}
+                    </td>
                     <td>
                         <small>${formatDoctorPayoutSummary(item)}</small>
                         <button type="button" class="action-btn view-btn" onclick='viewDoctorPayout(${JSON.stringify(safeItem).replace(/'/g, "&#39;")})' title="View payout details">View</button>
@@ -389,6 +400,60 @@ async function rejectDoctor(id) {
     }
 }
 
+async function approveDoctorFee(id) {
+    if (!id) {
+        showNotification('Invalid doctor ID', 'error');
+        return;
+    }
+    if (!confirm('Approve this doctor\'s requested consultation fee change?')) {
+        return;
+    }
+    try {
+        const response = await DgApi.apiFetch(`/api/admin/doctors/${id}/fee-request`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'approve' })
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || `HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        showNotification(data.message || 'Fee change approved', 'success');
+        loadTabData('doctors');
+    } catch (error) {
+        console.error('Error approving doctor fee:', error);
+        showNotification(`Failed to approve fee: ${error.message}`, 'error');
+    }
+}
+
+async function rejectDoctorFee(id) {
+    if (!id) {
+        showNotification('Invalid doctor ID', 'error');
+        return;
+    }
+    if (!confirm('Reject this doctor\'s requested consultation fee change?')) {
+        return;
+    }
+    try {
+        const response = await DgApi.apiFetch(`/api/admin/doctors/${id}/fee-request`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'reject' })
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || `HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        showNotification(data.message || 'Fee change rejected', 'success');
+        loadTabData('doctors');
+    } catch (error) {
+        console.error('Error rejecting doctor fee:', error);
+        showNotification(`Failed to reject fee: ${error.message}`, 'error');
+    }
+}
+
 // Verify doctor registration (one-time at signup)
 async function approveDoctor(id) {
     if (!id) {
@@ -462,6 +527,11 @@ function showEditModal(type, item) {
                 <div class="form-group">
                         <label for="availableTime">Available Time</label>
                         <input type="text" id="availableTime" value="${item.availableTime || ''}" required>
+                </div>
+                <div class="form-group">
+                    <label for="consultationFee">Consultation fee (₹)</label>
+                    <input type="number" id="consultationFee" min="0" step="1" value="${item.fee != null ? item.fee : (item.consultationFee || '')}">
+                    <small>Admin changes apply immediately and clear any pending doctor request.</small>
                 </div>
                 <div class="form-group">
                     <label>Verification (one-time at registration)</label>
@@ -1336,6 +1406,8 @@ window.clearOrderFilters = clearOrderFilters;
 window.applyOrderFilters = applyOrderFilters;
 window.approveDoctor = approveDoctor;
 window.rejectDoctor = rejectDoctor;
+window.approveDoctorFee = approveDoctorFee;
+window.rejectDoctorFee = rejectDoctorFee;
 window.showEditModal = showEditModal;
 window.showDeleteModal = showDeleteModal;
 
