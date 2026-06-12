@@ -73,7 +73,10 @@
     return '<div class="vcall-product-img-fallback" style="display:flex"><i class="fas fa-pills"></i></div>';
   }
 
-  function productActionsHtml(idx, browseOnly, cartQty) {
+  function productActionsHtml(idx, browseOnly, cartQty, prescribeSent) {
+    if (prescribeSent) {
+      return '';
+    }
     if (browseOnly) {
       return '<span class="vcall-browse-only-tag"><i class="fas fa-eye"></i> View only</span>';
     }
@@ -89,7 +92,7 @@
       '<i class="fas fa-prescription"></i> Prescribe</button>';
   }
 
-  function productCardHtml(med, idx, browseOnly, cartQty) {
+  function productCardHtml(med, idx, browseOnly, cartQty, prescribeSent) {
     var rating = global.getStaticRating ? getStaticRating(med.name) : '4.5';
     var reviews = global.getReviewCount ? getReviewCount(med.name) : 120;
     var stars = global.renderStarsHtml ? renderStarsHtml(rating) : '';
@@ -108,7 +111,7 @@
           '<div class="vcall-pack-single">' + weights[0].value + ' ' + weights[0].unit + ' — ₹' + weights[0].price + '</div>'
         : '<p class="vcall-no-pack">Price unavailable</p>');
     var storeLabel = displayStoreLabel(med);
-    var actions = productActionsHtml(idx, browseOnly, cartQty);
+    var actions = productActionsHtml(idx, browseOnly, cartQty, prescribeSent);
 
     return '<article class="vcall-product-card" data-idx="' + idx + '">' +
       '<div class="vcall-product-img-wrap">' + productImageHtml(med) + '</div>' +
@@ -266,7 +269,7 @@
     });
   }
 
-  function renderProductGrid(container, browseOnly, qtyForCard) {
+  function renderProductGrid(container, browseOnly, qtyForCard, prescribeSent) {
     if (!container) return;
     if (!products.length) {
       container.innerHTML = '<p class="vcall-empty-catalog">No products found. Try another brand or search term.</p>';
@@ -274,16 +277,18 @@
     }
     var lookup = typeof qtyForCard === 'function' ? qtyForCard : function () { return 0; };
     container.innerHTML = '<div class="vcall-product-grid">' +
-      products.map(function (med, i) { return productCardHtml(med, i, browseOnly, lookup(i, med)); }).join('') +
+      products.map(function (med, i) {
+        return productCardHtml(med, i, browseOnly, lookup(i, med), prescribeSent);
+      }).join('') +
       '</div>';
     global.__vcallProductIndex = products;
   }
 
-  function updateProductCardActions(card, idx, browseOnly, cartQty) {
+  function updateProductCardActions(card, idx, browseOnly, cartQty, prescribeSent) {
     if (!card) return;
     var actions = card.querySelector('.vcall-product-actions');
     if (!actions) return;
-    actions.innerHTML = productActionsHtml(idx, browseOnly, cartQty);
+    actions.innerHTML = productActionsHtml(idx, browseOnly, cartQty, prescribeSent);
   }
 
   function prescriptionItemHtml(item) {
