@@ -2880,7 +2880,7 @@ html, body {
             try {
                 const res = await fetch(`/api/video-room/${encodeURIComponent(activeRoom)}/refund`, {
                     method: 'POST',
-                    headers: Object.assign({ 'Content-Type': 'application/json' }, getFirebaseAuthHeaders()),
+                    headers: await resolveAuthHeaders(),
                     body: JSON.stringify({ reason })
                 });
                 return await res.json();
@@ -3109,12 +3109,21 @@ html, body {
                 token = DgAuth.getToken();
             }
             if (!token) {
-                token = localStorage.getItem('firebaseIdToken') || '';
+                token = localStorage.getItem('firebaseIdToken') ||
+                    sessionStorage.getItem('firebaseIdToken') || '';
             }
             if (token) headers.Authorization = 'Bearer ' + token;
             return headers;
         }
         window.getFirebaseAuthHeaders = getFirebaseAuthHeaders;
+
+        async function resolveAuthHeaders(extra) {
+            if (window.DgAuth && DgAuth.ensureValidToken) {
+                await DgAuth.ensureValidToken();
+            }
+            return await getFirebaseAuthHeaders(extra);
+        }
+        window.resolveAuthHeaders = resolveAuthHeaders;
 
         function clearStaleVideoTokens() {
             sessionStorage.removeItem('firebaseIdToken');
@@ -3313,7 +3322,7 @@ html, body {
                     try {
                         const res = await fetch('/api/doctors/updateStatus', {
                             method: 'POST',
-                            headers: getFirebaseAuthHeaders(),
+                            headers: await resolveAuthHeaders(),
                             body: JSON.stringify({
                                 doctorName,
                                 status: 'Available'
@@ -3375,7 +3384,7 @@ html, body {
                                 try {
                                     await fetch('/api/doctors/updateStatus', {
                                         method: 'POST',
-                                        headers: getFirebaseAuthHeaders(),
+                                        headers: await resolveAuthHeaders(),
                                         body: JSON.stringify({ doctorName, status: 'Busy' })
                                     });
                                 } catch (err) {
@@ -3426,8 +3435,32 @@ html, body {
   // ================= PRESCRIPTION FUNCTIONALITY =================
   
   // Cart data (each item now includes storeId, medicineId, selected weight and price)
+  function normalizeRxRoomId(roomId) {
+    try {
+      return decodeURIComponent(String(roomId || '').trim());
+    } catch (_) {
+      return String(roomId || '').trim();
+    }
+  }
+
   function getActiveRoomId() {
-    return getUrlParams().get("roomID") || localStorage.getItem("videoRoomId") || '';
+    const raw = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId") || '';
+    return normalizeRxRoomId(raw);
+  }
+
+  async function resolveDoctorPrescribeHeaders() {
+    if (window.DgAuth) {
+      if (DgAuth.ensureValidToken) await DgAuth.ensureValidToken();
+      if (DgAuth.ensureDoctorSession) await DgAuth.ensureDoctorSession();
+    }
+    const hdrFn = window.getFirebaseAuthHeaders;
+    if (typeof hdrFn === 'function') {
+      return await hdrFn();
+    }
+    const token = localStorage.getItem('firebaseIdToken') || '';
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = 'Bearer ' + token;
+    return headers;
   }
   let cart = JSON.parse(localStorage.getItem(`prescriptionCart_${getActiveRoomId()}`)) || [];
 
@@ -3629,8 +3662,15 @@ function bindPatientRxStorageSignal() {
   });
   window.addEventListener('dgRxReady', (e) => {
     const room = getActiveRoomId();
-    if (!room || !e.detail || e.detail.roomId !== room) return;
-    loadPatientPrescription(true);
+    if (!room || !e.detail) return;
+    if (normalizeRxRoomId(e.detail.roomId) !== normalizeRxRoomId(room)) return;
+    loadPatientPrescription(true).then((result) => {
+      if (result && result.isNew) {
+        markPatientPrescriptionReady();
+        autoShowPatientPrescriptionCard();
+        showMessage('Your doctor has finalized your prescription. Review, edit, or pay below.', 'success');
+      }
+    });
   });
 }
 
@@ -3818,7 +3858,7 @@ document.getElementById('proceed-payment-btn').addEventListener('click', async (
 
     const response = await fetch('/api/submit-prescription', {
       method: 'POST',
-      headers: (window.getFirebaseAuthHeaders || getFirebaseAuthHeaders)(),
+      headers: await resolveDoctorPrescribeHeaders(),
       body: JSON.stringify({
         name,
         address,
@@ -3928,10 +3968,7 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
     }
 
     try {
-      if (window.DgAuth && DgAuth.ensureValidToken) {
-        await DgAuth.ensureValidToken();
-      }
-      const authHdr = (window.getFirebaseAuthHeaders || getFirebaseAuthHeaders)();
+      const authHdr = await resolveDoctorPrescribeHeaders();
       if (!authHdr.Authorization) {
         throw new Error('Please log in at /doctor-auth.html before prescribing.');
       }
@@ -4889,10 +4926,7 @@ function handleWeightSelection(event) {
         const roomID = getUrlParams().get('roomID') || localStorage.getItem('videoRoomId');
         if (!roomID) throw new Error('Room ID not found');
 
-        if (window.DgAuth && DgAuth.ensureValidToken) {
-          await DgAuth.ensureValidToken();
-        }
-        const authHdr = (window.getFirebaseAuthHeaders || getFirebaseAuthHeaders)();
+        const authHdr = await resolveDoctorPrescribeHeaders();
         if (!authHdr.Authorization) {
           throw new Error('Please log in as doctor before opening diagnosis history.');
         }
@@ -4947,13 +4981,7 @@ function handleWeightSelection(event) {
         const roomID = getUrlParams().get('roomID') || localStorage.getItem('videoRoomId');
         if (!roomID) throw new Error('Room ID not found');
 
-        if (window.DgAuth && DgAuth.ensureValidToken) {
-          await DgAuth.ensureValidToken();
-        }
-        const authHdr = Object.assign(
-          { 'Content-Type': 'application/json' },
-          (window.getFirebaseAuthHeaders || getFirebaseAuthHeaders)()
-        );
+        const authHdr = await resolveDoctorPrescribeHeaders();
 
         const response = await fetch('/api/video-call/consultation-notes', {
           method: 'POST',

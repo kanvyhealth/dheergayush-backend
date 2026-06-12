@@ -1415,7 +1415,7 @@ async function enrichPrescribedCartItems(cartItems = []) {
   });
 }
 
-app.post('/api/prescribe-cart', async (req, res) => {
+app.post('/api/prescribe-cart', requireDoctorSession('Doctor sign-in required to prescribe.'), async (req, res) => {
   try {
     const { roomId, cartItems } = req.body;
 
@@ -1423,7 +1423,6 @@ app.post('/api/prescribe-cart', async (req, res) => {
       return res.status(400).json({ message: 'Room ID and cart items are required.' });
     }
 
-    if (!(await assertDoctorBearerToken(req, res))) return;
     if (!(await prescriptionVideoRoomExists(roomId))) {
       return res.status(403).json({ message: 'Invalid or unknown video room.' });
     }
@@ -3292,19 +3291,39 @@ function consultationStatusOf(consultation, payment) {
 }
 
 async function findLatestPaymentForRoom(room) {
-    let payment = await Payment.findOne({ roomName: room }).sort({ createdAt: -1 });
-    if (!payment) payment = await Payment.findOne({ videoRoomId: room }).sort({ createdAt: -1 });
+    const normalized = normalizeVideoRoomId(room);
+    if (!normalized) return null;
+    let payment = await Payment.findOne({ roomName: normalized }).sort({ createdAt: -1 });
+    if (!payment) payment = await Payment.findOne({ videoRoomId: normalized }).sort({ createdAt: -1 });
+    if (!payment) {
+        const lower = normalized.toLowerCase();
+        const recent = await Payment.find({}).sort({ createdAt: -1 }).limit(100);
+        payment = recent.find((p) => {
+            const rn = normalizeVideoRoomId(p.roomName || p.videoRoomId || '');
+            return rn === normalized || rn.toLowerCase() === lower;
+        }) || null;
+    }
     return payment;
 }
 
 async function findLatestConsultationForRoom(room) {
-    let consultation = await ConsultationRequest.findOne({ roomId: room }).sort({ createdAt: -1 });
-    if (!consultation) consultation = await ConsultationRequest.findOne({ videoRoomId: room }).sort({ createdAt: -1 });
+    const normalized = normalizeVideoRoomId(room);
+    if (!normalized) return null;
+    let consultation = await ConsultationRequest.findOne({ roomId: normalized }).sort({ createdAt: -1 });
+    if (!consultation) consultation = await ConsultationRequest.findOne({ videoRoomId: normalized }).sort({ createdAt: -1 });
+    if (!consultation) {
+        const lower = normalized.toLowerCase();
+        const recent = await ConsultationRequest.find({}).sort({ createdAt: -1 }).limit(100);
+        consultation = recent.find((c) => {
+            const rn = normalizeVideoRoomId(c.roomId || c.videoRoomId || '');
+            return rn === normalized || rn.toLowerCase() === lower;
+        }) || null;
+    }
     return consultation;
 }
 
 async function loadRoomContext(roomId) {
-    const room = String(roomId || '').trim();
+    const room = normalizeVideoRoomId(roomId);
     if (!room) return null;
     const [payment, consultation] = await Promise.all([
         findLatestPaymentForRoom(room),
