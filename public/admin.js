@@ -65,6 +65,11 @@ async function loadTabData(tabName) {
             await loadOrdersWithFiltering();
             return;
         }
+
+        if (tabName === 'settlements') {
+            await loadSettlementsWithFiltering();
+            return;
+        }
         
         const response = await DgApi.apiFetch(`/api/admin/${tabName}`);
         if (!response.ok) {
@@ -135,6 +140,41 @@ function getDoctorStatus(timeSlot) {
         ? 'Available'
         : 'Offline';
 }
+
+function formatDoctorPayoutSummary(item) {
+    const payment = item.paymentDetails || item;
+    const mode = String(payment.paymentMode || payment.paymentMethod || '').toLowerCase();
+    if (payment.upiId || mode.includes('upi')) {
+        return payment.upiId ? ('UPI: ' + payment.upiId) : 'UPI not set';
+    }
+    if (payment.accountNumber || mode.includes('bank')) {
+        const masked = String(payment.accountNumber || '').replace(/\d(?=\d{4})/g, '*');
+        return [
+            payment.bankName || 'Bank',
+            payment.accountHolderName || '',
+            masked,
+            payment.ifscCode || payment.ifsc || ''
+        ].filter(Boolean).join(' · ');
+    }
+    return 'Not provided';
+}
+
+function formatDoctorPayoutDetails(item) {
+    const payment = item.paymentDetails || item;
+    const lines = [];
+    if (payment.upiId) lines.push('UPI ID: ' + payment.upiId);
+    if (payment.accountHolderName) lines.push('Account holder: ' + payment.accountHolderName);
+    if (payment.bankName) lines.push('Bank: ' + payment.bankName);
+    if (payment.accountNumber) lines.push('Account number: ' + payment.accountNumber);
+    if (payment.ifscCode || payment.ifsc) lines.push('IFSC: ' + (payment.ifscCode || payment.ifsc));
+    if (!lines.length) lines.push('No payout details on file.');
+    return lines.join('\n');
+}
+
+function viewDoctorPayout(item) {
+    alert(formatDoctorPayoutDetails(item));
+}
+
 // Update table content
 function updateTable(tabName, data) {
     if (!Array.isArray(data)) {
@@ -178,6 +218,10 @@ function updateTable(tabName, data) {
                         }
                     </td>
                     <td>${item.availableTime || ''}</td>
+                    <td>
+                        <small>${formatDoctorPayoutSummary(item)}</small>
+                        <button type="button" class="action-btn view-btn" onclick='viewDoctorPayout(${JSON.stringify(safeItem).replace(/'/g, "&#39;")})' title="View payout details">View</button>
+                    </td>
                     <td class="cell-status"><span class="status-badge ${(item.Regstatus || '').toLowerCase()}">${item.Regstatus || ''}</span></td>
                     <td class="cell-status">
                         <span class="status-badge ${availClass}">${availStatus}</span>
@@ -424,6 +468,33 @@ function showEditModal(type, item) {
                     <input type="text" id="Regstatus" value="${item.Regstatus || 'pending'}" readonly style="background:#f5f5f5">
                     <small>Pending doctors: use Verify/Reject on the list. After verified, status is locked.</small>
                 </div>
+                <div class="form-group">
+                    <label for="paymentMode">Payout method</label>
+                    <select id="paymentMode">
+                        <option value="upi" ${(item.paymentDetails && item.paymentDetails.paymentMode === 'upi') || item.upiId ? 'selected' : ''}>UPI</option>
+                        <option value="bank" ${(item.paymentDetails && item.paymentDetails.paymentMode === 'bank') || item.accountNumber ? 'selected' : ''}>Bank transfer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="upiId">UPI ID</label>
+                    <input type="text" id="upiId" value="${item.upiId || (item.paymentDetails && item.paymentDetails.upiId) || ''}" placeholder="name@bank">
+                </div>
+                <div class="form-group">
+                    <label for="accountHolderName">Account holder name</label>
+                    <input type="text" id="accountHolderName" value="${item.accountHolderName || (item.paymentDetails && item.paymentDetails.accountHolderName) || ''}">
+                </div>
+                <div class="form-group">
+                    <label for="bankName">Bank name</label>
+                    <input type="text" id="bankName" value="${item.bankName || (item.paymentDetails && item.paymentDetails.bankName) || ''}">
+                </div>
+                <div class="form-group">
+                    <label for="accountNumber">Account number</label>
+                    <input type="text" id="accountNumber" value="${item.accountNumber || (item.paymentDetails && item.paymentDetails.accountNumber) || ''}">
+                </div>
+                <div class="form-group">
+                    <label for="ifsc">IFSC code</label>
+                    <input type="text" id="ifsc" value="${item.ifscCode || item.ifsc || (item.paymentDetails && item.paymentDetails.ifsc) || ''}">
+                </div>
                 `;
                 break;
 
@@ -587,11 +658,57 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteModal.style.display = 'none';
     });
 
+    const settlementModal = document.getElementById('settlementModal');
+    const settlementForm = document.getElementById('settlementForm');
+    const settlementCommissionPercent = document.getElementById('settlementCommissionPercent');
+    if (settlementCommissionPercent) {
+        settlementCommissionPercent.addEventListener('input', recalcSettlementPreview);
+    }
+    if (settlementForm) {
+        settlementForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const paymentId = document.getElementById('settlementPaymentId')?.value;
+            const commissionPercent = Number(document.getElementById('settlementCommissionPercent')?.value);
+            if (!paymentId) {
+                showNotification('Missing payment ID', 'error');
+                return;
+            }
+            if (Number.isNaN(commissionPercent)) {
+                showNotification('Enter a valid commission percentage', 'error');
+                return;
+            }
+            try {
+                const response = await DgApi.apiFetch('/api/admin/settlements/' + paymentId, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        commissionPercent,
+                        settlementStatus: 'settled',
+                        settlementReference: document.getElementById('settlementReference')?.value || '',
+                        settlementNote: document.getElementById('settlementNote')?.value || '',
+                        settledBy: document.getElementById('adminName')?.textContent || 'admin'
+                    })
+                });
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.message || `HTTP error! status: ${response.status}`);
+                }
+                showNotification('Settlement saved successfully', 'success');
+                if (settlementModal) settlementModal.style.display = 'none';
+                loadSettlementsWithFiltering();
+            } catch (error) {
+                console.error('Settlement save failed:', error);
+                showNotification(`Settlement failed: ${error.message}`, 'error');
+            }
+        });
+    }
+
     // Setup modal close buttons
 document.querySelectorAll('.close, .cancel-btn').forEach(element => {
     element.addEventListener('click', () => {
         editModal.style.display = 'none';
         deleteModal.style.display = 'none';
+        if (settlementModal) settlementModal.style.display = 'none';
     });
 });
 
@@ -1086,8 +1203,124 @@ function viewOrderItems(items) {
     showItemsModal(itemsHtml);
 }
 
+let allSettlements = [];
+
+async function loadSettlementsWithFiltering() {
+    try {
+        const response = await DgApi.apiFetch('/api/admin/settlements');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        allSettlements = await response.json();
+        updateSettlementsTable(allSettlements);
+    } catch (error) {
+        console.error('Error loading settlements:', error);
+        showNotification(`Failed to load settlements: ${error.message}`, 'error');
+    }
+}
+
+function updateSettlementsTable(rows) {
+    const tbody = document.getElementById('settlementsTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    rows.forEach((item) => {
+        const tr = document.createElement('tr');
+        const status = String(item.settlementStatus || 'pending').toLowerCase();
+        const safeItem = JSON.stringify(item).replace(/'/g, '&#39;');
+        tr.innerHTML = `
+            <td>${item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''}</td>
+            <td>${item.patientName || ''}<br><small>${item.patientPhone || ''}</small></td>
+            <td>${item.doctorName || ''}</td>
+            <td>₹${item.grossAmount || 0}</td>
+            <td>${item.commissionPercent != null ? item.commissionPercent + '%' : '—'}</td>
+            <td>${item.commissionAmount != null ? '₹' + item.commissionAmount : '—'}</td>
+            <td>${item.doctorNetAmount != null ? '₹' + item.doctorNetAmount : '—'}</td>
+            <td><small>${item.doctorPayoutSummary || 'Not provided'}</small></td>
+            <td><span class="status-badge ${status}">${status}</span></td>
+            <td class="cell-actions">
+                <div class="actions-group">
+                    <button type="button" class="action-btn edit-btn" onclick='openSettlementModal(${safeItem})'>${status === 'settled' ? 'Update' : 'Settle'}</button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function applySettlementFilters() {
+    const statusFilter = (document.getElementById('settlementStatusFilter')?.value || '').toLowerCase();
+    const doctorFilter = (document.getElementById('settlementDoctorFilter')?.value || '').toLowerCase().trim();
+    let filtered = allSettlements;
+    if (statusFilter) {
+        filtered = filtered.filter((row) => String(row.settlementStatus || '').toLowerCase() === statusFilter);
+    }
+    if (doctorFilter) {
+        filtered = filtered.filter((row) => String(row.doctorName || '').toLowerCase().includes(doctorFilter));
+    }
+    updateSettlementsTable(filtered);
+    showNotification(`Showing ${filtered.length} of ${allSettlements.length} settlements`, 'info');
+}
+
+function clearSettlementFilters() {
+    const statusEl = document.getElementById('settlementStatusFilter');
+    const doctorEl = document.getElementById('settlementDoctorFilter');
+    if (statusEl) statusEl.value = '';
+    if (doctorEl) doctorEl.value = '';
+    updateSettlementsTable(allSettlements);
+    showNotification('Settlement filters cleared', 'info');
+}
+
+function formatSettlementPayoutDetails(item) {
+    const payout = item.doctorPayout || {};
+    const lines = [];
+    if (payout.upiId) lines.push('UPI ID: ' + payout.upiId);
+    if (payout.accountHolderName) lines.push('Account holder: ' + payout.accountHolderName);
+    if (payout.bankName) lines.push('Bank: ' + payout.bankName);
+    if (payout.accountNumber) lines.push('Account number: ' + payout.accountNumber);
+    if (payout.ifsc) lines.push('IFSC: ' + payout.ifsc);
+    if (!lines.length) lines.push('Doctor has not added payout details yet.');
+    return lines.join('\n');
+}
+
+function recalcSettlementPreview() {
+    const gross = Number(document.getElementById('settlementGross')?.dataset.value || 0);
+    const pct = Number(document.getElementById('settlementCommissionPercent')?.value || 0);
+    const commission = Math.round(gross * pct) / 100;
+    const roundedCommission = Math.round(commission * 100) / 100;
+    const net = Math.round((gross - roundedCommission) * 100) / 100;
+    const commissionEl = document.getElementById('settlementCommissionAmount');
+    const netEl = document.getElementById('settlementDoctorNet');
+    if (commissionEl) commissionEl.value = '₹' + roundedCommission;
+    if (netEl) netEl.value = '₹' + net;
+}
+
+function openSettlementModal(item) {
+    const modal = document.getElementById('settlementModal');
+    if (!modal || !item) return;
+    document.getElementById('settlementPaymentId').value = item.paymentId || '';
+    document.getElementById('settlementPatient').value = [item.patientName, item.patientPhone].filter(Boolean).join(' · ');
+    document.getElementById('settlementDoctor').value = item.doctorName || '';
+    const grossEl = document.getElementById('settlementGross');
+    if (grossEl) {
+        grossEl.value = '₹' + (item.grossAmount || 0);
+        grossEl.dataset.value = String(item.grossAmount || 0);
+    }
+    document.getElementById('settlementCommissionPercent').value = item.commissionPercent != null ? item.commissionPercent : '';
+    document.getElementById('settlementReference').value = item.settlementReference || '';
+    document.getElementById('settlementNote').value = item.settlementNote || '';
+    document.getElementById('settlementPayoutDetails').value = formatSettlementPayoutDetails(item);
+    recalcSettlementPreview();
+    modal.style.display = 'block';
+}
+
 window.loadOrdersWithFiltering = loadOrdersWithFiltering;
 window.clearOrderFilters = clearOrderFilters;window.applyOrderFilters = applyOrderFilters;
+window.loadSettlementsWithFiltering = loadSettlementsWithFiltering;
+window.applySettlementFilters = applySettlementFilters;
+window.clearSettlementFilters = clearSettlementFilters;
+window.openSettlementModal = openSettlementModal;
+window.viewDoctorPayout = viewDoctorPayout;
 // Expose functions globally
 window.viewDoctorDocuments = viewDoctorDocuments;
 window.loadPaymentsWithFiltering = loadPaymentsWithFiltering;

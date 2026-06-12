@@ -759,6 +759,24 @@ html, body {
       opacity: 0.45;
       cursor: not-allowed;
     }
+    .vcall-prescribe-btn {
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #4CAF50, #43a047);
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 9px 10px;
+      cursor: pointer;
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .vcall-product-qty--active {
+      justify-content: center;
+    }
     .vcall-browse-only-tag {
       display: inline-flex;
       align-items: center;
@@ -1030,8 +1048,11 @@ html, body {
       display: flex;
       flex-direction: column;
       min-width: 240px;
-      border-left: 1px solid #e8ecf0;
-      padding-left: 12px;
+      order: -1;
+      border-right: 1px solid #e8ecf0;
+      border-left: none;
+      padding-right: 12px;
+      padding-left: 0;
       background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
       border-radius: 12px;
     }
@@ -1136,13 +1157,182 @@ html, body {
       }
       .dg-rx-cart-panel {
         flex: none;
-        border-left: none;
+        order: -1;
+        border-right: none;
         border-top: 1px solid #e8ecf0;
-        padding-left: 0;
+        padding-right: 0;
         padding-top: 12px;
         max-height: 40vh;
       }
     }
+    .dg-patient-rx-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      z-index: 10060;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .dg-patient-rx-overlay.dg-patient-rx-overlay--open {
+      display: flex;
+    }
+    .dg-patient-rx-modal {
+      width: min(520px, 100%);
+      max-height: min(90vh, 720px);
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: dgPatientRxIn 0.35s ease;
+    }
+    @keyframes dgPatientRxIn {
+      from { opacity: 0; transform: translateY(16px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .dg-patient-rx-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px;
+      border-bottom: 1px solid #e8ecf0;
+      background: linear-gradient(135deg, #fff8f3, #fff);
+    }
+    .dg-patient-rx-modal-header h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: #2c3e50;
+    }
+    .dg-patient-rx-close {
+      border: none;
+      background: #fee2e2;
+      color: #c0392b;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .dg-patient-rx-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 18px;
+    }
+    .dg-patient-rx-item {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px 10px;
+      align-items: center;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border: 1px solid #e8ecf0;
+      border-radius: 10px;
+      background: #fafbfc;
+    }
+    .dg-patient-rx-item-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .dg-patient-rx-item-main strong {
+      font-size: 0.9rem;
+      color: #2c3e50;
+    }
+    .dg-patient-rx-pack, .dg-patient-rx-unit {
+      font-size: 0.75rem;
+      color: #666;
+    }
+    .dg-patient-rx-item-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dg-patient-rx-item-controls button {
+      width: 28px;
+      height: 28px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+    }
+    .dg-patient-rx-remove {
+      color: #c0392b !important;
+      border-color: #f5c6cb !important;
+    }
+    .dg-patient-rx-line-total {
+      font-weight: 700;
+      color: #f26727;
+      font-size: 0.9rem;
+      text-align: right;
+    }
+    .dg-patient-rx-total-bar {
+      margin-top: 10px;
+      padding: 12px;
+      background: #fff8f3;
+      border: 1px solid rgba(242,103,39,0.25);
+      border-radius: 10px;
+      font-weight: 700;
+      text-align: right;
+      color: #2c3e50;
+    }
+    .dg-patient-rx-footer {
+      padding: 14px 18px 18px;
+      border-top: 1px solid #e8ecf0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .dg-patient-rx-actions-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .dg-patient-rx-save-btn {
+      flex: 1;
+      min-width: 140px;
+      padding: 12px;
+      border: 2px solid #3498db;
+      background: #fff;
+      color: #3498db;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .dg-patient-rx-pay-toggle {
+      flex: 1;
+      min-width: 140px;
+      padding: 12px;
+      border: none;
+      background: linear-gradient(135deg, #F67227, #ff8a50);
+      color: #fff;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .dg-patient-rx-pay-panel {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .dg-patient-rx-pay-panel.dg-patient-rx-pay-panel--open {
+      display: flex;
+    }
+    .dg-patient-rx-pay-panel input,
+    .dg-patient-rx-pay-panel textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      box-sizing: border-box;
+    }
+    #prescription-card { display: none !important; }
     .dg-diagnosis-save-btn {
       background: #8e44ad;
       color: #fff;
@@ -2327,6 +2517,47 @@ html, body {
     <div id="root"></div>
 
   <!-- Legacy hidden buttons kept for JS compatibility -->
+  <div id="dg-patient-rx-overlay" class="dg-patient-rx-overlay" aria-hidden="true">
+    <div class="dg-patient-rx-modal" role="dialog" aria-labelledby="dg-patient-rx-title">
+      <div class="dg-patient-rx-modal-header">
+        <h3 id="dg-patient-rx-title"><i class="fa-solid fa-prescription-bottle-medical"></i> Your Prescription</h3>
+        <button type="button" class="dg-patient-rx-close" id="dg-patient-rx-close" aria-label="Close">×</button>
+      </div>
+      <div class="dg-patient-rx-body">
+        <p id="dg-patient-rx-empty" style="display:none;text-align:center;color:#666;padding:20px 8px;">No prescription yet. Your doctor will prescribe medicines during the call.</p>
+        <div id="prescription-list"></div>
+        <div class="dg-patient-rx-total-bar" id="dg-patient-rx-total-bar" style="display:none;">
+          <span id="dg-patient-rx-total-label">Total: ₹0</span>
+        </div>
+      </div>
+      <div class="dg-patient-rx-footer">
+        <div class="dg-patient-rx-actions-row">
+          <button type="button" class="dg-patient-rx-save-btn" id="dg-patient-rx-save-btn" style="display:none;">
+            <i class="fas fa-cart-plus"></i> Save to cart for later
+          </button>
+          <button type="button" class="dg-patient-rx-pay-toggle" id="pay-now-btn" style="display:none;">
+            <i class="fas fa-bolt"></i> Pay now
+          </button>
+        </div>
+        <div class="dg-patient-rx-pay-panel" id="patient-rx-payment-panel">
+          <input type="text" id="patient-rx-name" placeholder="Your full name">
+          <input type="text" id="phone-input" placeholder="Phone number (10 digits)">
+          <textarea id="patient-rx-address" placeholder="Delivery address" rows="3"></textarea>
+          <div class="dg-pay-banner" style="padding:14px;background:#fff8f3;border-radius:10px;text-align:center;border:1px solid rgba(242,103,39,0.25);">
+            <p style="margin:0;font-weight:600;color:#F67227;"><i class="fas fa-lock"></i> UPI, cards &amp; all payment methods via Razorpay</p>
+            <p style="margin:8px 0 0;font-weight:700;font-size:1.05rem;">Total: ₹<span id="total-amount">0</span></p>
+          </div>
+          <button type="button" id="proceed-payment-btn" style="padding:12px;background:linear-gradient(135deg,#F67227,#ff8a50);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;">
+            <i class="fas fa-credit-card"></i> Pay with Razorpay
+          </button>
+          <p id="patient-rx-pay-status" style="display:none;margin:0;text-align:center;font-size:0.9rem;"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button type="button" id="fetch-prescription-btn" style="display:none !important;" aria-hidden="true">Get Prescription</button>
+
   <div id="prescription-card" style="display: none; position: fixed; bottom: 20px; right: 20px; width: min(440px, calc(100vw - 24px)); max-height: 70vh; background: linear-gradient(135deg, #ffffff, #f8f9fa); border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.35); overflow-y: auto; padding: 20px; z-index: 10070; transition: transform 0.4s ease, opacity 0.4s ease;">
 
   <!-- Close Button -->
@@ -2335,40 +2566,7 @@ html, body {
     X
   </div>
 
-  <h3 style="margin-bottom: 15px; text-align: center; font-family: 'Segoe UI', sans-serif; color: #2c3e50; font-size: 22px;">Prescribed Medicines</h3>
-
-  <div id="prescription-list" style="margin-bottom: 20px; padding: 10px;">
-    <!-- Medicine list will be populated here -->
-  </div>
-
-  <button id="fetch-prescription-btn" 
-    style="margin: 15px 0;cursor: pointer; padding: 12px 20px; background-color: #3498db; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s;">
-    Get Prescription
-  </button>
-
-  <button id="pay-now-btn" 
-    style="display: none;cursor: pointer; margin: 15px 0; padding: 12px 20px; background: linear-gradient(45deg, #ff8c00, #ff5722); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s;">
-    Pay Now
-  </button>
-
-  <div id="patient-rx-payment-panel" style="display: none; margin-top: 20px; animation: fadeIn 0.5s;">
-    <input type="text" id="patient-rx-name" placeholder="Your full name"
-      style="padding: 12px; width: 90%; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px;">
-    <input type="text" id="phone-input" placeholder="Enter Phone Number" 
-      style="padding: 12px; width: 90%; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
-    <textarea id="patient-rx-address" placeholder="Delivery address" rows="3"
-      style="padding: 12px; width: 90%; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; resize: vertical;"></textarea>
-    <div id="cart-summary" style="margin: 15px 0; font-family: 'Segoe UI', sans-serif; color: #333; font-weight: 500;"></div>
-    <div class="dg-pay-banner" style="margin-bottom:15px;padding:16px;background:#fff8f3;border-radius:10px;text-align:center;border:1px solid rgba(242,103,39,0.25);">
-      <p style="margin:0;font-weight:600;color:#F67227;"><i class="fas fa-lock"></i> Pay with Razorpay</p>
-      <p style="margin:8px 0 0;font-weight:600;">Total: ₹<span id="total-amount"></span></p>
-    </div>
-    <button id="proceed-payment-btn" 
-      style="padding: 12px 20px; cursor: pointer;background: linear-gradient(135deg, #F67227, #ff8a50); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; width: 100%; box-shadow: 0 5px 12px rgba(0,0,0,0.2);">
-      <i class="fas fa-credit-card"></i> Pay with Razorpay
-    </button>
-    <p id="patient-rx-pay-status" style="display:none;margin-top:10px;text-align:center;font-size:0.9rem;"></p>
-  </div>
+  <h3 style="display:none;">Legacy prescription card</h3>
 </div>
 
 
@@ -2389,6 +2587,31 @@ html, body {
         </div>
 
         <div class="dg-rx-workspace" id="dg-rx-workspace">
+          <aside class="dg-rx-cart-panel" id="dg-rx-cart-panel">
+            <div class="dg-rx-cart-header">
+              <h4><i class="fa-solid fa-cart-shopping"></i> Prescription cart</h4>
+              <span class="dg-rx-cart-count" id="dg-rx-cart-count">0 items</span>
+            </div>
+            <div class="tab-content" id="shop-prescription">
+              <div class="cart-items" id="cart-items"></div>
+              <div class="dg-rx-breakdown" id="dg-rx-breakdown">
+                <div class="dg-rx-breakdown-row"><span>Line items</span><span id="dg-rx-line-count">0</span></div>
+                <div class="dg-rx-breakdown-row"><span>Total quantity</span><span id="dg-rx-qty-count">0</span></div>
+                <div class="dg-rx-breakdown-row dg-rx-breakdown-total"><span>Total</span><span id="dg-rx-cart-grand-total">₹0</span></div>
+              </div>
+              <div class="cart-total" id="cart-total" style="display:none;">Total: ₹0</div>
+              <div class="cart-actions">
+                <button type="button" class="empty-cart-btn" id="empty-cart-btn">Clear</button>
+                <button type="button" class="add-all-to-db-btn" id="add-all-to-db-btn" style="display:none;">Prescribe All</button>
+                <button type="button" class="submit-btn" id="checkout-btn" style="display:none;">Send Prescription</button>
+                <button type="button" class="dg-prescribe-send-btn" id="dg-prescribe-send-btn" disabled>
+                  <i class="fa-solid fa-check-double"></i> Finalize Prescription
+                </button>
+              </div>
+              <p id="doctor-checkout-status" style="display:none;margin-top:8px;text-align:center;font-size:0.85rem;"></p>
+            </div>
+          </aside>
+
           <div class="dg-rx-store-panel">
             <div class="tab-content active" id="stores">
               <div class="vcall-brands-strip" id="vcall-brands-strip"></div>
@@ -2407,31 +2630,6 @@ html, body {
               </div>
             </div>
           </div>
-
-          <aside class="dg-rx-cart-panel" id="dg-rx-cart-panel">
-            <div class="dg-rx-cart-header">
-              <h4><i class="fa-solid fa-cart-shopping"></i> Cart</h4>
-              <span class="dg-rx-cart-count" id="dg-rx-cart-count">0 items</span>
-            </div>
-            <div class="tab-content" id="shop-prescription">
-              <div class="cart-items" id="cart-items"></div>
-              <div class="dg-rx-breakdown" id="dg-rx-breakdown">
-                <div class="dg-rx-breakdown-row"><span>Line items</span><span id="dg-rx-line-count">0</span></div>
-                <div class="dg-rx-breakdown-row"><span>Total quantity</span><span id="dg-rx-qty-count">0</span></div>
-                <div class="dg-rx-breakdown-row dg-rx-breakdown-total"><span>Total</span><span id="dg-rx-cart-grand-total">₹0</span></div>
-              </div>
-              <div class="cart-total" id="cart-total" style="display:none;">Total: ₹0</div>
-              <div class="cart-actions">
-                <button type="button" class="empty-cart-btn" id="empty-cart-btn">Clear</button>
-                <button type="button" class="add-all-to-db-btn" id="add-all-to-db-btn" style="display:none;">Prescribe All</button>
-                <button type="button" class="submit-btn" id="checkout-btn" style="display:none;">Send Prescription</button>
-                <button type="button" class="dg-prescribe-send-btn" id="dg-prescribe-send-btn" disabled>
-                  <i class="fa-solid fa-paper-plane"></i> Prescribe &amp; Send to Patient
-                </button>
-              </div>
-              <p id="doctor-checkout-status" style="display:none;margin-top:8px;text-align:center;font-size:0.85rem;"></p>
-            </div>
-          </aside>
         </div>
       </div>
         </div>
@@ -2476,6 +2674,7 @@ html, body {
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script src="js/dg-store-payment.js"></script>
   <script src="js/dg-catalog-merge.js"></script>
+  <script src="js/dg-fuzzy-search.js"></script>
   <script src="js/dg-store-categories.js"></script>
   <script src="js/medicine-images.js"></script>
   <script src="js/dg-vcall-store.js"></script>
@@ -3274,20 +3473,100 @@ html, body {
   const storeButtonsContainer = document.getElementById('store-buttons');
   const storeCategories = document.querySelector('.store-categories');
   const searchInput = document.getElementById('search-input');
-document.getElementById('view-prescription-btn').addEventListener('click', () => {
-  document.getElementById('prescription-card').style.display = 'block';
-  loadPatientPrescription(false);
-  startPatientPrescriptionPolling();
-});
+const viewPrescriptionBtnEl = document.getElementById('view-prescription-btn');
+if (viewPrescriptionBtnEl) {
+  viewPrescriptionBtnEl.addEventListener('click', () => {
+    openPatientRxModal();
+    loadPatientPrescription(false);
+    startPatientPrescriptionPolling();
+  });
+}
 
 document.getElementById('browse-store-btn').addEventListener('click', () => {
   openPrescriptionModal(true);
 });
+
 let latestPrescription = null;
+let patientRxDraft = [];
 let totalAmount = 0;
 let prescriptionPollInterval = null;
 let lastSeenPrescriptionAt = null;
 let clinicalNotesSaveTimer = null;
+let patientRxStorageBound = false;
+
+function getPatientSavedCartKey() {
+  const phone = localStorage.getItem('patientPhoneNumber') || localStorage.getItem('patientId') || 'guest';
+  return 'patientSavedRxCart_' + phone;
+}
+
+function cloneRxItems(items) {
+  return (items || []).map((item) => Object.assign({}, item));
+}
+
+function recalcPatientRxTotals() {
+  totalAmount = patientRxDraft.reduce((sum, item) => {
+    const unit = Number(item.pricePerUnit || item.price || item.unitPrice || 0);
+    const qty = Math.max(1, parseInt(item.quantity, 10) || 1);
+    item.quantity = qty;
+    item.totalPrice = unit * qty;
+    return sum + item.totalPrice;
+  }, 0);
+  latestPrescription = cloneRxItems(patientRxDraft);
+}
+
+function renderPatientRxDraft() {
+  const listContainer = document.getElementById('prescription-list');
+  const emptyEl = document.getElementById('dg-patient-rx-empty');
+  const totalBar = document.getElementById('dg-patient-rx-total-bar');
+  const totalLabel = document.getElementById('dg-patient-rx-total-label');
+  const saveBtn = document.getElementById('dg-patient-rx-save-btn');
+  const payBtn = document.getElementById('pay-now-btn');
+  const totalAmountEl = document.getElementById('total-amount');
+  if (!listContainer) return;
+
+  recalcPatientRxTotals();
+
+  if (!patientRxDraft.length) {
+    listContainer.innerHTML = '';
+    if (emptyEl) emptyEl.style.display = 'block';
+    if (totalBar) totalBar.style.display = 'none';
+    if (saveBtn) saveBtn.style.display = 'none';
+    if (payBtn) payBtn.style.display = 'none';
+    return;
+  }
+
+  if (emptyEl) emptyEl.style.display = 'none';
+  listContainer.innerHTML = patientRxDraft.map((item, index) => (
+    window.DgVcallStore
+      ? DgVcallStore.patientEditableItemHtml(item, index)
+      : ('<div><strong>' + (item.name || '') + '</strong></div>')
+  )).join('');
+
+  if (totalBar) totalBar.style.display = 'block';
+  if (totalLabel) totalLabel.textContent = patientRxDraft.length + ' medicine(s) · Total: ₹' + totalAmount;
+  if (saveBtn) saveBtn.style.display = 'inline-flex';
+  if (payBtn) payBtn.style.display = 'inline-flex';
+  if (totalAmountEl) totalAmountEl.textContent = String(totalAmount);
+}
+
+function openPatientRxModal() {
+  const overlay = document.getElementById('dg-patient-rx-overlay');
+  if (overlay) {
+    overlay.classList.add('dg-patient-rx-overlay--open');
+    overlay.setAttribute('aria-hidden', 'false');
+  }
+  renderPatientRxDraft();
+}
+
+function closePatientRxModal() {
+  const overlay = document.getElementById('dg-patient-rx-overlay');
+  const payPanel = document.getElementById('patient-rx-payment-panel');
+  if (overlay) {
+    overlay.classList.remove('dg-patient-rx-overlay--open');
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+  if (payPanel) payPanel.classList.remove('dg-patient-rx-pay-panel--open');
+}
 
 function stopPatientPrescriptionPolling() {
   if (prescriptionPollInterval) {
@@ -3302,19 +3581,39 @@ function markPatientPrescriptionReady() {
 }
 
 function autoShowPatientPrescriptionCard() {
-  const card = document.getElementById('prescription-card');
-  if (card) card.style.display = 'block';
+  openPatientRxModal();
+}
+
+function bindPatientRxStorageSignal() {
+  if (patientRxStorageBound) return;
+  patientRxStorageBound = true;
+  window.addEventListener('storage', (e) => {
+    const room = getActiveRoomId();
+    if (!room || e.key !== 'dgRxSignal_' + room) return;
+    loadPatientPrescription(true);
+  });
+  window.addEventListener('dgRxReady', (e) => {
+    const room = getActiveRoomId();
+    if (!room || !e.detail || e.detail.roomId !== room) return;
+    loadPatientPrescription(true);
+  });
 }
 
 function startPatientPrescriptionPolling() {
   if (localStorage.getItem('userRole') === 'doctor') return;
+  bindPatientRxStorageSignal();
   stopPatientPrescriptionPolling();
+  const room = getActiveRoomId();
+  const seenKey = room ? 'dgRxSeen_' + room : '';
+  if (seenKey) {
+    lastSeenPrescriptionAt = localStorage.getItem(seenKey) || null;
+  }
   const poll = async () => {
     const result = await loadPatientPrescription(true);
     if (result && result.isNew) {
       markPatientPrescriptionReady();
       autoShowPatientPrescriptionCard();
-      showMessage('Your doctor has prescribed medicines. Review and pay below.', 'success');
+      showMessage('Your doctor has finalized your prescription. Review, edit, or pay below.', 'success');
     }
   };
   poll();
@@ -3326,18 +3625,22 @@ async function loadPatientPrescription(silent) {
   const listContainer = document.getElementById('prescription-list');
   if (!activeRoom || !listContainer) return null;
   try {
-    const res = await fetch(`/api/get-prescription/${encodeURIComponent(activeRoom)}`);
-    const data = await res.json();
+    const res = await fetch('/api/get-prescription/' + encodeURIComponent(activeRoom) + '?t=' + Date.now());
+    let data = null;
+    try { data = await res.json(); } catch (_) { data = null; }
 
     if (!res.ok || !data || !data.cartItems || !data.cartItems.length) {
       if (!silent) {
-        if (res.status === 403) {
-          listContainer.innerHTML = '<p style="text-align:center;color:#c0392b;padding:12px;">Could not verify this consultation room. Rejoin from your appointment link.</p>';
-        } else {
-          listContainer.innerHTML = '<p style="text-align:center;color:#666;padding:12px;">No prescription yet. Your doctor will prescribe medicines during the call.</p>';
+        openPatientRxModal();
+        patientRxDraft = [];
+        renderPatientRxDraft();
+        const emptyEl = document.getElementById('dg-patient-rx-empty');
+        if (emptyEl) {
+          emptyEl.style.display = 'block';
+          emptyEl.textContent = res.status === 403
+            ? 'Could not verify this consultation room. Rejoin from your appointment link.'
+            : 'No prescription yet. Your doctor will prescribe medicines during the call.';
         }
-        document.getElementById('fetch-prescription-btn').style.display = 'block';
-        document.getElementById('pay-now-btn').style.display = 'none';
       }
       return null;
     }
@@ -3345,53 +3648,102 @@ async function loadPatientPrescription(silent) {
     const prescribedAt = data.prescribedAt || data.updatedAt || data.createdAt || null;
     const prescribedKey = prescribedAt ? String(new Date(prescribedAt).getTime()) : JSON.stringify(data.cartItems);
     const isNew = prescribedKey !== lastSeenPrescriptionAt;
-    if (isNew) lastSeenPrescriptionAt = prescribedKey;
+    if (isNew) {
+      lastSeenPrescriptionAt = prescribedKey;
+      const seenKey = 'dgRxSeen_' + activeRoom;
+      localStorage.setItem(seenKey, prescribedKey);
+    }
 
-    latestPrescription = data.cartItems;
-    listContainer.innerHTML = '';
-    totalAmount = 0;
-    latestPrescription.forEach(item => {
-      totalAmount += Number(item.totalPrice) || (Number(item.pricePerUnit || item.price || 0) * (item.quantity || 1));
-      const itemDiv = document.createElement('div');
-      itemDiv.innerHTML = window.DgVcallStore
-        ? DgVcallStore.prescriptionItemHtml(item)
-        : ('<div><strong>' + (item.name || '') + '</strong> — ₹' + (item.totalPrice || 0) + '</div>');
-      listContainer.appendChild(itemDiv);
-    });
-
-    const totalDiv = document.createElement('div');
-    totalDiv.style.cssText = 'margin-top:12px;padding:12px;background:#fff8f3;border-radius:10px;border:1px solid rgba(242,103,39,0.25);font-weight:700;text-align:right;color:#2c3e50;';
-    totalDiv.innerHTML = latestPrescription.length + ' medicine(s) · Total: ₹' + totalAmount;
-    listContainer.appendChild(totalDiv);
-
-    document.getElementById('fetch-prescription-btn').style.display = 'none';
-    document.getElementById('pay-now-btn').style.display = 'block';
+    patientRxDraft = cloneRxItems(data.cartItems);
+    renderPatientRxDraft();
     markPatientPrescriptionReady();
-    if (!silent && isNew) {
-      showMessage('Your doctor has prescribed medicines. Review and pay below.', 'success');
+
+    if (!silent) {
+      openPatientRxModal();
+      if (isNew) {
+        showMessage('Your doctor has finalized your prescription. Review, edit, or pay below.', 'success');
+      }
     }
     return { ok: true, isNew, prescribedAt };
   } catch (err) {
     console.error('Fetch prescription error:', err);
     if (!silent) {
-      listContainer.innerHTML = '<p style="text-align:center;color:#c0392b;">Could not load prescription. Tap Get Prescription to retry.</p>';
-      document.getElementById('fetch-prescription-btn').style.display = 'block';
+      openPatientRxModal();
+      const emptyEl = document.getElementById('dg-patient-rx-empty');
+      if (emptyEl) {
+        emptyEl.style.display = 'block';
+        emptyEl.textContent = 'Could not load prescription. Please try again in a moment.';
+      }
     }
     return null;
   }
 }
 
-document.getElementById('fetch-prescription-btn').addEventListener('click', () => loadPatientPrescription(false));
+const fetchRxBtn = document.getElementById('fetch-prescription-btn');
+if (fetchRxBtn) fetchRxBtn.addEventListener('click', () => loadPatientPrescription(false));
 
-document.getElementById('pay-now-btn').addEventListener('click', () => {
-    document.getElementById('pay-now-btn').style.display = 'none';
-  document.getElementById('patient-rx-payment-panel').style.display = 'block';
-  document.getElementById('total-amount').innerText = totalAmount;
-  const nameEl = document.getElementById('patient-rx-name');
-  const phoneEl = document.getElementById('phone-input');
-  if (nameEl && !nameEl.value) nameEl.value = localStorage.getItem('patientName') || localStorage.getItem('userName') || '';
-  if (phoneEl && !phoneEl.value) phoneEl.value = localStorage.getItem('patientPhoneNumber') || '';
-});
+const patientRxCloseBtn = document.getElementById('dg-patient-rx-close');
+if (patientRxCloseBtn) patientRxCloseBtn.addEventListener('click', closePatientRxModal);
+
+const patientRxOverlay = document.getElementById('dg-patient-rx-overlay');
+if (patientRxOverlay) {
+  patientRxOverlay.addEventListener('click', (e) => {
+    if (e.target === patientRxOverlay) closePatientRxModal();
+  });
+}
+
+const prescriptionListEl = document.getElementById('prescription-list');
+if (prescriptionListEl) {
+  prescriptionListEl.addEventListener('click', (e) => {
+    const idx = parseInt(e.target.getAttribute('data-rx-idx'), 10);
+    if (Number.isNaN(idx) || !patientRxDraft[idx]) return;
+
+    if (e.target.closest('.dg-patient-rx-inc')) {
+      patientRxDraft[idx].quantity = (parseInt(patientRxDraft[idx].quantity, 10) || 1) + 1;
+      renderPatientRxDraft();
+    } else if (e.target.closest('.dg-patient-rx-dec')) {
+      const next = (parseInt(patientRxDraft[idx].quantity, 10) || 1) - 1;
+      if (next <= 0) patientRxDraft.splice(idx, 1);
+      else patientRxDraft[idx].quantity = next;
+      renderPatientRxDraft();
+    } else if (e.target.closest('.dg-patient-rx-remove')) {
+      patientRxDraft.splice(idx, 1);
+      renderPatientRxDraft();
+    }
+  });
+}
+
+const saveRxBtn = document.getElementById('dg-patient-rx-save-btn');
+if (saveRxBtn) {
+  saveRxBtn.addEventListener('click', () => {
+    if (!patientRxDraft.length) {
+      showMessage('Nothing to save.', 'warning');
+      return;
+    }
+    recalcPatientRxTotals();
+    localStorage.setItem(getPatientSavedCartKey(), JSON.stringify({
+      items: latestPrescription,
+      total: totalAmount,
+      savedAt: new Date().toISOString(),
+      roomId: getActiveRoomId()
+    }));
+    showMessage('Prescription saved to your cart. Buy anytime from the store.', 'success');
+  });
+}
+
+const payNowBtn = document.getElementById('pay-now-btn');
+if (payNowBtn) {
+  payNowBtn.addEventListener('click', () => {
+    const payPanel = document.getElementById('patient-rx-payment-panel');
+    if (payPanel) payPanel.classList.add('dg-patient-rx-pay-panel--open');
+    const totalAmountEl = document.getElementById('total-amount');
+    if (totalAmountEl) totalAmountEl.textContent = String(totalAmount);
+    const nameEl = document.getElementById('patient-rx-name');
+    const phoneEl = document.getElementById('phone-input');
+    if (nameEl && !nameEl.value) nameEl.value = localStorage.getItem('patientName') || localStorage.getItem('userName') || '';
+    if (phoneEl && !phoneEl.value) phoneEl.value = localStorage.getItem('patientPhoneNumber') || '';
+  });
+}
 document.getElementById('proceed-payment-btn').addEventListener('click', async () => {
   const name = (document.getElementById('patient-rx-name') && document.getElementById('patient-rx-name').value.trim()) || '';
   const phone = document.getElementById('phone-input').value.trim();
@@ -3471,7 +3823,7 @@ document.getElementById('proceed-payment-btn').addEventListener('click', async (
       window.open(receiptUrl.toString(), '_blank');
 
       alert("Prescription submitted successfully!");
-      document.getElementById('prescription-card').style.display = 'none';
+      closePatientRxModal();
     } else {
       alert(result.message || "Submission failed.");
     }
@@ -3496,6 +3848,7 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
   // Re-render UI
   renderCart();
   updateCartBadge();
+  syncVcallProductCardsFromCart();
 
   // Optional: Notify others if needed
   if (typeof broadcastPrescriptionUpdate === 'function') {
@@ -3517,6 +3870,7 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
     try {
       localStorage.setItem('dgRxSignal_' + roomID, JSON.stringify({ at: Date.now(), roomId: roomID }));
     } catch (_) { /* ignore quota errors */ }
+    window.dispatchEvent(new CustomEvent('dgRxReady', { detail: { roomId: roomID, at: Date.now() } }));
   }
 
   async function sendPrescriptionToPatient() {
@@ -3561,7 +3915,7 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
         throw new Error(result.message || 'Failed to send prescription');
       }
 
-      showMessage('Prescription sent! Patient can see it on their screen now.', 'success');
+      showMessage('Prescription finalized! Patient will see it automatically.', 'success');
       notifyPrescriptionReady();
 
       cart = [];
@@ -3752,7 +4106,7 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
     }
 
     await DgVcallStore.fetchProductsPage(1, searchTerm || '', !!append);
-    DgVcallStore.renderProductGrid(medicineList, isBrowseOnlyMode);
+    DgVcallStore.renderProductGrid(medicineList, isBrowseOnlyMode, getVcallCardCartQty);
     updateVcallProductCount();
 
     if (loadMoreBtn) {
@@ -3797,6 +4151,18 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
     updateCartBadge();
   }
 
+  function getVcallWeightParts(card) {
+    const sel = card.querySelector('.vcall-product-weight');
+    if (!sel || !sel.value) return null;
+    const parts = sel.value.split('|');
+    return {
+      medicineId: parts[1],
+      value: parts[2],
+      unit: parts[3],
+      price: Number(parts[4])
+    };
+  }
+
   function initPrescription() {
     const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
     console.log(`Initializing prescription for room: ${roomID}`);
@@ -3804,6 +4170,66 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
     if (localStorage.getItem('userRole') !== 'doctor') {
       startPatientPrescriptionPolling();
     }
+  }
+
+  function findCartItemForVcallParts(med, parts) {
+    if (!med || !parts) return null;
+    const storeId = med.storeId || med.company || 'general';
+    return cart.find((item) =>
+      String(item.id) === String(parts.medicineId) &&
+      String(item.storeId) === String(storeId) &&
+      String(item.weightValue) === String(parts.value) &&
+      String(item.weightUnit) === String(parts.unit)
+    ) || null;
+  }
+
+  function getVcallCardCartQty(idx, med) {
+    const card = document.querySelector('.vcall-product-card[data-idx="' + idx + '"]');
+    const parts = card ? getVcallWeightParts(card) : null;
+    if (!parts && med && med.weights && med.weights[0]) {
+      const w = med.weights[0];
+      parts = {
+        medicineId: w.medicineId || med._id,
+        value: w.value,
+        unit: w.unit
+      };
+    }
+    const line = findCartItemForVcallParts(med, parts);
+    return line ? line.quantity : 0;
+  }
+
+  function syncVcallProductCardsFromCart() {
+    if (isBrowseOnlyMode || !window.DgVcallStore) return;
+    document.querySelectorAll('.vcall-product-card').forEach((card) => {
+      const idx = parseInt(card.dataset.idx, 10);
+      const med = DgVcallStore.getProduct(idx);
+      const qty = getVcallCardCartQty(idx, med);
+      DgVcallStore.updateProductCardActions(card, idx, false, qty);
+    });
+  }
+
+  function setVcallCartQty(card, med, nextQty) {
+    const parts = getVcallWeightParts(card);
+    if (!parts) {
+      showMessage('Select a pack size first', 'warning');
+      return;
+    }
+    const storeId = med.storeId || med.company || 'general';
+    const existing = findCartItemForVcallParts(med, parts);
+    if (nextQty <= 0) {
+      if (existing) removeFromCart(parts.medicineId, parts.value, parts.unit);
+      else syncVcallProductCardsFromCart();
+      return;
+    }
+    addToCart(
+      parts.medicineId,
+      storeId,
+      med.name,
+      { value: parts.value, unit: parts.unit },
+      parts.price,
+      nextQty
+    );
+    syncVcallProductCardsFromCart();
   }
   function handleQuantityChange(event) {
     const button = event.currentTarget; // The clicked button (increment or decrement)
@@ -4033,6 +4459,7 @@ function handleWeightSelection(event) {
         : `Total: ₹${cartGrandTotal}`;
     }
     if (paymentAmount) paymentAmount.textContent = 'Amount: ₹' + cartGrandTotal;
+    syncVcallProductCardsFromCart();
   }
 
   // Update cart badge
@@ -4098,18 +4525,6 @@ function handleWeightSelection(event) {
       });
     });
 
-    function getVcallWeightParts(card) {
-      const sel = card.querySelector('.vcall-product-weight');
-      if (!sel || !sel.value) return null;
-      const parts = sel.value.split('|');
-      return {
-        medicineId: parts[1],
-        value: parts[2],
-        unit: parts[3],
-        price: Number(parts[4])
-      };
-    }
-
     if (medicineList) {
       medicineList.addEventListener('click', (e) => {
         const card = e.target.closest('.vcall-product-card');
@@ -4120,50 +4535,30 @@ function handleWeightSelection(event) {
         const med = window.DgVcallStore ? DgVcallStore.getProduct(idx) : null;
         if (!med) return;
 
-        const qtyEl = card.querySelector('.vcall-qty-val');
-        let qty = parseInt(qtyEl && qtyEl.textContent, 10) || 0;
-        const addBtn = card.querySelector('.vcall-add-btn');
+        const currentQty = getVcallCardCartQty(idx, med);
+
+        if (e.target.closest('.vcall-prescribe-btn')) {
+          setVcallCartQty(card, med, 1);
+          flashRxCartPanel();
+          return;
+        }
 
         if (e.target.closest('.vcall-qty-inc')) {
-          qty += 1;
-          if (qtyEl) qtyEl.textContent = String(qty);
-          if (addBtn) addBtn.disabled = qty <= 0;
+          setVcallCartQty(card, med, currentQty + 1);
+          flashRxCartPanel();
           return;
         }
 
         if (e.target.closest('.vcall-qty-dec')) {
-          qty = Math.max(0, qty - 1);
-          if (qtyEl) qtyEl.textContent = String(qty);
-          if (addBtn) addBtn.disabled = qty <= 0;
-          return;
-        }
-
-        if (e.target.closest('.vcall-add-btn')) {
-          const parts = getVcallWeightParts(card);
-          if (!parts || qty <= 0) {
-            showMessage('Select pack size and quantity greater than 0', 'warning');
-            return;
-          }
-          addToCart(
-            parts.medicineId,
-            med.storeId || med.company || 'general',
-            med.name,
-            { value: parts.value, unit: parts.unit },
-            parts.price,
-            qty
-          );
-          if (qtyEl) qtyEl.textContent = '0';
-          if (addBtn) addBtn.disabled = true;
-          showMessage('Added to prescription cart', 'success');
+          setVcallCartQty(card, med, currentQty - 1);
+          flashRxCartPanel();
         }
       });
 
       medicineList.addEventListener('change', (e) => {
         const card = e.target.closest('.vcall-product-card');
         if (!card || !e.target.classList.contains('vcall-product-weight')) return;
-        const addBtn = card.querySelector('.vcall-add-btn');
-        const qty = parseInt(card.querySelector('.vcall-qty-val')?.textContent || '0', 10) || 0;
-        if (addBtn) addBtn.disabled = isBrowseOnlyMode || qty <= 0;
+        syncVcallProductCardsFromCart();
       });
     }
 
@@ -4938,6 +5333,12 @@ function renderStoreButtons(storesToRender) {
     }
 
     init();
+
+    const urlRole = new URLSearchParams(window.location.search).get('role');
+    const storedRole = localStorage.getItem('userRole');
+    if (storedRole !== 'doctor' && urlRole !== 'doctor') {
+      startPatientPrescriptionPolling();
+    }
 });
 
 // Add back the category buttons event listeners

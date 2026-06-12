@@ -14,6 +14,8 @@
   var searchTimer = null;
   var observer = null;
   var cartToastTimer = null;
+  var legacyMode = false;
+  var legacyFiltered = [];
   var isDoctor = localStorage.getItem('isDoctor') === '1';
   var consultationContext = { appointmentId: '', prescriptionId: '' };
 
@@ -387,19 +389,36 @@
     updateProductCount();
   }
 
+  function appendLegacyPage() {
+    var start = products.length;
+    var chunk = legacyFiltered.slice(start, start + PAGE_SIZE);
+    if (!chunk.length) {
+      hasMore = false;
+      return;
+    }
+    products = products.concat(chunk);
+    currentPage = Math.ceil(products.length / PAGE_SIZE) || 1;
+    hasMore = products.length < legacyFiltered.length;
+    appendProducts(chunk);
+    updateProductCount();
+  }
+
   async function fetchProductsPage() {
     if (loading || !hasMore) return;
     loading = true;
     setLoadingState(true);
     try {
+      if (legacyMode) {
+        appendLegacyPage();
+        return;
+      }
       var res = await fetch('/api/medicines?' + apiQuery());
       if (!res.ok) throw new Error('fail');
       var data = await res.json();
       applyProductsPage(data);
     } catch (e) {
-      if (products.length && !hasMore) {
-        renderFullLegacy(filterLegacyProducts(products));
-        updateProductCount();
+      if (legacyMode && products.length) {
+        appendLegacyPage();
       } else if (currentPage <= 1) {
         await loadLegacyFallback();
       }
@@ -467,13 +486,16 @@
           : String(m.category || '').toLowerCase() === String(currentCategory || '').toLowerCase();
       });
     }
-    var q = (els.searchInput && els.searchInput.value.trim().toLowerCase()) || '';
+    var q = (els.searchInput && els.searchInput.value.trim()) || '';
     if (q) {
-      out = out.filter(function (m) {
-        return (m.name || '').toLowerCase().indexOf(q) >= 0
-          || (m.description || '').toLowerCase().indexOf(q) >= 0
-          || (m.company || '').toLowerCase().indexOf(q) >= 0;
-      });
+      out = window.DgFuzzySearch
+        ? DgFuzzySearch.searchMedicines(out, q)
+        : out.filter(function (m) {
+          var lower = q.toLowerCase();
+          return (m.name || '').toLowerCase().indexOf(lower) >= 0
+            || (m.description || '').toLowerCase().indexOf(lower) >= 0
+            || (m.company || '').toLowerCase().indexOf(lower) >= 0;
+        });
     }
     return sortProducts(out.slice());
   }
@@ -503,11 +525,15 @@
         });
       });
       products = mergeProducts(products);
-      totalProducts = products.length;
-      hasMore = false;
+      legacyMode = true;
+      legacyFiltered = filterLegacyProducts(products);
+      totalProducts = legacyFiltered.length;
+      products = [];
+      currentPage = 0;
+      hasMore = legacyFiltered.length > 0;
       renderStoresStrip();
-      renderFullLegacy(filterLegacyProducts(products));
-      updateProductCount();
+      if (els.productGrid) els.productGrid.innerHTML = '';
+      appendLegacyPage();
     } catch (err) {
       els.productGrid.innerHTML = '<p class="empty-grid">Could not load store. Please ensure the server is running.</p>';
     }
@@ -516,6 +542,8 @@
   function resetAndLoadProducts() {
     currentPage = 0;
     products = [];
+    legacyMode = false;
+    legacyFiltered = [];
     hasMore = true;
     totalProducts = 0;
     if (els.productGrid) els.productGrid.innerHTML = '';

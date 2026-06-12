@@ -64,12 +64,20 @@
   }
 
   function clientFilter(doctors) {
-    var q = searchQuery.toLowerCase().trim();
+    var q = searchQuery.trim();
     return doctors.filter(function (doctor) {
       if (showAvailableOnly && !doctor.bookable) return false;
       if (!q) return true;
+      if (global.DgFuzzySearch) {
+        return DgFuzzySearch.filterByFields(
+          [doctor],
+          q,
+          ['name', 'specialization', 'location', 'bio'],
+          0.48
+        ).length > 0 || DgFuzzySearch.matchText(getLanguages(doctor).join(' '), q, 0.48);
+      }
       var hay = [doctor.name, doctor.specialization, doctor.location, getLanguages(doctor), doctor.bio].join(' ').toLowerCase();
-      return hay.indexOf(q) !== -1;
+      return hay.indexOf(q.toLowerCase()) !== -1;
     });
   }
 

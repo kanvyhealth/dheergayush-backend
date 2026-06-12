@@ -539,14 +539,14 @@ app.get('/api/medicines/batch', async (req, res) => {
 
 app.get('/api/medicines', async (req, res) => {
   try {
-    const { page, limit, company, category, q } = req.query;
+    const { page, limit, company, category, q, all } = req.query;
     res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-    if (page || limit || company || category || q) {
-      const result = await getMedicinesPaginated({ page, limit, company, category, q });
-      return res.json(result);
+    if (String(all || '') === '1') {
+      const medicines = await getMedicinesFromFirebase();
+      return res.json(medicines);
     }
-    const medicines = await getMedicinesFromFirebase();
-    res.json(medicines);
+    const result = await getMedicinesPaginated({ page, limit, company, category, q });
+    return res.json(result);
   } catch (err) {
     res.status(500).json({ message: 'Failed to load medicines', error: err.message });
   }
@@ -1265,17 +1265,36 @@ async function assertDoctorBearerToken(req, res) {
   }
 }
 
+function normalizeVideoRoomId(roomId) {
+  try {
+    return decodeURIComponent(String(roomId || '').trim());
+  } catch (_) {
+    return String(roomId || '').trim();
+  }
+}
+
+async function findPrescriptionForRoom(roomId) {
+  const room = normalizeVideoRoomId(roomId);
+  if (!room) return null;
+
+  let prescription = await PrescribedCart.findOne({ roomId: room }).sort({ prescribedAt: -1 });
+  if (prescription) return prescription;
+
+  const roomLower = room.toLowerCase();
+  const all = await PrescribedCart.find({}).sort({ prescribedAt: -1 });
+  return all.find((p) => {
+    const stored = normalizeVideoRoomId(p.roomId);
+    return stored === room || stored.toLowerCase() === roomLower;
+  }) || null;
+}
+
 async function prescriptionVideoRoomExists(roomId) {
-  const room = String(roomId || '').trim();
+  const room = normalizeVideoRoomId(roomId);
   if (!room) return false;
-  const payment = await Payment.findOne({
-    $or: [{ roomName: room }, { videoRoomId: room }]
-  }).sort({ createdAt: -1 });
-  if (payment) return true;
-  const consultation = await ConsultationRequest.findOne({
-    $or: [{ roomId: room }, { videoRoomId: room }]
-  }).sort({ createdAt: -1 });
-  return !!consultation;
+  const ctx = await loadRoomContext(room);
+  if (ctx) return true;
+  const prescription = await findPrescriptionForRoom(room);
+  return !!prescription;
 }
 
 async function enrichPrescribedCartItems(cartItems = []) {
@@ -1337,10 +1356,10 @@ app.post('/api/prescribe-cart', async (req, res) => {
       return res.status(403).json({ message: 'Invalid or unknown video room.' });
     }
 
-    const normalizedRoomId = String(roomId).trim();
+    const normalizedRoomId = normalizeVideoRoomId(roomId);
     const enrichedItems = await enrichPrescribedCartItems(cartItems);
     const prescribedAt = new Date();
-    const existing = await PrescribedCart.findOne({ roomId: normalizedRoomId }).sort({ prescribedAt: -1 });
+    const existing = await findPrescriptionForRoom(normalizedRoomId);
 
     let saved;
     if (existing?._id) {
@@ -1369,15 +1388,13 @@ app.post('/api/prescribe-cart', async (req, res) => {
 
 app.get('/api/get-prescription/:roomId', async (req, res) => {
   try {
-    const roomId = req.params.roomId;
+    const roomId = normalizeVideoRoomId(req.params.roomId);
 
     if (!(await prescriptionVideoRoomExists(roomId))) {
       return res.status(403).json({ message: 'Invalid or unknown video room.' });
     }
 
-    const prescription = await PrescribedCart
-        .findOne({ roomId })
-        .sort({ prescribedAt: -1 });  // fetch latest one
+    const prescription = await findPrescriptionForRoom(roomId);
 
     if (!prescription) {
       return res.status(404).json({ message: 'No prescription found for this room.' });
@@ -2747,6 +2764,94 @@ app.get('/api/admin/payments', async (req, res) => {
     }
 });
 
+app.get('/api/admin/settlements', async (req, res) => {
+    try {
+        if (!isConnected()) {
+            return res.status(503).json({ message: 'Database not connected. Check Firebase credentials on the server.' });
+        }
+        const {
+            enrichSettlementRow,
+            getPaymentGrossAmount
+        } = require('./lib/doctorSettlement');
+        const payments = await Payment.find({}).sort({ createdAt: -1 }).exec();
+        const doctors = await listDoctors();
+        const doctorById = new Map();
+        const doctorByName = new Map();
+        for (const doctor of doctors) {
+            const id = String(doctor._id || doctor.id || doctor.uid || '').trim();
+            const name = String(doctor.name || '').trim().toLowerCase();
+            if (id) doctorById.set(id, doctor);
+            if (name) doctorByName.set(name, doctor);
+        }
+
+        const rows = payments
+            .filter((payment) => getPaymentGrossAmount(payment) > 0)
+            .map((payment) => {
+                const doctorId = String(payment.doctorId || payment.selectedDoctorId || '').trim();
+                const doctorName = String(payment.doctorName || payment.selectedDoctorName || '').trim().toLowerCase();
+                const doctor = doctorById.get(doctorId) || doctorByName.get(doctorName) || null;
+                return enrichSettlementRow(payment, doctor);
+            });
+
+        res.json(rows);
+    } catch (error) {
+        adminDbErrorResponse(res, 'settlements', error);
+    }
+});
+
+app.put('/api/admin/settlements/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {
+            buildSettlementPatch,
+            calcSettlement,
+            enrichSettlementRow,
+            getPaymentGrossAmount
+        } = require('./lib/doctorSettlement');
+
+        const payment = await Payment.findById(id);
+        if (!payment) {
+            return res.status(404).json({ message: 'Payment not found' });
+        }
+
+        const commissionPercent = req.body.commissionPercent ?? req.body.settlementCommissionPercent;
+        if (commissionPercent == null && req.body.settlementStatus == null) {
+            return res.status(400).json({ message: 'commissionPercent or settlementStatus is required.' });
+        }
+
+        const patch = buildSettlementPatch(req.body);
+        if (patch.settlementStatus === 'settled' && commissionPercent == null) {
+            const existingPct = payment.settlementCommissionPercent ?? payment.commissionPercent;
+            if (existingPct == null) {
+                return res.status(400).json({ message: 'Enter commission percentage before marking as settled.' });
+            }
+        }
+
+        if (commissionPercent != null) {
+            const gross = getPaymentGrossAmount(payment);
+            const calc = calcSettlement(gross, commissionPercent);
+            patch.commissionAmount = calc.commissionAmount;
+            patch.doctorNetAmount = calc.doctorNetAmount;
+        }
+
+        const updated = await Payment.findByIdAndUpdate(id, { $set: patch }, { new: true });
+        let doctor = null;
+        const doctorId = String(updated.doctorId || updated.selectedDoctorId || '').trim();
+        if (doctorId) doctor = await findDoctorById(doctorId);
+        if (!doctor && updated.doctorName) {
+            doctor = await findDoctorByName(updated.doctorName || updated.selectedDoctorName);
+        }
+
+        res.json({
+            message: 'Settlement updated successfully',
+            settlement: enrichSettlementRow(updated, doctor)
+        });
+    } catch (error) {
+        console.error('Error updating settlement:', error);
+        res.status(500).json({ message: 'Error updating settlement', error: error.message });
+    }
+});
+
 app.get('/api/admin/prescriptions', async (req, res) => {
     try {
         if (!isConnected()) {
@@ -2856,6 +2961,14 @@ app.put('/api/admin/doctors/:id', async (req, res) => {
         }
 
         const { profile, approval, working } = parseAdminDoctorUpdates(req.body, doctor);
+
+        const paymentPatchResult = buildPaymentDetailsPatch(req.body, doctor);
+        if (req.body.paymentMode || req.body.upiId || req.body.accountNumber || req.body.bankName) {
+            if (!paymentPatchResult.ok) {
+                return res.status(400).json({ message: paymentPatchResult.error });
+            }
+            Object.assign(profile, paymentPatchResult.patch);
+        }
 
         if (!profile.name || !profile.specialization || !profile.license) {
             return res.status(400).json({ message: 'Name, specialization, and license are required fields' });

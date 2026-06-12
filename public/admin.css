@@ -28,6 +28,13 @@ body.admin-page {
     padding: 20px;
 }
 
+.section-subtitle {
+    margin-top: 6px;
+    color: #666;
+    font-size: 0.92rem;
+    font-weight: 400;
+}
+
 /* Header Styles */
 header {
     display: flex;

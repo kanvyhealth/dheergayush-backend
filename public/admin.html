@@ -41,6 +41,7 @@
             <button class="tab-btn active" data-tab="doctors">Doctors</button>
             <button class="tab-btn" data-tab="patients">Patients</button>
             <button class="tab-btn" data-tab="payments">Payments</button>
+            <button class="tab-btn" data-tab="settlements">Settlements</button>
             <button class="tab-btn" data-tab="prescriptions">Prescriptions</button>
             <button class="tab-btn" data-tab="orders">Orders</button>
         </nav>
@@ -61,6 +62,7 @@
                                 <th>Languages</th>
                                 <th>Documents</th>
                                 <th>Available Time</th>
+                                <th>Payout details</th>
                                 <th>Registration Status</th>
                                 <th>Availability Status</th>
                                 <th>Actions</th>
@@ -136,6 +138,54 @@
                             </tr>
                         </thead>
                         <tbody id="paymentsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Settlements Tab -->
+            <section id="settlements" class="tab-content">
+                <div class="section-header">
+                    <h2>Doctor Settlements</h2>
+                    <p class="section-subtitle">View doctor bank/UPI details, apply platform commission %, and mark payouts as settled.</p>
+                </div>
+                <div class="filter-controls">
+                    <div class="filter-group">
+                        <label for="settlementStatusFilter">Status:</label>
+                        <select id="settlementStatusFilter">
+                            <option value="">All</option>
+                            <option value="pending">Pending</option>
+                            <option value="settled">Settled</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="settlementDoctorFilter">Doctor:</label>
+                        <input type="text" id="settlementDoctorFilter" placeholder="Doctor name">
+                    </div>
+                    <div class="filter-group filter-group--actions">
+                        <span class="filter-group-label">Actions</span>
+                        <div class="filter-buttons">
+                            <button type="button" onclick="applySettlementFilters()" class="filter-btn">Apply Filters</button>
+                            <button type="button" onclick="clearSettlementFilters()" class="clear-btn">Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="settlementsTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Patient</th>
+                                <th>Doctor</th>
+                                <th>Gross</th>
+                                <th>Commission %</th>
+                                <th>Commission</th>
+                                <th>Doctor net</th>
+                                <th>Doctor payout</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="settlementsTableBody"></tbody>
                     </table>
                 </div>
             </section>
@@ -233,6 +283,56 @@
                 <button class="delete-btn" id="confirmDeleteBtn">Delete</button>
                 <button class="cancel-btn" id="cancelDeleteBtn">Cancel</button>
             </div>
+        </div>
+    </div>
+
+    <div id="settlementModal" class="modal">
+        <div class="modal-content">
+            <span class="close settlement-close">&times;</span>
+            <h2>Settle doctor payment</h2>
+            <form id="settlementForm">
+                <input type="hidden" id="settlementPaymentId">
+                <div class="form-group">
+                    <label>Patient</label>
+                    <input type="text" id="settlementPatient" readonly style="background:#f5f5f5">
+                </div>
+                <div class="form-group">
+                    <label>Doctor</label>
+                    <input type="text" id="settlementDoctor" readonly style="background:#f5f5f5">
+                </div>
+                <div class="form-group">
+                    <label>Gross amount (₹)</label>
+                    <input type="text" id="settlementGross" readonly style="background:#f5f5f5">
+                </div>
+                <div class="form-group">
+                    <label for="settlementCommissionPercent">Platform commission %</label>
+                    <input type="number" id="settlementCommissionPercent" min="0" max="100" step="0.01" required placeholder="e.g. 20">
+                </div>
+                <div class="form-group">
+                    <label>Commission amount (₹)</label>
+                    <input type="text" id="settlementCommissionAmount" readonly style="background:#f5f5f5">
+                </div>
+                <div class="form-group">
+                    <label>Doctor receives (₹)</label>
+                    <input type="text" id="settlementDoctorNet" readonly style="background:#f5f5f5">
+                </div>
+                <div class="form-group">
+                    <label>Doctor payout details</label>
+                    <textarea id="settlementPayoutDetails" rows="4" readonly style="background:#f5f5f5"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="settlementReference">Transfer reference / UTR</label>
+                    <input type="text" id="settlementReference" placeholder="UPI ref, NEFT UTR, etc.">
+                </div>
+                <div class="form-group">
+                    <label for="settlementNote">Note</label>
+                    <textarea id="settlementNote" rows="2" placeholder="Optional note"></textarea>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="save-btn">Save &amp; mark settled</button>
+                    <button type="button" class="cancel-btn settlement-close">Cancel</button>
+                </div>
+            </form>
         </div>
     </div>
 

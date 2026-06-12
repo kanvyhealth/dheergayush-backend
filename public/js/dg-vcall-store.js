@@ -73,7 +73,23 @@
     return '<div class="vcall-product-img-fallback" style="display:flex"><i class="fas fa-pills"></i></div>';
   }
 
-  function productCardHtml(med, idx, browseOnly) {
+  function productActionsHtml(idx, browseOnly, cartQty) {
+    if (browseOnly) {
+      return '<span class="vcall-browse-only-tag"><i class="fas fa-eye"></i> View only</span>';
+    }
+    var qty = Math.max(0, parseInt(cartQty, 10) || 0);
+    if (qty > 0) {
+      return '<div class="vcall-product-qty vcall-product-qty--active">' +
+        '<button type="button" class="vcall-qty-btn vcall-qty-dec" data-idx="' + idx + '">−</button>' +
+        '<span class="vcall-qty-val" data-idx="' + idx + '">' + qty + '</span>' +
+        '<button type="button" class="vcall-qty-btn vcall-qty-inc" data-idx="' + idx + '">+</button>' +
+        '</div>';
+    }
+    return '<button type="button" class="vcall-prescribe-btn" data-idx="' + idx + '">' +
+      '<i class="fas fa-prescription"></i> Prescribe</button>';
+  }
+
+  function productCardHtml(med, idx, browseOnly, cartQty) {
     var rating = global.getStaticRating ? getStaticRating(med.name) : '4.5';
     var reviews = global.getReviewCount ? getReviewCount(med.name) : 120;
     var stars = global.renderStarsHtml ? renderStarsHtml(rating) : '';
@@ -92,14 +108,7 @@
           '<div class="vcall-pack-single">' + weights[0].value + ' ' + weights[0].unit + ' — ₹' + weights[0].price + '</div>'
         : '<p class="vcall-no-pack">Price unavailable</p>');
     var storeLabel = displayStoreLabel(med);
-    var actions = browseOnly
-      ? '<span class="vcall-browse-only-tag"><i class="fas fa-eye"></i> View only</span>'
-      : '<div class="vcall-product-qty">' +
-        '<button type="button" class="vcall-qty-btn vcall-qty-dec" data-idx="' + idx + '">−</button>' +
-        '<span class="vcall-qty-val" data-idx="' + idx + '">0</span>' +
-        '<button type="button" class="vcall-qty-btn vcall-qty-inc" data-idx="' + idx + '">+</button>' +
-        '</div>' +
-        '<button type="button" class="vcall-add-btn" data-idx="' + idx + '" disabled>Add to prescription</button>';
+    var actions = productActionsHtml(idx, browseOnly, cartQty);
 
     return '<article class="vcall-product-card" data-idx="' + idx + '">' +
       '<div class="vcall-product-img-wrap">' + productImageHtml(med) + '</div>' +
@@ -221,11 +230,13 @@
       });
       products = mergeProducts(list, '');
       if (searchTerm) {
-        var q = searchTerm.toLowerCase();
-        products = products.filter(function (m) {
-          return (m.name || '').toLowerCase().indexOf(q) >= 0 ||
-            (m.description || '').toLowerCase().indexOf(q) >= 0;
-        });
+        products = global.DgFuzzySearch
+          ? DgFuzzySearch.searchMedicines(products, searchTerm)
+          : products.filter(function (m) {
+            var q = searchTerm.toLowerCase();
+            return (m.name || '').toLowerCase().indexOf(q) >= 0 ||
+              (m.description || '').toLowerCase().indexOf(q) >= 0;
+          });
       }
       totalProducts = products.length;
     } catch (_) {
@@ -252,16 +263,24 @@
     });
   }
 
-  function renderProductGrid(container, browseOnly) {
+  function renderProductGrid(container, browseOnly, qtyForCard) {
     if (!container) return;
     if (!products.length) {
       container.innerHTML = '<p class="vcall-empty-catalog">No products found. Try another brand or search term.</p>';
       return;
     }
+    var lookup = typeof qtyForCard === 'function' ? qtyForCard : function () { return 0; };
     container.innerHTML = '<div class="vcall-product-grid">' +
-      products.map(function (med, i) { return productCardHtml(med, i, browseOnly); }).join('') +
+      products.map(function (med, i) { return productCardHtml(med, i, browseOnly, lookup(i, med)); }).join('') +
       '</div>';
     global.__vcallProductIndex = products;
+  }
+
+  function updateProductCardActions(card, idx, browseOnly, cartQty) {
+    if (!card) return;
+    var actions = card.querySelector('.vcall-product-actions');
+    if (!actions) return;
+    actions.innerHTML = productActionsHtml(idx, browseOnly, cartQty);
   }
 
   function prescriptionItemHtml(item) {
@@ -304,7 +323,30 @@
     fetchProductsPage: fetchProductsPage,
     renderBrandChips: renderBrandChips,
     renderProductGrid: renderProductGrid,
+    updateProductCardActions: updateProductCardActions,
+    productActionsHtml: productActionsHtml,
     prescriptionItemHtml: prescriptionItemHtml,
+    patientEditableItemHtml: function (item, index) {
+      var weight = item.selectedWeight || {};
+      var pack = [weight.value, weight.unit].filter(Boolean).join(' ');
+      var unitPrice = Number(item.pricePerUnit || item.price || item.unitPrice || 0);
+      var qty = Math.max(1, parseInt(item.quantity, 10) || 1);
+      var lineTotal = Number(item.totalPrice) || unitPrice * qty;
+      return '<div class="dg-patient-rx-item" data-rx-idx="' + index + '">' +
+        '<div class="dg-patient-rx-item-main">' +
+        '<strong>' + escapeHtml(item.name || 'Medicine') + '</strong>' +
+        (pack ? '<span class="dg-patient-rx-pack">' + escapeHtml(pack) + '</span>' : '') +
+        '<span class="dg-patient-rx-unit">₹' + unitPrice + ' each</span>' +
+        '</div>' +
+        '<div class="dg-patient-rx-item-controls">' +
+        '<button type="button" class="dg-patient-rx-dec" data-rx-idx="' + index + '">−</button>' +
+        '<span class="dg-patient-rx-qty" data-rx-idx="' + index + '">' + qty + '</span>' +
+        '<button type="button" class="dg-patient-rx-inc" data-rx-idx="' + index + '">+</button>' +
+        '<button type="button" class="dg-patient-rx-remove" data-rx-idx="' + index + '" title="Remove">×</button>' +
+        '</div>' +
+        '<div class="dg-patient-rx-line-total">₹' + lineTotal + '</div>' +
+        '</div>';
+    },
     resetCatalog: resetCatalog,
     setBrand: setBrand,
     getProducts: function () { return products; },
