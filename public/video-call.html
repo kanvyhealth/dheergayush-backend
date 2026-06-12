@@ -2885,7 +2885,7 @@ html, body {
                 });
                 return await res.json();
             } catch (err) {
-                console.warn('Refund request failed:', err);
+                console.warn('Refund request failed:', after doctor raise prescription its giving error please login as doctor to prescribe and patient not getting the prescription fix the issueerr);
                 return null;
             }
         }
@@ -3499,7 +3499,7 @@ html, body {
   
   let currentView = 'stores'; // 'stores', 'medicines', or 'cart'
   let isBrowseOnlyMode = false;
-  let doctorPrescriptionLocked = false;
+  let doctorPrescriptionSent = false;
   let stores = [];
   let allMedicines = [];
   let currentStore = null;
@@ -3658,17 +3658,35 @@ function bindPatientRxStorageSignal() {
   window.addEventListener('storage', (e) => {
     const room = getActiveRoomId();
     if (!room || e.key !== 'dgRxSignal_' + room) return;
-    loadPatientPrescription(true);
+    loadPatientPrescription(true).then((result) => {
+      if (result && result.ok && result.isNew) {
+        markPatientPrescriptionReady();
+        autoShowPatientPrescriptionCard();
+        showMessage(
+          result.wasUpdated
+            ? 'Your doctor updated your prescription. Review, edit, or pay below.'
+            : 'Your doctor has finalized your prescription. Review, edit, or pay below.',
+          'success'
+        );
+      }
+    });
   });
   window.addEventListener('dgRxReady', (e) => {
     const room = getActiveRoomId();
     if (!room || !e.detail) return;
     if (normalizeRxRoomId(e.detail.roomId) !== normalizeRxRoomId(room)) return;
     loadPatientPrescription(true).then((result) => {
-      if (result && result.isNew) {
+      if (result && result.ok) {
         markPatientPrescriptionReady();
-        autoShowPatientPrescriptionCard();
-        showMessage('Your doctor has finalized your prescription. Review, edit, or pay below.', 'success');
+        if (result.isNew) {
+          autoShowPatientPrescriptionCard();
+          showMessage(
+            result.wasUpdated
+              ? 'Your doctor updated your prescription. Review, edit, or pay below.'
+              : 'Your doctor has finalized your prescription. Review, edit, or pay below.',
+            'success'
+          );
+        }
       }
     });
   });
@@ -3685,10 +3703,17 @@ function startPatientPrescriptionPolling() {
   }
   const poll = async () => {
     const result = await loadPatientPrescription(true);
-    if (result && result.isNew) {
+    if (result && result.ok) {
       markPatientPrescriptionReady();
-      autoShowPatientPrescriptionCard();
-      showMessage('Your doctor has finalized your prescription. Review, edit, or pay below.', 'success');
+      if (result.isNew) {
+        autoShowPatientPrescriptionCard();
+        showMessage(
+          result.wasUpdated
+            ? 'Your doctor updated your prescription. Review, edit, or pay below.'
+            : 'Your doctor has finalized your prescription. Review, edit, or pay below.',
+          'success'
+        );
+      }
     }
   };
   poll();
@@ -3723,6 +3748,7 @@ async function loadPatientPrescription(silent) {
     const prescribedAt = data.prescribedAt || data.updatedAt || data.createdAt || null;
     const prescribedKey = prescribedAt ? String(new Date(prescribedAt).getTime()) : JSON.stringify(data.cartItems);
     const isNew = prescribedKey !== lastSeenPrescriptionAt;
+    const wasUpdated = isNew && !!lastSeenPrescriptionAt;
     if (isNew) {
       lastSeenPrescriptionAt = prescribedKey;
       const seenKey = 'dgRxSeen_' + activeRoom;
@@ -3736,10 +3762,15 @@ async function loadPatientPrescription(silent) {
     if (!silent) {
       openPatientRxModal();
       if (isNew) {
-        showMessage('Your doctor has finalized your prescription. Review, edit, or pay below.', 'success');
+        showMessage(
+          wasUpdated
+            ? 'Your doctor updated your prescription. Review, edit, or pay below.'
+            : 'Your doctor has finalized your prescription. Review, edit, or pay below.',
+          'success'
+        );
       }
     }
-    return { ok: true, isNew, prescribedAt };
+    return { ok: true, isNew, wasUpdated, prescribedAt };
   } catch (err) {
     console.error('Fetch prescription error:', err);
     if (!silent) {
@@ -3912,13 +3943,13 @@ document.getElementById('proceed-payment-btn').addEventListener('click', async (
   }
 });
 document.getElementById("empty-cart-btn").addEventListener("click", () => {
-  const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
+  const roomID = getActiveRoomId();
 
   // Clear cart array
   cart = [];
 
   // Remove from localStorage
-  localStorage.removeItem(`prescriptionCart_${roomID}`);
+  if (roomID) localStorage.removeItem(`prescriptionCart_${roomID}`);
 
   // Re-render UI
   renderCart();
@@ -3987,18 +4018,25 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
         throw new Error(result.message || 'Failed to send prescription');
       }
 
-      showMessage('Prescription finalized! Patient will see it automatically.', 'success');
+      const wasUpdate = doctorPrescriptionSent;
+      markDoctorPrescriptionSent(true);
+      persistPrescriptionCart();
+      broadcastPrescriptionUpdate(cart);
       notifyPrescriptionReady();
 
-      cart = [];
-      localStorage.removeItem(`prescriptionCart_${roomID}`);
-      setDoctorPrescriptionLocked(true);
-      broadcastPrescriptionUpdate(cart);
+      showMessage(
+        wasUpdate
+          ? 'Prescription updated! Patient will see the changes automatically.'
+          : 'Prescription finalized! Patient will see it automatically.',
+        'success'
+      );
 
       if (statusEl) {
         statusEl.textContent = 'Sent to patient successfully.';
         statusEl.style.color = '#16a34a';
       }
+      renderCart();
+      syncVcallProductCardsFromCart();
       return true;
     } catch (error) {
       console.error('Error saving prescription:', error);
@@ -4009,7 +4047,7 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
       }
       return false;
     } finally {
-      if (prescribeSendBtn && !isDoctorPrescribeLocked()) {
+      if (prescribeSendBtn) {
         prescribeSendBtn.disabled = cart.length === 0;
       }
     }
@@ -4025,12 +4063,7 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
 
   function initOfflineMode() {
     console.log('Initializing prescription system');
-    const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
-    
-    // Load cart from localStorage
-    cart = JSON.parse(localStorage.getItem(`prescriptionCart_${roomID}`)) || [];
-    
-    // Initial render
+    reloadPrescriptionCartFromStorage();
     loadStores();
     renderCart();
     updateCartBadge();
@@ -4101,9 +4134,7 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
       });
     }
 
-    // Save to localStorage
-    const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
-    localStorage.setItem(`prescriptionCart_${roomID}`, JSON.stringify(cart));
+    persistPrescriptionCart();
 
     // Update UI
     renderCart();
@@ -4124,70 +4155,103 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
     updateCartBadge();
   }
 
-  function rxFinalizedStorageKey(roomID) {
-    return 'dgRxFinalized_' + (roomID || getActiveRoomId());
+  function rxSentStorageKey(roomID) {
+    return 'dgRxSent_' + (roomID || getActiveRoomId());
   }
 
-  function isDoctorPrescribeLocked() {
-    if (localStorage.getItem('userRole') !== 'doctor') return false;
+  function serverCartItemsToLocalCart(items) {
+    return (items || []).map((item) => {
+      const weight = item.selectedWeight || {};
+      return {
+        id: item.medicineId || item.id,
+        storeId: item.storeId || '',
+        name: item.name || item.productName || 'Medicine',
+        weightValue: weight.value != null ? weight.value : item.weightValue,
+        weightUnit: weight.unit || item.weightUnit || 'unit',
+        price: Number(item.pricePerUnit || item.price || item.unitPrice || 0),
+        quantity: Math.max(1, Number(item.quantity || 1))
+      };
+    });
+  }
+
+  function reloadPrescriptionCartFromStorage() {
     const roomID = getActiveRoomId();
-    if (!roomID) return false;
-    return doctorPrescriptionLocked || localStorage.getItem(rxFinalizedStorageKey(roomID)) === '1';
+    if (!roomID) return;
+    try {
+      cart = JSON.parse(localStorage.getItem(`prescriptionCart_${roomID}`)) || [];
+    } catch (_) {
+      cart = [];
+    }
+    doctorPrescriptionSent = localStorage.getItem(rxSentStorageKey(roomID)) === '1';
+  }
+
+  function persistPrescriptionCart() {
+    const roomID = getActiveRoomId();
+    if (!roomID) return;
+    localStorage.setItem(`prescriptionCart_${roomID}`, JSON.stringify(cart));
+  }
+
+  function markDoctorPrescriptionSent(sent) {
+    doctorPrescriptionSent = !!sent;
+    const roomID = getActiveRoomId();
+    if (roomID) {
+      if (sent) localStorage.setItem(rxSentStorageKey(roomID), '1');
+      else localStorage.removeItem(rxSentStorageKey(roomID));
+    }
+    updateDoctorPrescriptionControls();
   }
 
   function vcallStoreActionFlags() {
-    const locked = isDoctorPrescribeLocked();
     return {
-      browseOnly: isBrowseOnlyMode || locked,
-      prescribeSent: locked && !isBrowseOnlyMode
+      browseOnly: isBrowseOnlyMode,
+      prescribeSent: false
     };
   }
 
-  function applyDoctorPrescriptionLockedUI() {
-    const locked = isDoctorPrescribeLocked();
-    if (rxWorkspace) rxWorkspace.classList.toggle('dg-rx-workspace--rx-locked', locked);
-    if (prescribeSendBtn) prescribeSendBtn.style.display = locked ? 'none' : '';
-    if (emptyCartBtn) emptyCartBtn.style.display = locked ? 'none' : (cart.length ? 'inline-block' : 'none');
+  function ensureDoctorPrescriptionPanelsVisible() {
+    const isDoctorUser = localStorage.getItem('userRole') === 'doctor';
+    if (!isDoctorUser || isBrowseOnlyMode) return;
+    const cartTabContent = document.getElementById('shop-prescription');
+    const storeTabContent = document.getElementById('stores');
+    cartTabContent?.classList.add('active');
+    storeTabContent?.classList.add('active');
+    if (rxCartPanel) rxCartPanel.style.display = 'flex';
+    if (rxWorkspace) rxWorkspace.classList.remove('dg-rx-workspace--rx-locked');
+  }
 
+  function updateDoctorPrescriptionControls() {
+    ensureDoctorPrescriptionPanelsVisible();
+    if (emptyCartBtn) emptyCartBtn.style.display = cart.length ? 'inline-block' : 'none';
     const statusEl = document.getElementById('doctor-checkout-status');
-    if (locked && statusEl) {
+    if (statusEl && doctorPrescriptionSent) {
       statusEl.style.display = 'block';
-      statusEl.textContent = 'Prescription sent to patient.';
+      statusEl.textContent = 'Prescription sent — edit cart and tap Update to push changes to patient.';
       statusEl.style.color = '#16a34a';
     }
-
-    const medicineListEl = document.getElementById('medicine-list');
-    if (window.DgVcallStore && medicineListEl && medicineListEl.querySelector('.vcall-product-grid')) {
-      const flags = vcallStoreActionFlags();
-      DgVcallStore.renderProductGrid(medicineListEl, flags.browseOnly, safeVcallCardCartQty, flags.prescribeSent);
-    }
   }
 
-  function setDoctorPrescriptionLocked(locked) {
-    doctorPrescriptionLocked = !!locked;
-    const roomID = getActiveRoomId();
-    if (roomID) {
-      if (locked) localStorage.setItem(rxFinalizedStorageKey(roomID), '1');
-      else localStorage.removeItem(rxFinalizedStorageKey(roomID));
-    }
-    applyDoctorPrescriptionLockedUI();
-    renderCart();
-  }
-
-  async function refreshDoctorPrescriptionLockState() {
-    if (localStorage.getItem('userRole') !== 'doctor') return;
-    const roomID = getActiveRoomId();
-    if (!roomID) return;
-    if (localStorage.getItem(rxFinalizedStorageKey(roomID)) === '1') {
-      setDoctorPrescriptionLocked(true);
+  async function syncDoctorPrescriptionCart() {
+    if (localStorage.getItem('userRole') !== 'doctor') {
+      reloadPrescriptionCartFromStorage();
       return;
     }
+    const roomID = getActiveRoomId();
+    if (!roomID) return;
+    reloadPrescriptionCartFromStorage();
+    const localCart = cart.slice();
     try {
       const res = await fetch('/api/get-prescription/' + encodeURIComponent(roomID) + '?t=' + Date.now());
       if (!res.ok) return;
       const data = await res.json();
       if (data && data.cartItems && data.cartItems.length) {
-        setDoctorPrescriptionLocked(true);
+        markDoctorPrescriptionSent(true);
+        const serverCart = serverCartItemsToLocalCart(data.cartItems);
+        if (!localCart.length) {
+          cart = serverCart;
+          persistPrescriptionCart();
+        } else {
+          cart = localCart;
+        }
       }
     } catch (_) { /* ignore network errors */ }
   }
@@ -4213,6 +4277,7 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
     if (!isBrowseOnlyMode) {
       cartTabContent?.classList.add('active');
       storeTabContent?.classList.add('active');
+      ensureDoctorPrescriptionPanelsVisible();
     } else {
       cartTabContent?.classList.remove('active');
       storeTabContent?.classList.add('active');
@@ -4284,19 +4349,17 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
     }
   }
 
-  function openPrescriptionModal(browseOnly) {
+  async function openPrescriptionModal(browseOnly) {
     if (!prescriptionModal) return;
     configurePrescriptionModalForRole(browseOnly);
     prescriptionModal.style.display = 'block';
 
-    const roomID = getActiveRoomId();
     if (!isBrowseOnlyMode) {
-      cart = JSON.parse(localStorage.getItem(`prescriptionCart_${roomID}`)) || [];
+      await syncDoctorPrescriptionCart();
+      ensureDoctorPrescriptionPanelsVisible();
       renderCart();
       updateCartBadge();
-      if (localStorage.getItem('userRole') === 'doctor') {
-        refreshDoctorPrescriptionLockState();
-      }
+      updateDoctorPrescriptionControls();
     }
 
     currentView = 'stores';
@@ -4313,11 +4376,7 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
 
   // Initialize the app
   function init() {
-    // Clear cart on page load/refresh (only for dev, remove in production if cart should persist across sessions)
-    // cart = [];
-    // localStorage.removeItem('prescriptionCart');
-    
-    // Initialize store system instead of medicine list
+    reloadPrescriptionCartFromStorage();
     loadStores();
     renderCart();
     setupEventListeners();
@@ -4341,7 +4400,11 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
     console.log(`Initializing prescription for room: ${roomID}`);
     initOfflineMode();
     if (localStorage.getItem('userRole') === 'doctor') {
-      refreshDoctorPrescriptionLockState();
+      syncDoctorPrescriptionCart().then(() => {
+        renderCart();
+        updateCartBadge();
+        updateDoctorPrescriptionControls();
+      });
     } else {
       startPatientPrescriptionPolling();
     }
@@ -4383,7 +4446,7 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
   function syncVcallProductCardsFromCart() {
     if (!window.DgVcallStore) return;
     const flags = vcallStoreActionFlags();
-    if (flags.browseOnly && !flags.prescribeSent) return;
+    if (flags.browseOnly) return;
     document.querySelectorAll('.vcall-product-card').forEach((card) => {
       const idx = parseInt(card.dataset.idx, 10);
       const med = DgVcallStore.getProduct(idx);
@@ -4549,13 +4612,13 @@ function handleWeightSelection(event) {
                     `).join('')}
                 </div>
 
-                ${isDoctorPrescribeLocked() ? '' : `<button class="add-to-cart-btn" data-id="${medicine._id}" ${initialQty === 0 || !initialWeight ? 'disabled' : ''}>
+                ${isBrowseOnlyMode ? '' : `<button class="add-to-cart-btn" data-id="${medicine._id}" ${initialQty === 0 || !initialWeight ? 'disabled' : ''}>
                     ${initialQty > 0 ? 'Update' : 'Add'}
                 </button>`}
         </div>
       `;
       
-      if (isBrowseOnlyMode || isDoctorPrescribeLocked()) {
+      if (isBrowseOnlyMode) {
         medicineItem.querySelectorAll('.add-to-cart-btn, .quantity-btn, .quantity-controls').forEach((el) => {
           el.remove();
         });
@@ -4579,7 +4642,7 @@ function handleWeightSelection(event) {
   function renderCart(filterTerm) {
     if (!cartItemsContainer) return;
     cartItemsContainer.innerHTML = '';
-    const isDoctor = localStorage.getItem('userRole') === 'doctor' && !isBrowseOnlyMode && !isDoctorPrescribeLocked();
+    const isDoctor = localStorage.getItem('userRole') === 'doctor' && !isBrowseOnlyMode;
     const term = (filterTerm || '').toLowerCase().trim();
     const visibleCart = term
       ? cart.filter(item => (item.name || '').toLowerCase().includes(term))
@@ -4596,15 +4659,14 @@ function handleWeightSelection(event) {
     if (grandTotalEl) grandTotalEl.textContent = '₹' + cartGrandTotal;
     if (cartCountEl) cartCountEl.textContent = cart.length + ' item' + (cart.length === 1 ? '' : 's');
     if (prescribeSendBtn) {
-      if (isDoctorPrescribeLocked()) {
-        prescribeSendBtn.style.display = 'none';
-      } else {
-        prescribeSendBtn.style.display = '';
-        prescribeSendBtn.disabled = !isDoctor || cart.length === 0;
-      }
+      prescribeSendBtn.style.display = isDoctor ? '' : 'none';
+      prescribeSendBtn.disabled = !isDoctor || cart.length === 0;
+      prescribeSendBtn.innerHTML = doctorPrescriptionSent
+        ? '<i class="fa-solid fa-rotate"></i> Update Prescription'
+        : '<i class="fa-solid fa-check-double"></i> Finalize Prescription';
     }
     if (emptyCartBtn) {
-      emptyCartBtn.style.display = isDoctorPrescribeLocked() ? 'none' : (cart.length ? 'inline-block' : 'none');
+      emptyCartBtn.style.display = isDoctor && cart.length ? 'inline-block' : 'none';
     }
 
     if (visibleCart.length === 0) {
@@ -4682,28 +4744,39 @@ function handleWeightSelection(event) {
     // Tab switching
             tabButtons.forEach(button => {
       button.addEventListener('click', () => {
-        tabButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-
         const tabId = button.dataset.tab;
-            tabContents.forEach(content => {
-          content.classList.remove('active');
-                if (content.id === tabId) {
-                    content.classList.add('active');
-          }
-        });
+        const isDoctorPrescribe = localStorage.getItem('userRole') === 'doctor' && !isBrowseOnlyMode;
 
-        if (paymentForm) paymentForm.style.display = 'none';
-        const backToCartBtnEl = document.querySelector('.back-to-cart-btn');
-        if (backToCartBtnEl) backToCartBtnEl.style.display = 'none';
-        
-        if (tabId === 'stores') {
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+
+        if (isDoctorPrescribe) {
+          ensureDoctorPrescriptionPanelsVisible();
+          if (tabId === 'stores') {
             currentView = 'stores';
             displayStoresView();
             searchInput.placeholder = 'Search products by name or brand…';
             searchInput.value = '';
             loadVcallCatalog('', false);
-        } else if (tabId === 'shop-prescription') {
+            renderCart();
+          } else if (tabId === 'shop-prescription') {
+            currentView = 'cart';
+            renderCart();
+          }
+        } else {
+          tabContents.forEach(content => {
+            content.classList.remove('active');
+            if (content.id === tabId) {
+              content.classList.add('active');
+            }
+          });
+          if (tabId === 'stores') {
+            currentView = 'stores';
+            displayStoresView();
+            searchInput.placeholder = 'Search products by name or brand…';
+            searchInput.value = '';
+            loadVcallCatalog('', false);
+          } else if (tabId === 'shop-prescription') {
             currentView = 'cart';
             renderCart();
             if (storeNavigation) storeNavigation.style.display = 'none';
@@ -4712,7 +4785,12 @@ function handleWeightSelection(event) {
             if (prescriptionView) prescriptionView.style.display = 'none';
             searchInput.placeholder = 'Search cart items...';
             searchInput.value = '';
+          }
         }
+
+        if (paymentForm) paymentForm.style.display = 'none';
+        const backToCartBtnEl = document.querySelector('.back-to-cart-btn');
+        if (backToCartBtnEl) backToCartBtnEl.style.display = 'none';
       });
     });
 
@@ -4720,7 +4798,7 @@ function handleWeightSelection(event) {
       medicineList.addEventListener('click', (e) => {
         const card = e.target.closest('.vcall-product-card');
         if (!card) return;
-        if (isBrowseOnlyMode || isDoctorPrescribeLocked()) return;
+        if (isBrowseOnlyMode) return;
 
         const idx = parseInt(card.dataset.idx, 10);
         const med = window.DgVcallStore ? DgVcallStore.getProduct(idx) : null;
