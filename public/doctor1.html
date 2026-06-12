@@ -430,8 +430,9 @@
       if (window.DgRealtime.onDoctorStatus) {
         DgRealtime.onDoctorStatus(function (payload) {
           if (!payload || payload.doctorName !== doctorName) return;
-          applyDoctorStatusUI(payload.effectiveStatus || payload.working || payload.dbStatus, {
-            dbStatus: payload.dbStatus || payload.working || payload.presenceStatus
+          if (Date.now() < doctorStatusPollPausedUntil) return;
+          applyDoctorStatusUI(payload.effectiveStatus || payload.dbStatus || payload.working, {
+            dbStatus: payload.dbStatus || payload.presenceStatus || payload.working
           });
         });
       }
@@ -531,20 +532,22 @@
       if (!doctorName) return alert('Doctor name not found. Please sign in again.');
       const switchWrap = document.getElementById('doctorOnlineSwitchWrap');
       if (switchWrap) switchWrap.classList.add('is-loading');
-      doctorStatusPollPausedUntil = Date.now() + 8000;
+      doctorStatusPollPausedUntil = Date.now() + 15000;
+      applyDoctorStatusUI(status, { dbStatus: status });
       try {
         const data = await DgDoctorStatus.updateDoctorStatus(doctorName, status);
         if (window.DgAuth && data.doctorName) {
           DgAuth.hydrateDoctorPortal({ portal: 'doctor', doctor: { name: data.doctorName } });
         }
         applyDoctorStatusUI(data.effectiveStatus || status, {
-          dbStatus: data.dbStatus || data.working || data.presenceStatus || status
+          dbStatus: data.dbStatus || data.presenceStatus || data.working || status
         });
         if (status === 'Available' && window.DgRealtime) {
           DgRealtime.registerDoctor(doctorName);
         }
       } catch (e) {
         alert(e.message || 'Could not update status');
+        doctorStatusPollPausedUntil = 0;
         await checkDoctorStatus();
       } finally {
         if (switchWrap) switchWrap.classList.remove('is-loading');

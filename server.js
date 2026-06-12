@@ -3549,9 +3549,9 @@ app.post('/api/doctors/updateStatus', requireDoctorNameAccess(), async (req, res
       await Doctor.findByIdAndUpdate(id, { lastSeenAt: new Date() });
     }
 
-    const refreshed = id ? await Doctor.findById(id) : doctor;
+    const canonicalName = String(doctor.name || doctorName).trim();
+    const refreshed = (await findDoctorByName(canonicalName)) || (id ? await Doctor.findById(id) : doctor);
     const payload = await buildStatusPayload(refreshed || doctor);
-    const canonicalName = String((refreshed || doctor).name || doctorName).trim();
     emitDoctorStatus(canonicalName, payload);
 
     const working = normalized.toLowerCase();

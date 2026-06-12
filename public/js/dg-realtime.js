@@ -2,6 +2,8 @@
   'use strict';
 
   var socket = null;
+  var registeredDoctorName = '';
+  var heartbeatTimer = null;
   var ringAudio = null;
   var speechInterval = null;
   var VOICE_MESSAGE = 'DHEERGAYUSH patient is waiting';
@@ -12,17 +14,34 @@
       console.warn('Socket.io client not loaded');
       return null;
     }
+    if (socket) {
+      try {
+        socket.removeAllListeners();
+        socket.disconnect();
+      } catch (e) { /* ignore */ }
+      socket = null;
+    }
     socket = io({ transports: ['websocket', 'polling'], reconnection: true });
+    socket.on('connect', function () {
+      if (registeredDoctorName) {
+        socket.emit('doctor:register', { doctorName: registeredDoctorName });
+      }
+    });
     return socket;
   }
 
   function registerDoctor(doctorName) {
+    registeredDoctorName = String(doctorName || '').trim();
     var s = connect();
-    if (!s || !doctorName) return;
-    s.emit('doctor:register', { doctorName: doctorName });
-    if (!s._dgHeartbeat) {
-      s._dgHeartbeat = setInterval(function () {
-        if (s.connected) s.emit('doctor:heartbeat', { doctorName: doctorName });
+    if (!s || !registeredDoctorName) return;
+    if (s.connected) {
+      s.emit('doctor:register', { doctorName: registeredDoctorName });
+    }
+    if (!heartbeatTimer) {
+      heartbeatTimer = setInterval(function () {
+        if (socket && socket.connected && registeredDoctorName) {
+          socket.emit('doctor:heartbeat', { doctorName: registeredDoctorName });
+        }
       }, 20000);
     }
   }
