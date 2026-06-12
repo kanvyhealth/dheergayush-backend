@@ -32,6 +32,46 @@
   padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
 
+/* Hide auth shells until role is resolved (prevents patient UI flash for doctors) */
+body.dg-role-pending .patient-portal-shell,
+body.dg-role-pending .dg-doctor-auth-shell,
+body.dg-role-pending.dg-doctor-dashboard .dg-doc-shell {
+  visibility: hidden;
+}
+
+body.dg-role-pending::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+body.dg-role-pending::after {
+  content: 'Checking your account…';
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #3c3c3c;
+  padding: 14px 22px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 40px rgba(60, 60, 60, 0.12);
+}
+
+body.dg-landing-page.dg-role-pending::before {
+  background: rgba(15, 23, 42, 0.55);
+}
+
+body.dg-landing-page.dg-role-pending::after {
+  color: #1e293b;
+}
+
 /* Long registration / payment forms — scroll inside the panel when content exceeds viewport */
 #custom-prejoin,
 #regdocsec .auth-form,

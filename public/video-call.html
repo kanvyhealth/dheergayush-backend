@@ -856,16 +856,27 @@ html, body {
 
     body.vcall-in-call .prescription-modal {
       z-index: 10060;
+      position: fixed;
+      inset: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(72px, calc(56px + env(safe-area-inset-bottom))) max(8px, env(safe-area-inset-left));
+      width: auto;
+      height: auto;
+      max-height: none;
+      right: auto;
+      bottom: auto;
+    }
+    body.vcall-in-call .prescription-modal .modal-content {
+      height: 100%;
+      max-height: 100%;
+    }
+    body.vcall-in-call .prescription-modal .modal-body {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
 
     @media (max-width: 768px) {
       body.vcall-in-call .prescription-modal {
         inset: max(8px, env(safe-area-inset-top)) 8px max(72px, calc(56px + env(safe-area-inset-bottom))) 8px;
-        width: auto;
-        height: auto;
-        max-height: none;
-        right: auto;
-        bottom: auto;
       }
     }
 
@@ -986,6 +997,151 @@ html, body {
       font-size: 0.92rem;
       resize: vertical;
       box-sizing: border-box;
+      pointer-events: auto;
+      user-select: text;
+      -webkit-user-select: text;
+      background: #fff;
+      color: #2c3e50;
+    }
+    .dg-diagnosis-field textarea:focus {
+      outline: 2px solid rgba(142, 68, 173, 0.35);
+      border-color: #8e44ad;
+    }
+    .diagnosis-modal-content {
+      pointer-events: auto;
+    }
+    .dg-rx-workspace {
+      display: flex;
+      gap: 12px;
+      min-height: 0;
+      flex: 1;
+    }
+    .dg-rx-workspace--browse-only {
+      display: block;
+    }
+    .dg-rx-store-panel {
+      flex: 1.4;
+      min-width: 0;
+      overflow-y: auto;
+      max-height: calc(100dvh - 220px);
+    }
+    .dg-rx-cart-panel {
+      flex: 0 0 min(300px, 38%);
+      display: flex;
+      flex-direction: column;
+      min-width: 240px;
+      border-left: 1px solid #e8ecf0;
+      padding-left: 12px;
+      background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
+      border-radius: 12px;
+    }
+    .dg-rx-cart-panel.dg-rx-cart-flash {
+      animation: dgRxCartFlash 0.6s ease;
+    }
+    @keyframes dgRxCartFlash {
+      0%, 100% { background: linear-gradient(180deg, #fafbfc 0%, #fff 100%); }
+      50% { background: linear-gradient(180deg, #e8f8f0 0%, #f0fff4 100%); }
+    }
+    .dg-rx-cart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e8ecf0;
+    }
+    .dg-rx-cart-header h4 {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #2c3e50;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dg-rx-cart-count {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #f26727;
+      background: rgba(242, 103, 39, 0.12);
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+    .dg-rx-cart-panel .cart-items {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 120px;
+      max-height: 280px;
+      margin-bottom: 10px;
+    }
+    .dg-rx-breakdown {
+      background: #fff;
+      border: 1px solid #e8ecf0;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+    }
+    .dg-rx-breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      color: #566573;
+    }
+    .dg-rx-breakdown-total {
+      border-top: 1px dashed #dde1e6;
+      margin-top: 6px;
+      padding-top: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      color: #2c3e50;
+    }
+    .dg-prescribe-send-btn {
+      flex: 1;
+      background: linear-gradient(135deg, #f26727, #ff8a50) !important;
+      color: #fff !important;
+      font-weight: 700 !important;
+      border: none !important;
+      border-radius: 10px !important;
+      padding: 12px 14px !important;
+      cursor: pointer;
+      font-size: 0.88rem !important;
+    }
+    .dg-prescribe-send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .dg-rx-cart-panel .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      font-size: 0.82rem;
+    }
+    .dg-rx-cart-panel .cart-item-remove {
+      background: none;
+      border: none;
+      color: #c0392b;
+      cursor: pointer;
+      font-size: 0.75rem;
+      padding: 2px 4px;
+    }
+    @media (max-width: 768px) {
+      .dg-rx-workspace {
+        flex-direction: column;
+      }
+      .dg-rx-cart-panel {
+        flex: none;
+        border-left: none;
+        border-top: 1px solid #e8ecf0;
+        padding-left: 0;
+        padding-top: 12px;
+        max-height: 40vh;
+      }
     }
     .dg-diagnosis-save-btn {
       background: #8e44ad;
@@ -2171,7 +2327,7 @@ html, body {
     <div id="root"></div>
 
   <!-- Legacy hidden buttons kept for JS compatibility -->
-  <div id="prescription-card" style="display: none; position: fixed; bottom: 20px; right: 20px; width: min(440px, calc(100vw - 24px)); max-height: 70vh; background: linear-gradient(135deg, #ffffff, #f8f9fa); border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.35); overflow-y: auto; padding: 20px; z-index: 10000; transition: transform 0.4s ease, opacity 0.4s ease;">
+  <div id="prescription-card" style="display: none; position: fixed; bottom: 20px; right: 20px; width: min(440px, calc(100vw - 24px)); max-height: 70vh; background: linear-gradient(135deg, #ffffff, #f8f9fa); border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.35); overflow-y: auto; padding: 20px; z-index: 10070; transition: transform 0.4s ease, opacity 0.4s ease;">
 
   <!-- Close Button -->
   <div onclick="document.getElementById('prescription-card').style.display='none'" 
@@ -2222,55 +2378,61 @@ html, body {
       <button class="close-btn">&times;</button>
             </div>
     <div class="modal-body">
-            <div class="tab-buttons">
-          <button class="tab-btn active" data-tab="stores">Stores</button>
-        <button class="tab-btn" data-tab="shop-prescription">Cart</button>
-            </div>
+        <div class="tab-buttons" id="dg-rx-tab-buttons">
+          <button class="tab-btn active" data-tab="stores">Store</button>
+          <button class="tab-btn" data-tab="shop-prescription">Cart</button>
+        </div>
 
         <div class="search-container">
-          <input type="text" id="search-input" placeholder="Search stores or medicines...">
+          <input type="text" id="search-input" placeholder="Search medicines by name or brand…">
           <button id="search-btn"><i class="fas fa-search"></i></button>
         </div>
 
-        <div class="tab-content active" id="stores">
-          <div class="vcall-brands-strip" id="vcall-brands-strip"></div>
-          <div id="prescription-view">
-            <h2 id="medicine-list-title">Ayurvedic Store</h2>
-            <p id="vcall-product-count" class="vcall-product-count"></p>
-            <div class="medicine-list" id="medicine-list"></div>
-            <button type="button" id="vcall-load-more-btn" class="vcall-load-more-btn" style="display:none;">Load more products</button>
-          </div>
-    
-          <div class="manual-report-upload">
-            <h4>Manual Report Upload</h4>
-            <form id="report-upload-form">
-              <input type="file" id="report-files" multiple accept=".pdf,.jpg,.jpeg,.png">
-              <button type="submit" class="submit-btn">Upload Reports</button>
-            </form>
-          </div>
-        </div>
-
-        <div class="tab-content" id="shop-prescription">
-          <div class="cart-items" id="cart-items"></div>
-          <div class="cart-total" id="cart-total">Total: ₹0</div>
-          <div class="cart-actions">
-              <button class="empty-cart-btn" id="empty-cart-btn">Empty Cart</button>
-              <button class="add-all-to-db-btn" id="add-all-to-db-btn">Prescribe All</button>
-        <button class="submit-btn" id="checkout-btn">Send Prescription to Patient</button>
-          </div>
-    </div>
-
-        <form class="payment-form" id="doctor-checkout-form">
-            <button type="button" class="back-to-cart-btn">Back to Cart</button>
-            <h4>Send to Patient</h4>
-            <p style="color:#555;font-size:0.95rem;margin:0 0 12px;">Review the cart and send medicines to the patient. The patient pays from their prescription panel during or after the call.</p>
-            <div class="dg-pay-banner" style="text-align:center;padding:16px;background:#fff8f3;border-radius:10px;margin:12px 0;">
-                <p style="margin:0;font-weight:600;color:#F67227;"><i class="fas fa-pills"></i> Prescription total</p>
-                <p id="payment-amount" style="margin:8px 0 0;font-weight:600;">Amount: ₹0</p>
+        <div class="dg-rx-workspace" id="dg-rx-workspace">
+          <div class="dg-rx-store-panel">
+            <div class="tab-content active" id="stores">
+              <div class="vcall-brands-strip" id="vcall-brands-strip"></div>
+              <div id="prescription-view">
+                <h2 id="medicine-list-title">Ayurvedic Store</h2>
+                <p id="vcall-product-count" class="vcall-product-count"></p>
+                <div class="medicine-list" id="medicine-list"></div>
+                <button type="button" id="vcall-load-more-btn" class="vcall-load-more-btn" style="display:none;">Load more products</button>
+              </div>
+              <div class="manual-report-upload">
+                <h4>Manual Report Upload</h4>
+                <form id="report-upload-form">
+                  <input type="file" id="report-files" multiple accept=".pdf,.jpg,.jpeg,.png">
+                  <button type="submit" class="submit-btn">Upload Reports</button>
+                </form>
+              </div>
             </div>
-            <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Send prescription to patient</button>
-            <p id="doctor-checkout-status" style="display:none;margin-top:10px;text-align:center;font-size:0.9rem;"></p>
-        </form>
+          </div>
+
+          <aside class="dg-rx-cart-panel" id="dg-rx-cart-panel">
+            <div class="dg-rx-cart-header">
+              <h4><i class="fa-solid fa-cart-shopping"></i> Cart</h4>
+              <span class="dg-rx-cart-count" id="dg-rx-cart-count">0 items</span>
+            </div>
+            <div class="tab-content" id="shop-prescription">
+              <div class="cart-items" id="cart-items"></div>
+              <div class="dg-rx-breakdown" id="dg-rx-breakdown">
+                <div class="dg-rx-breakdown-row"><span>Line items</span><span id="dg-rx-line-count">0</span></div>
+                <div class="dg-rx-breakdown-row"><span>Total quantity</span><span id="dg-rx-qty-count">0</span></div>
+                <div class="dg-rx-breakdown-row dg-rx-breakdown-total"><span>Total</span><span id="dg-rx-cart-grand-total">₹0</span></div>
+              </div>
+              <div class="cart-total" id="cart-total" style="display:none;">Total: ₹0</div>
+              <div class="cart-actions">
+                <button type="button" class="empty-cart-btn" id="empty-cart-btn">Clear</button>
+                <button type="button" class="add-all-to-db-btn" id="add-all-to-db-btn" style="display:none;">Prescribe All</button>
+                <button type="button" class="submit-btn" id="checkout-btn" style="display:none;">Send Prescription</button>
+                <button type="button" class="dg-prescribe-send-btn" id="dg-prescribe-send-btn" disabled>
+                  <i class="fa-solid fa-paper-plane"></i> Prescribe &amp; Send to Patient
+                </button>
+              </div>
+              <p id="doctor-checkout-status" style="display:none;margin-top:8px;text-align:center;font-size:0.85rem;"></p>
+            </div>
+          </aside>
+        </div>
       </div>
         </div>
     </div>
@@ -2519,6 +2681,10 @@ html, body {
             }
         }
 
+        function isBenignPatientVideoMessage(message) {
+            return /wait for your doctor|doctor to accept|still pending|waiting for doctor|free follow-up|no payment was charged|free consultation/i.test(String(message || ''));
+        }
+
         async function handleConsultationFailure(title, message, reason) {
             clearNoPeerRefundTimer();
             const role = localStorage.getItem('userRole') || callIdentity?.role || 'patient';
@@ -2526,18 +2692,48 @@ html, body {
                 showMessageBox(title, message);
                 return;
             }
+            if (isBenignPatientVideoMessage(message)) {
+                showMessageBox(title === 'Video unavailable' ? 'Please wait' : title, message);
+                return;
+            }
             const refund = await requestConsultationRefund(reason);
             let fullMessage = message;
-            if (refund && (refund.refunded || refund.alreadyRefunded) && refund.message) {
-                fullMessage = refund.message;
-            } else if (refund && refund.freeConsultation) {
+            if (refund && (refund.freeConsultation || Number(refund.amount) === 0)) {
                 fullMessage = message;
+            } else if (refund && (refund.refunded || refund.alreadyRefunded) && refund.message) {
+                fullMessage = refund.message;
             } else if (Number(refund?.amount) > 0) {
                 fullMessage += ' We could not process an automatic refund. Please contact support with your payment details.';
-            } else {
+            } else if (reason !== 'token_failed' && reason !== 'no_peer_connected') {
                 fullMessage += ' Please contact support if you were charged.';
             }
             showMessageBox(title, fullMessage);
+        }
+
+        let roomStatusPollInterval = null;
+        function stopRoomStatusPoll() {
+            if (roomStatusPollInterval) {
+                clearInterval(roomStatusPollInterval);
+                roomStatusPollInterval = null;
+            }
+        }
+        function startRoomStatusPoll() {
+            const role = localStorage.getItem('userRole') || callIdentity?.role || 'patient';
+            if (role === 'doctor' || !roomID) return;
+            stopRoomStatusPoll();
+            roomStatusPollInterval = setInterval(async () => {
+                try {
+                    const res = await fetch('/api/video-room/' + encodeURIComponent(roomID) + '/access?role=patient');
+                    const data = await res.json();
+                    if (data.consultationStatus === 'ringing' || data.consultationStatus === 'waiting') {
+                        setCallStatus('Waiting for doctor to accept…', 'reconnecting');
+                    } else if (data.consultationStatus === 'accepted') {
+                        setCallStatus('Doctor accepted — waiting for them to join…', 'connected');
+                    } else if (!data.canJoin && data.consultationStatus === 'completed') {
+                        stopRoomStatusPoll();
+                    }
+                } catch (_) { /* ignore poll errors */ }
+            }, 4000);
         }
 
         function startNoPeerRefundWatchdog() {
@@ -2820,6 +3016,16 @@ html, body {
                         clearStaleVideoTokens();
                         localStorage.removeItem('firebaseIdToken');
                         if (window.DgAuth && DgAuth.clearSession) DgAuth.clearSession();
+                        await handleConsultationFailure('Sign in required', errMsg, 'token_failed');
+                        return;
+                    }
+                    if (tokenRes.status === 409) {
+                        showMessageBox('Doctor busy', errMsg);
+                        return;
+                    }
+                    if (isBenignPatientVideoMessage(errMsg)) {
+                        showMessageBox('Please wait', errMsg);
+                        return;
                     }
                     await handleConsultationFailure('Video unavailable', errMsg, 'token_failed');
                     return;
@@ -2843,6 +3049,8 @@ html, body {
                 console.log(`Left Agora channel ${roomID}`);
                 setDoctorDockVisible(false);
                 setPatientRxActionsVisible(false);
+                if (typeof stopPatientPrescriptionPolling === 'function') stopPatientPrescriptionPolling();
+                stopRoomStatusPoll();
 
                 clearNoPeerRefundTimer();
                 if (roomID) {
@@ -2917,7 +3125,13 @@ html, body {
                         setCallStatus('Tap “Enable sound” to hear the other person', 'reconnecting');
                     },
                     onConnected: async () => {
-                        setCallStatus('Connected', 'connected');
+                        const joinRole = localStorage.getItem('userRole') || callIdentity?.role || 'patient';
+                        if (joinRole === 'patient') {
+                            setCallStatus('Connected — waiting for doctor…', 'connected');
+                            startRoomStatusPoll();
+                        } else {
+                            setCallStatus('Connected', 'connected');
+                        }
                         startNoPeerRefundWatchdog();
                         const currentRole = localStorage.getItem("userRole");
                         if (currentRole === "doctor") {
@@ -2994,8 +3208,12 @@ html, body {
   const cartItemsContainer = document.getElementById('cart-items'); // Renamed to avoid conflict
   const cartTotal = document.getElementById('cart-total');
   const checkoutBtn = document.getElementById('checkout-btn');
-        const paymentForm = document.getElementById('doctor-checkout-form');
+  const paymentForm = document.getElementById('doctor-checkout-form');
   const paymentAmount = document.getElementById('payment-amount');
+  const prescribeSendBtn = document.getElementById('dg-prescribe-send-btn');
+  const rxWorkspace = document.getElementById('dg-rx-workspace');
+  const rxCartPanel = document.getElementById('dg-rx-cart-panel');
+  const rxTabButtons = document.getElementById('dg-rx-tab-buttons');
 
   const reportsBtn = document.getElementById('reports-btn');
   const reportsModal = document.getElementById('reports-modal');
@@ -3068,6 +3286,8 @@ document.getElementById('browse-store-btn').addEventListener('click', () => {
 let latestPrescription = null;
 let totalAmount = 0;
 let prescriptionPollInterval = null;
+let lastSeenPrescriptionAt = null;
+let clinicalNotesSaveTimer = null;
 
 function stopPatientPrescriptionPolling() {
   if (prescriptionPollInterval) {
@@ -3081,23 +3301,30 @@ function markPatientPrescriptionReady() {
   if (btn) btn.classList.add('dg-rx-ready');
 }
 
+function autoShowPatientPrescriptionCard() {
+  const card = document.getElementById('prescription-card');
+  if (card) card.style.display = 'block';
+}
+
 function startPatientPrescriptionPolling() {
   if (localStorage.getItem('userRole') === 'doctor') return;
   stopPatientPrescriptionPolling();
-  loadPatientPrescription(true);
-  prescriptionPollInterval = setInterval(async () => {
-    const loaded = await loadPatientPrescription(true);
-    if (loaded) {
+  const poll = async () => {
+    const result = await loadPatientPrescription(true);
+    if (result && result.isNew) {
       markPatientPrescriptionReady();
-      stopPatientPrescriptionPolling();
+      autoShowPatientPrescriptionCard();
+      showMessage('Your doctor has prescribed medicines. Review and pay below.', 'success');
     }
-  }, 5000);
+  };
+  poll();
+  prescriptionPollInterval = setInterval(poll, 2500);
 }
 
 async function loadPatientPrescription(silent) {
   const activeRoom = getActiveRoomId();
   const listContainer = document.getElementById('prescription-list');
-  if (!activeRoom || !listContainer) return false;
+  if (!activeRoom || !listContainer) return null;
   try {
     const res = await fetch(`/api/get-prescription/${encodeURIComponent(activeRoom)}`);
     const data = await res.json();
@@ -3112,14 +3339,19 @@ async function loadPatientPrescription(silent) {
         document.getElementById('fetch-prescription-btn').style.display = 'block';
         document.getElementById('pay-now-btn').style.display = 'none';
       }
-      return false;
+      return null;
     }
+
+    const prescribedAt = data.prescribedAt || data.updatedAt || data.createdAt || null;
+    const prescribedKey = prescribedAt ? String(new Date(prescribedAt).getTime()) : JSON.stringify(data.cartItems);
+    const isNew = prescribedKey !== lastSeenPrescriptionAt;
+    if (isNew) lastSeenPrescriptionAt = prescribedKey;
 
     latestPrescription = data.cartItems;
     listContainer.innerHTML = '';
     totalAmount = 0;
     latestPrescription.forEach(item => {
-      totalAmount += Number(item.totalPrice) || 0;
+      totalAmount += Number(item.totalPrice) || (Number(item.pricePerUnit || item.price || 0) * (item.quantity || 1));
       const itemDiv = document.createElement('div');
       itemDiv.innerHTML = window.DgVcallStore
         ? DgVcallStore.prescriptionItemHtml(item)
@@ -3127,20 +3359,25 @@ async function loadPatientPrescription(silent) {
       listContainer.appendChild(itemDiv);
     });
 
+    const totalDiv = document.createElement('div');
+    totalDiv.style.cssText = 'margin-top:12px;padding:12px;background:#fff8f3;border-radius:10px;border:1px solid rgba(242,103,39,0.25);font-weight:700;text-align:right;color:#2c3e50;';
+    totalDiv.innerHTML = latestPrescription.length + ' medicine(s) · Total: ₹' + totalAmount;
+    listContainer.appendChild(totalDiv);
+
     document.getElementById('fetch-prescription-btn').style.display = 'none';
     document.getElementById('pay-now-btn').style.display = 'block';
     markPatientPrescriptionReady();
-    if (!silent) {
+    if (!silent && isNew) {
       showMessage('Your doctor has prescribed medicines. Review and pay below.', 'success');
     }
-    return true;
+    return { ok: true, isNew, prescribedAt };
   } catch (err) {
     console.error('Fetch prescription error:', err);
     if (!silent) {
       listContainer.innerHTML = '<p style="text-align:center;color:#c0392b;">Could not load prescription. Tap Get Prescription to retry.</p>';
       document.getElementById('fetch-prescription-btn').style.display = 'block';
     }
-    return false;
+    return null;
   }
 }
 
@@ -3275,7 +3512,88 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
   }
 
   function notifyPrescriptionReady() {
-    // Patient receives updates via /api/get-prescription polling
+    const roomID = getActiveRoomId();
+    if (!roomID) return;
+    try {
+      localStorage.setItem('dgRxSignal_' + roomID, JSON.stringify({ at: Date.now(), roomId: roomID }));
+    } catch (_) { /* ignore quota errors */ }
+  }
+
+  async function sendPrescriptionToPatient() {
+    const roomID = getActiveRoomId();
+    const statusEl = document.getElementById('doctor-checkout-status');
+    if (!roomID) {
+      showMessage('Room ID not found. Rejoin the consultation.', 'error');
+      return false;
+    }
+    if (!cart.length) {
+      showMessage('Add medicines to the cart before prescribing.', 'warning');
+      return false;
+    }
+
+    if (prescribeSendBtn) prescribeSendBtn.disabled = true;
+    if (statusEl) {
+      statusEl.style.display = 'block';
+      statusEl.textContent = 'Sending prescription to patient…';
+      statusEl.style.color = '#555';
+    }
+
+    try {
+      if (window.DgAuth && DgAuth.ensureValidToken) {
+        await DgAuth.ensureValidToken();
+      }
+      const authHdr = (window.getFirebaseAuthHeaders || getFirebaseAuthHeaders)();
+      if (!authHdr.Authorization) {
+        throw new Error('Please log in at /doctor-auth.html before prescribing.');
+      }
+
+      const response = await fetch('/api/prescribe-cart', {
+        method: 'POST',
+        headers: authHdr,
+        body: JSON.stringify({
+          roomId: roomID,
+          cartItems: cart,
+          timestamp: new Date().toISOString()
+        })
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to send prescription');
+      }
+
+      showMessage('Prescription sent! Patient can see it on their screen now.', 'success');
+      notifyPrescriptionReady();
+
+      cart = [];
+      localStorage.removeItem(`prescriptionCart_${roomID}`);
+      renderCart();
+      updateCartBadge();
+      broadcastPrescriptionUpdate(cart);
+
+      if (statusEl) {
+        statusEl.textContent = 'Sent to patient successfully.';
+        statusEl.style.color = '#16a34a';
+      }
+      return true;
+    } catch (error) {
+      console.error('Error saving prescription:', error);
+      showMessage('Error saving prescription: ' + (error.message || 'Unknown error'), 'error');
+      if (statusEl) {
+        statusEl.textContent = error.message || 'Failed to send';
+        statusEl.style.color = '#c0392b';
+      }
+      return false;
+    } finally {
+      if (prescribeSendBtn) prescribeSendBtn.disabled = cart.length === 0;
+    }
+  }
+
+  function flashRxCartPanel() {
+    if (!rxCartPanel) return;
+    rxCartPanel.classList.remove('dg-rx-cart-flash');
+    void rxCartPanel.offsetWidth;
+    rxCartPanel.classList.add('dg-rx-cart-flash');
+    setTimeout(() => rxCartPanel.classList.remove('dg-rx-cart-flash'), 650);
   }
 
   function initOfflineMode() {
@@ -3363,7 +3681,8 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
     // Update UI
     renderCart();
     updateCartBadge();
-    broadcastPrescriptionUpdate(cart); // Broadcast update
+    broadcastPrescriptionUpdate(cart);
+    flashRxCartPanel();
   }
 
   // Calculate total function
@@ -3384,12 +3703,15 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
     const cartTab = document.querySelector('.tab-btn[data-tab="shop-prescription"]');
     const manualUpload = document.querySelector('.manual-report-upload');
     const modalTitle = prescriptionModal.querySelector('.modal-header h3');
-    if (cartTab) cartTab.style.display = isBrowseOnlyMode ? 'none' : '';
+    if (rxTabButtons) rxTabButtons.style.display = isBrowseOnlyMode ? 'flex' : 'none';
+    if (rxCartPanel) rxCartPanel.style.display = isBrowseOnlyMode ? 'none' : 'flex';
+    if (rxWorkspace) rxWorkspace.classList.toggle('dg-rx-workspace--browse-only', isBrowseOnlyMode);
+    if (cartTab) cartTab.style.display = isBrowseOnlyMode ? '' : 'none';
     if (manualUpload) manualUpload.style.display = (isDoctorUser && !isBrowseOnlyMode) ? '' : 'none';
     if (modalTitle) {
       modalTitle.innerHTML = isBrowseOnlyMode
         ? '<i class="fa-solid fa-store"></i> Ayurvedic Store'
-        : '<i class="fa-solid fa-prescription-bottle-medical"></i> Medical Prescription';
+        : '<i class="fa-solid fa-prescription-bottle-medical"></i> Prescribe Medicines';
     }
     if (isBrowseOnlyMode) {
       document.querySelector('.tab-btn[data-tab="stores"]')?.click();
@@ -3441,9 +3763,7 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
   function openPrescriptionModal(browseOnly) {
     if (!prescriptionModal) return;
     configurePrescriptionModalForRole(browseOnly);
-    const isOpen = prescriptionModal.style.display === 'block';
-    prescriptionModal.style.display = isOpen ? 'none' : 'block';
-    if (prescriptionModal.style.display !== 'block') return;
+    prescriptionModal.style.display = 'block';
 
     const roomID = getActiveRoomId();
     if (!isBrowseOnlyMode) {
@@ -3454,8 +3774,13 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
 
     currentView = 'stores';
     displayStoresView();
-    searchInput.value = '';
-    searchInput.placeholder = 'Search products by name or brand…';
+    if (searchInput) {
+      searchInput.value = '';
+      searchInput.placeholder = 'Search products by name or brand…';
+      searchInput.style.display = 'flex';
+    }
+    const searchBtn = document.getElementById('search-btn');
+    if (searchBtn) searchBtn.style.display = 'flex';
     loadVcallCatalog('', false);
   }
 
@@ -3632,8 +3957,19 @@ function handleWeightSelection(event) {
       updateMedicineState(medicine._id, initialQty, initialWeight);
     });
 }
+  function removeFromCart(itemId, weightValue, weightUnit) {
+    cart = cart.filter(item =>
+      !(item.id === itemId &&
+        String(item.weightValue) === String(weightValue) &&
+        String(item.weightUnit) === String(weightUnit))
+    );
+    updateCartDisplay();
+    flashRxCartPanel();
+  }
+
   // Render cart
   function renderCart(filterTerm) {
+    if (!cartItemsContainer) return;
     cartItemsContainer.innerHTML = '';
     const isDoctor = localStorage.getItem('userRole') === 'doctor' && !isBrowseOnlyMode;
     const term = (filterTerm || '').toLowerCase().trim();
@@ -3641,45 +3977,62 @@ function handleWeightSelection(event) {
       ? cart.filter(item => (item.name || '').toLowerCase().includes(term))
       : cart;
 
+    const cartGrandTotal = cart.reduce((s, i) => s + (Number(i.price) || 0) * (i.quantity || 1), 0);
+    const totalQty = cart.reduce((s, i) => s + (i.quantity || 1), 0);
+    const lineCountEl = document.getElementById('dg-rx-line-count');
+    const qtyCountEl = document.getElementById('dg-rx-qty-count');
+    const grandTotalEl = document.getElementById('dg-rx-cart-grand-total');
+    const cartCountEl = document.getElementById('dg-rx-cart-count');
+    if (lineCountEl) lineCountEl.textContent = String(cart.length);
+    if (qtyCountEl) qtyCountEl.textContent = String(totalQty);
+    if (grandTotalEl) grandTotalEl.textContent = '₹' + cartGrandTotal;
+    if (cartCountEl) cartCountEl.textContent = cart.length + ' item' + (cart.length === 1 ? '' : 's');
+    if (prescribeSendBtn) prescribeSendBtn.disabled = !isDoctor || cart.length === 0;
+    if (emptyCartBtn) emptyCartBtn.style.display = cart.length ? 'inline-block' : 'none';
+
     if (visibleCart.length === 0) {
       cartItemsContainer.innerHTML = term
         ? '<p style="text-align: center; color: #7f8c8d;">No matching items in cart</p>'
-        : '<p style="text-align: center; color: #7f8c8d;">No items in prescription</p>';
-      cartTotal.textContent = term ? `Showing 0 of ${cart.length} items · Total: ₹${cart.reduce((s, i) => s + i.price * i.quantity, 0)}` : 'Total: ₹0';
-      checkoutBtn.style.display = 'none';
-      emptyCartBtn.style.display = cart.length ? 'inline-block' : 'none';
-      addAllToDbBtn.style.display = (isDoctor && cart.length) ? 'inline-block' : 'none';
-      if (!term && cart.length === 0) return;
-      if (term) return;
+        : '<p style="text-align: center; color: #7f8c8d; padding: 16px 8px;">Add medicines from the store — they appear here instantly.</p>';
+      if (cartTotal) {
+        cartTotal.textContent = term
+          ? `Showing 0 of ${cart.length} items · Total: ₹${cartGrandTotal}`
+          : 'Total: ₹0';
+      }
+      if (paymentAmount) paymentAmount.textContent = 'Amount: ₹0';
+      return;
     }
 
-    checkoutBtn.style.display = 'none';
-    emptyCartBtn.style.display = 'inline-block';
-    addAllToDbBtn.style.display = isDoctor ? 'inline-block' : 'none';
-    let total = 0;
-
     visibleCart.forEach(item => {
+      const lineTotal = (Number(item.price) || 0) * (item.quantity || 1);
       const cartItem = document.createElement('div');
       cartItem.className = 'cart-item';
       cartItem.dataset.id = item.id;
-      
-      cartItem.innerHTML = `
-        <div class="cart-item-info">
-          <div class="cart-item-name">${item.name}</div>
-          <div class="cart-item-details">${item.weightValue}${item.weightUnit} - ₹${item.price} x ${item.quantity}</div>
-        </div>
-        <div class="cart-item-price">₹${item.price * item.quantity}</div>
-      `;
-      
+
+      cartItem.innerHTML =
+        '<div class="cart-item-info">' +
+          '<div class="cart-item-name">' + (item.name || 'Medicine') + '</div>' +
+          '<div class="cart-item-details">' + item.weightValue + item.weightUnit + ' · ₹' + item.price + ' × ' + item.quantity + '</div>' +
+        '</div>' +
+        '<div style="text-align:right;">' +
+          '<div class="cart-item-price">₹' + lineTotal + '</div>' +
+          (isDoctor ? '<button type="button" class="cart-item-remove" title="Remove">Remove</button>' : '') +
+        '</div>';
+
+      const removeBtn = cartItem.querySelector('.cart-item-remove');
+      if (removeBtn) {
+        removeBtn.addEventListener('click', () => removeFromCart(item.id, item.weightValue, item.weightUnit));
+      }
+
       cartItemsContainer.appendChild(cartItem);
-      total += item.price * item.quantity;
     });
 
-    const cartGrandTotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-    cartTotal.textContent = term
-      ? `Showing ${visibleCart.length} of ${cart.length} · Total: ₹${cartGrandTotal}`
-      : `Total: ₹${cartGrandTotal}`;
-    paymentAmount.textContent = `Amount to Pay: ₹${cartGrandTotal}`;
+    if (cartTotal) {
+      cartTotal.textContent = term
+        ? `Showing ${visibleCart.length} of ${cart.length} · Total: ₹${cartGrandTotal}`
+        : `Total: ₹${cartGrandTotal}`;
+    }
+    if (paymentAmount) paymentAmount.textContent = 'Amount: ₹' + cartGrandTotal;
   }
 
   // Update cart badge
@@ -3705,7 +4058,7 @@ function handleWeightSelection(event) {
     // Close modal
     closeBtn.addEventListener('click', () => {
       prescriptionModal.style.display = 'none';
-      paymentForm.style.display = 'none'; // Ensure payment form is hidden when modal closes
+      if (paymentForm) paymentForm.style.display = 'none';
     });
     
     // Tab switching
@@ -3722,9 +4075,9 @@ function handleWeightSelection(event) {
           }
         });
 
-        // Hide payment form and back to cart button when switching tabs
-        paymentForm.style.display = 'none';
-        document.querySelector('.back-to-cart-btn').style.display = 'none';
+        if (paymentForm) paymentForm.style.display = 'none';
+        const backToCartBtnEl = document.querySelector('.back-to-cart-btn');
+        if (backToCartBtnEl) backToCartBtnEl.style.display = 'none';
         
         if (tabId === 'stores') {
             currentView = 'stores';
@@ -3821,86 +4174,21 @@ function handleWeightSelection(event) {
       });
     }
     
-    // Checkout button
-    checkoutBtn.addEventListener('click', () => {
-      if (cart.length === 0) {
-        showMessage('Please add items to prescription first', 'warning');
-        return;
-      }
+    if (checkoutBtn) {
+      checkoutBtn.addEventListener('click', () => sendPrescriptionToPatient());
+    }
 
-      const cartTotal = calculateTotal();
-      if (paymentAmount) paymentAmount.textContent = 'Amount: ₹' + cartTotal;
+    if (prescribeSendBtn) {
+      prescribeSendBtn.addEventListener('click', () => sendPrescriptionToPatient());
+    }
 
-      tabContents.forEach(content => content.classList.remove('active'));
-      paymentForm.style.display = 'block';
-
-      searchInput.style.display = 'none';
-      document.getElementById('search-btn').style.display = 'none';
-      tabButtons.forEach(btn => btn.style.display = 'none');
-    });
-    
-    // Doctor sends prescription to patient (no payment on doctor side)
-    document.getElementById('doctor-checkout-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      try {
-        const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
-        const statusEl = document.getElementById('doctor-checkout-status');
-
-        if (cart.length === 0) {
-          showMessage('Please add items to your prescription', 'warning');
-          return;
-        }
-
-        if (window.DgAuth && DgAuth.ensureValidToken) {
-          await DgAuth.ensureValidToken();
-        }
-        const authHdr = (window.getFirebaseAuthHeaders || getFirebaseAuthHeaders)();
-        if (!authHdr.Authorization) {
-          showMessage('Please log in at /doctor-auth.html before prescribing.', 'error');
-          return;
-        }
-
-        if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Sending prescription…'; statusEl.style.color = '#555'; }
-
-        const response = await fetch('/api/prescribe-cart', {
-          method: 'POST',
-          headers: authHdr,
-          body: JSON.stringify({
-            roomId: roomID,
-            cartItems: cart,
-            timestamp: new Date().toISOString()
-          })
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.message || 'Failed to send prescription');
-        }
-
-        showMessage('Prescription sent to patient. They can review and pay from their screen.', 'success');
-        notifyPrescriptionReady();
-
-        cart = [];
-        localStorage.removeItem(`prescriptionCart_${roomID}`);
-        paymentForm.style.display = 'none';
-        prescriptionModal.style.display = 'none';
-        updateCartBadge();
-        renderCart();
-        // Reset form and UI
-        paymentForm.reset();
-        paymentForm.style.display = 'none';
-        searchInput.style.display = 'flex'; // Show search bar again
-        document.getElementById('search-btn').style.display = 'flex';
-        tabButtons.forEach(btn => btn.style.display = 'flex');
-        // Switch back to stores tab
-        document.querySelector('.tab-btn[data-tab="stores"]').click();
-      } catch (error) {
-        console.error('Error saving prescription:', error);
-        showMessage(`Error saving prescription: ${error.message}\nPlease try again or contact support.`, 'error');
-      }
-    });
+    const doctorCheckoutForm = document.getElementById('doctor-checkout-form');
+    if (doctorCheckoutForm) {
+      doctorCheckoutForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await sendPrescriptionToPatient();
+      });
+    }
 
     if (reportsBtn) {
       reportsBtn.addEventListener('click', () => {
@@ -4024,6 +4312,19 @@ function handleWeightSelection(event) {
       if (saveBtn) {
         saveBtn.addEventListener('click', saveClinicalNotes);
       }
+
+      ['dg-current-symptoms', 'dg-current-diagnosis', 'dg-current-notes'].forEach(function (fieldId) {
+        const field = document.getElementById(fieldId);
+        if (!field) return;
+        field.addEventListener('input', scheduleAutoSaveClinicalNotes);
+      });
+    }
+
+    function scheduleAutoSaveClinicalNotes() {
+      if (clinicalNotesSaveTimer) clearTimeout(clinicalNotesSaveTimer);
+      clinicalNotesSaveTimer = setTimeout(function () {
+        saveClinicalNotes(true);
+      }, 1500);
     }
 
     async function fetchDiagnosisHistory() {
@@ -4068,17 +4369,29 @@ function handleWeightSelection(event) {
       }
     }
 
-    async function saveClinicalNotes() {
+    async function saveClinicalNotes(isAutoSave) {
       const statusEl = document.getElementById('dg-diagnosis-save-status');
       const saveBtn = document.getElementById('dg-save-clinical-notes');
       const symptomsEl = document.getElementById('dg-current-symptoms');
       const diagnosisEl = document.getElementById('dg-current-diagnosis');
       const notesEl = document.getElementById('dg-current-notes');
+      const symptomsVal = symptomsEl ? symptomsEl.value.trim() : '';
+      const diagnosisVal = diagnosisEl ? diagnosisEl.value.trim() : '';
+      const notesVal = notesEl ? notesEl.value.trim() : '';
+
+      if (!symptomsVal && !diagnosisVal && !notesVal) {
+        if (isAutoSave) return;
+        if (statusEl) {
+          statusEl.textContent = 'Enter symptoms or diagnosis before saving.';
+          statusEl.className = 'dg-diagnosis-status dg-diagnosis-status--err';
+        }
+        return;
+      }
 
       try {
-        if (saveBtn) saveBtn.disabled = true;
+        if (saveBtn && !isAutoSave) saveBtn.disabled = true;
         if (statusEl) {
-          statusEl.textContent = 'Saving…';
+          statusEl.textContent = isAutoSave ? 'Auto-saving…' : 'Saving…';
           statusEl.className = 'dg-diagnosis-status';
         }
 
@@ -4098,9 +4411,9 @@ function handleWeightSelection(event) {
           headers: authHdr,
           body: JSON.stringify({
             roomId: roomID,
-            patientSymptoms: symptomsEl ? symptomsEl.value.trim() : '',
-            doctorDiagnosis: diagnosisEl ? diagnosisEl.value.trim() : '',
-            consultationNotes: notesEl ? notesEl.value.trim() : ''
+            patientSymptoms: symptomsVal,
+            doctorDiagnosis: diagnosisVal,
+            consultationNotes: notesVal
           })
         });
         const payload = await response.json().catch(function () { return {}; });
@@ -4109,17 +4422,19 @@ function handleWeightSelection(event) {
         }
 
         if (statusEl) {
-          statusEl.textContent = 'Saved — this visit will appear in future diagnosis history.';
+          statusEl.textContent = isAutoSave
+            ? 'Saved automatically — visible on future visits with this patient.'
+            : 'Saved — this visit will appear in future diagnosis history.';
           statusEl.className = 'dg-diagnosis-status dg-diagnosis-status--ok';
         }
       } catch (err) {
         console.error('Save clinical notes error:', err);
-        if (statusEl) {
+        if (statusEl && !isAutoSave) {
           statusEl.textContent = err.message || 'Could not save notes';
           statusEl.className = 'dg-diagnosis-status dg-diagnosis-status--err';
         }
       } finally {
-        if (saveBtn) saveBtn.disabled = false;
+        if (saveBtn && !isAutoSave) saveBtn.disabled = false;
       }
     }
 
@@ -4173,61 +4488,9 @@ function handleWeightSelection(event) {
         });
     }
 
-    // Modify the Add All to DB button handler
-    addAllToDbBtn.addEventListener('click', async () => {
-        if (cart.length === 0) {
-            showMessage('Cart is empty. Nothing to prescribe.', 'warning');
-            return;
-        }
-
-        if (!confirm('Are you sure you want to prescribe all items in the cart? This will save them permanently.')) {
-            return;
-        }
-
-        try {
-            const roomID = getUrlParams().get("roomID") || localStorage.getItem("videoRoomId");
-            if (window.DgAuth && DgAuth.ensureValidToken) {
-                await DgAuth.ensureValidToken();
-            }
-            const authHdr = (window.getFirebaseAuthHeaders || getFirebaseAuthHeaders)();
-            if (!authHdr.Authorization) {
-                showMessage('Please log in at /doctor-auth.html before prescribing.', 'error');
-                return;
-            }
-            const response = await fetch('/api/prescribe-cart', {
-                method: 'POST',
-                headers: authHdr,
-                body: JSON.stringify({
-                    roomId: roomID,
-                    cartItems: cart,
-                    timestamp: new Date().toISOString()
-                })
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.message || 'Failed to prescribe cart items');
-            }
-
-            showMessage('All items have been prescribed and saved successfully!', 'success');
-            notifyPrescriptionReady();
-            
-            // Clear cart after successful prescription
-            cart = [];
-            localStorage.removeItem(`prescriptionCart_${roomID}`);
-            renderCart();
-            updateCartBadge();
-            broadcastPrescriptionUpdate(cart);
-
-            document.querySelector('.tab-btn[data-tab="stores"]').click();
-            loadVcallCatalog('', false);
-
-        } catch (error) {
-            console.error('Error prescribing cart items:', error);
-            showMessage(`Failed to prescribe items: ${error.message}`, 'error');
-        }
-    });
+    if (addAllToDbBtn) {
+      addAllToDbBtn.addEventListener('click', () => sendPrescriptionToPatient());
+    }
 
     // Search functionality
     searchInput.addEventListener('input', (e) => {

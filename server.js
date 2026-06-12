@@ -140,6 +140,11 @@ const {
   transitionConsultation,
   formatConsultationResponse
 } = require('./lib/consultationWorkflow');
+const {
+  clearStaleDoctorConsultations,
+  hasLiveActiveConsultation,
+  autoHealStaleRoomContext
+} = require('./lib/consultationSessionCleanup');
 const { refundConsultationForRoom } = require('./lib/consultationRefund');
 const {
   findActiveAccess,
@@ -1332,15 +1337,29 @@ app.post('/api/prescribe-cart', async (req, res) => {
       return res.status(403).json({ message: 'Invalid or unknown video room.' });
     }
 
+    const normalizedRoomId = String(roomId).trim();
     const enrichedItems = await enrichPrescribedCartItems(cartItems);
-    const newPrescription = new PrescribedCart({
-      roomId,
-      cartItems: enrichedItems
+    const prescribedAt = new Date();
+    const existing = await PrescribedCart.findOne({ roomId: normalizedRoomId }).sort({ prescribedAt: -1 });
+
+    let saved;
+    if (existing?._id) {
+      saved = await PrescribedCart.findByIdAndUpdate(existing._id, {
+        $set: { cartItems: enrichedItems, prescribedAt, roomId: normalizedRoomId }
+      });
+    } else {
+      saved = await PrescribedCart.create({
+        roomId: normalizedRoomId,
+        cartItems: enrichedItems,
+        prescribedAt
+      });
+    }
+
+    res.status(200).json({
+      message: 'Prescription saved successfully!',
+      prescribedAt: saved?.prescribedAt || prescribedAt,
+      itemCount: enrichedItems.length
     });
-
-    await newPrescription.save();
-
-    res.status(200).json({ message: 'Prescription saved successfully!' });
 
   } catch (error) {
     console.error('Error saving prescribed cart items:', error);
@@ -1371,7 +1390,10 @@ app.get('/api/get-prescription/:roomId', async (req, res) => {
     const payload = typeof prescription.toObject === 'function'
       ? prescription.toObject()
       : Object.assign({}, prescription);
-    res.json(Object.assign({}, payload, { cartItems: enrichedItems }));
+    res.json(Object.assign({}, payload, {
+      cartItems: enrichedItems,
+      prescribedAt: prescription.prescribedAt || prescription.createdAt || null
+    }));
   } catch (err) {
     res.status(500).json({ message: 'Error fetching prescription.', error: err.message });
   }
@@ -1665,10 +1687,15 @@ async function completeWebsiteConsultationCheckout({
   if (!isDoctorApproved(doctor)) {
     throw Object.assign(new Error('This doctor is not approved for consultations yet.'), { status: 403 });
   }
-  if (isDoctorBusy(doctor)) {
-    throw Object.assign(new Error('Doctor is currently in a consultation. Please try again shortly.'), {
-      status: 409
-    });
+  await clearStaleDoctorConsultations(selectedDoctorName);
+  const doctorStillBusy = await hasLiveActiveConsultation(selectedDoctorName);
+  if (doctorStillBusy || isDoctorBusy(doctor)) {
+    throw Object.assign(
+      new Error(
+        'Doctor appears to be in another consultation. Ask them to end active sessions from their dashboard, or try again in a minute.'
+      ),
+      { status: 409 }
+    );
   }
 
   const patientUid = await resolvePatientUid({
@@ -2982,31 +3009,70 @@ function isWithinConsultationWindow(createdAt) {
 }
 
 async function validateVideoRoomAccess(roomId, role) {
-    const ctx = await loadRoomContext(roomId);
+    let ctx = await loadRoomContext(roomId);
     if (!ctx) return { ok: false, status: 403, message: 'Invalid or expired video room.' };
-    if (!isWithinConsultationWindow(ctx.createdAt)) {
-        return { ok: false, status: 403, message: 'Consultation access has expired (15 days from booking).' };
+
+    ctx = await autoHealStaleRoomContext(ctx);
+
+    const payment = ctx.payment;
+    const consultation = ctx.consultation;
+    const doctorName =
+      consultation?.doctorName || payment?.selectedDoctorName || payment?.doctorName || '';
+    const patientPhone = normalizePhone(payment?.phone || payment?.patientPhone || consultation?.patientPhone || '');
+    const isFollowUp = !!(payment?.isFollowUp || consultation?.isFollowUp || payment?.accessPlanActive);
+    const withinRoomWindow = isWithinConsultationWindow(ctx.createdAt);
+
+    if (!withinRoomWindow) {
+      let accessAllowed = false;
+      if (isFollowUp && doctorName && patientPhone) {
+        const access = await findActiveAccess({
+          patientPhone,
+          doctorName
+        });
+        accessAllowed = !!access;
+      }
+      if (!accessAllowed) {
+        const msg = isFollowUp
+          ? 'Your 15-day free follow-up plan has expired. Please book a new consultation from your dashboard.'
+          : 'Consultation access has expired (15 days from booking). Please book a new consultation.';
+        return { ok: false, status: 403, message: msg, payment, consultation };
+      }
     }
+
     const normalizedRole = normalizeVideoRole(role);
-    const status = consultationStatusOf(ctx.consultation, ctx.payment);
+    let status = consultationStatusOf(ctx.consultation, ctx.payment);
+
+    if (normalizedRole === 'patient' && status === 'completed') {
+      return {
+        ok: false,
+        status: 403,
+        message: 'This consultation has ended. Start a new free follow-up from your dashboard if your 15-day plan is still active.',
+        payment,
+        consultation
+      };
+    }
+
     if (normalizedRole === 'patient' && !patientCanJoinVideo(status)) {
         const messages = {
-            ringing: 'Please wait for your doctor to accept before joining the video call.',
-            waiting: 'Your consultation is still pending. Please wait for the doctor to accept.',
             rejected: 'The doctor declined this consultation. Please book again.',
-            timeout: 'The doctor did not respond in time. Please book again.',
+            timeout: 'The doctor did not respond in time. Please book again or start a new follow-up.',
             cancelled: 'This consultation was cancelled.',
-            completed: 'This consultation has already ended.',
+            refunded: 'This consultation was refunded.',
             '': 'This consultation is not ready for video call yet.'
         };
         return {
             ok: false,
             status: 403,
             message: messages[status] || 'This consultation is not ready for video call yet.',
-            payment: ctx.payment,
-            consultation: ctx.consultation
+            payment,
+            consultation
         };
     }
+
+    if (normalizedRole === 'doctor' && doctorName) {
+      await clearStaleDoctorConsultations(doctorName, { exceptRoomId: roomId });
+    }
+
     return { ok: true, ...ctx, status };
 }
 
@@ -3052,11 +3118,21 @@ async function markConsultationCompleted(roomId) {
     const doctorName = ctx.consultation?.doctorName || ctx.payment?.selectedDoctorName || ctx.payment?.doctorName;
     if (doctorName) {
         const doctor = await findDoctorByName(doctorName);
-        if (doctor && isDoctorBusy(doctor)) {
+        if (doctor) {
             await updateDoctorPresence(doctor, 'Available');
             const payload = await buildStatusPayload(doctor);
             if (payload) emitDoctorStatus(doctor.name, payload);
         }
+    }
+
+    try {
+        const appointmentId = String(ctx.consultation?._id || ctx.consultation?.id || '');
+        if (appointmentId) {
+            const { scheduledCallId } = require('./lib/appAppointmentSync');
+            await getFirestore().collection('active_calls').doc(scheduledCallId(appointmentId)).delete();
+        }
+    } catch (activeErr) {
+        console.warn('active_calls end cleanup:', activeErr.message);
     }
 }
 
@@ -3390,7 +3466,9 @@ app.post('/api/doctors/:doctorName/end-active-calls', requireDoctorNameAccess('d
     if (!doctorName) return res.status(400).json({ message: 'doctorName is required' });
 
     const exceptRoomId = String(req.body?.exceptRoomId || req.query?.exceptRoomId || '').trim();
-    const ACTIVE_STATUSES = ['accepted', 'in_call'];
+    await clearStaleDoctorConsultations(doctorName, { exceptRoomId });
+
+    const ACTIVE_STATUSES = ['accepted', 'in_call', 'ringing', 'waiting'];
     const all = await ConsultationRequest.find({ doctorName }).exec();
     const active = (Array.isArray(all) ? all : []).filter((c) => {
       if (!ACTIVE_STATUSES.includes(normalizeConsultationStatus(c, null))) return false;
@@ -3419,6 +3497,25 @@ app.post('/api/doctors/:doctorName/end-active-calls', requireDoctorNameAccess('d
     }
 
     const doctor = await findDoctorByName(doctorName);
+
+    try {
+      const doctorUid = String(doctor?.uid || doctor?._id || doctor?.id || req.doctor?.uid || '');
+      if (doctorUid) {
+        const db = getFirestore();
+        const activeCalls = await db.collection('active_calls').where('doctorId', '==', doctorUid).get();
+        const batch = db.batch();
+        activeCalls.forEach((doc) => {
+          const data = doc.data() || {};
+          const callRoom = String(data.callRoomId || '');
+          if (!exceptRoomId || callRoom !== exceptRoomId) {
+            batch.delete(doc.ref);
+          }
+        });
+        await batch.commit();
+      }
+    } catch (activeErr) {
+      console.warn('active_calls cleanup:', activeErr.message);
+    }
     if (doctor) {
       await updateDoctorPresence(doctor, 'Available');
       const payload = await buildStatusPayload(doctor);
@@ -3469,6 +3566,12 @@ app.get('/api/consultations/:id', async (req, res) => {
 
 app.post('/api/consultations/:id/accept', requireConsultationDoctor(), async (req, res) => {
   try {
+    const existing = await ConsultationRequest.findById(req.params.id);
+    if (existing?.doctorName) {
+      const exceptRoom = existing.roomId || existing.videoRoomId || '';
+      await clearStaleDoctorConsultations(existing.doctorName, { exceptRoomId: exceptRoom });
+    }
+
     let consultation;
     try {
       consultation = await transitionConsultation(req.params.id, RINGING_STATUSES, {

@@ -462,6 +462,24 @@ body.vcall-in-call .dg-vcall-doctor-dock.dg-vcall-doctor-dock--visible,
   box-shadow: 0 24px 64px rgba(15, 23, 42, 0.2) !important;
 }
 
+body.vcall-in-call .prescription-modal {
+  max-width: min(1100px, calc(100vw - 16px)) !important;
+  margin: 0 auto;
+}
+
+.dg-rx-cart-panel .cart-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.dg-rx-cart-panel .empty-cart-btn {
+  flex: 0 0 auto;
+  min-width: 72px;
+}
+
 .reports-modal .modal-header,
 .diagnosis-modal .modal-header,
 .prescription-modal .modal-header {

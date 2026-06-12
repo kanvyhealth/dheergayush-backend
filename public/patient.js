@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    document.body.classList.add('dg-role-pending');
+
     if (window.DgApi) {
         await DgApi.bootstrapApp({ skipOnLocalhost: true });
     }
@@ -80,8 +82,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function redirectDoctorIfNeeded(session) {
         if (!session) return false;
-        if (session.portal === 'doctor' && session.redirectTo) {
-            window.location.replace(session.redirectTo);
+        if (session.portal === 'doctor') {
+            if (window.DgAuth) DgAuth.setSession(session);
+            if (window.DgAuth && DgAuth.redirectAfterAuth(session)) return true;
+            window.location.replace(session.redirectTo || '/doctor1.html');
             return true;
         }
         return false;
@@ -104,9 +108,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const session = await fetchSession();
     if (session) {
+        if (window.DgAuth) DgAuth.setSession(session);
         if (redirectDoctorIfNeeded(session)) return;
+        document.body.classList.remove('dg-role-pending');
         showPatientMenu();
     } else {
+        document.body.classList.remove('dg-role-pending');
         setPortalLayout('login');
     }
 
@@ -135,9 +142,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return body;
                 });
 
-            if (data.portal === 'doctor' && data.redirectTo) {
-                showMessage('Redirecting to doctor dashboard…', 'success', 'login');
-                setTimeout(() => window.location.replace(data.redirectTo), 600);
+            if (data.portal === 'doctor') {
+                if (window.DgAuth && DgAuth.redirectAfterAuth(data)) return;
+                window.location.replace(data.redirectTo || '/doctor1.html');
                 return;
             }
 
@@ -219,10 +226,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const roomId = data.videoRoomId || data.roomId;
         localStorage.setItem('videoRoomId', roomId);
         localStorage.setItem('userRole', 'patient');
-        showMessage('Follow-up started! Waiting for doctor…', 'success', 'dashboard');
-        setTimeout(() => {
-            window.location.href = `video-call.html?roomID=${encodeURIComponent(roomId)}&role=patient`;
-        }, 1200);
+        showMessage('Follow-up started! Opening video room — your doctor will join after accepting.', 'success', 'dashboard');
+        window.location.href = `video-call.html?roomID=${encodeURIComponent(roomId)}&role=patient`;
     }
 
     function bindStartCallButtons(container, accessPlans) {

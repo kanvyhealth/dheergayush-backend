@@ -4,6 +4,46 @@
 (function () {
   'use strict';
 
+  function setRolePending(pending) {
+    document.body.classList.toggle('dg-role-pending', !!pending);
+  }
+
+  async function resolveExistingSession() {
+    if (!window.DgAuth || !DgAuth.getToken()) {
+      setRolePending(false);
+      return;
+    }
+
+    if (window.DgAuth.bootstrapPortal) {
+      setRolePending(true);
+      await DgAuth.bootstrapPortal('doctor');
+      setRolePending(false);
+      return;
+    }
+
+    setRolePending(true);
+    try {
+      const data = window.DgAuth.fetchAuthMe
+        ? await DgAuth.fetchAuthMe()
+        : await fetch('/api/auth/me', { headers: DgAuth.authHeaders() }).then(function (res) {
+            return res.ok ? res.json() : null;
+          });
+
+      if (!data) {
+        setRolePending(false);
+        return;
+      }
+
+      DgAuth.setSession(data);
+      if (DgAuth.redirectAfterAuth(data)) {
+        return;
+      }
+    } catch (_) {
+      /* stay on page */
+    }
+    setRolePending(false);
+  }
+
   function init() {
     var loginTab = document.getElementById('doctorTabLogin');
     var registerTab = document.getElementById('doctorTabRegister');
@@ -43,16 +83,7 @@
       showTab('register');
     }
 
-    if (window.DgAuth && DgAuth.getToken()) {
-      fetch('/api/auth/me', { headers: DgAuth.authHeaders() })
-        .then(function (res) { return res.ok ? res.json() : null; })
-        .then(function (data) {
-          if (data && data.redirectTo) {
-            window.location.replace(data.redirectTo);
-          }
-        })
-        .catch(function () { /* stay on page */ });
-    }
+    resolveExistingSession();
   }
 
   if (document.readyState === 'loading') {

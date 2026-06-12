@@ -20,9 +20,19 @@ document.addEventListener('DOMContentLoaded', () => {
         showMessage('Signing in…', 'info');
 
         try {
-            const data = window.DgAuth
-                ? await DgAuth.login({ email, password })
-                : await fetch('/api/auth/login', {
+            let data;
+            if (window.DgAuth && DgAuth.loginDoctor) {
+                try {
+                    data = await DgAuth.loginDoctor({ email, password });
+                } catch (doctorErr) {
+                    if (/doctor profile not found/i.test(doctorErr.message || '')) {
+                        data = await DgAuth.login({ email, password });
+                    } else {
+                        throw doctorErr;
+                    }
+                }
+            } else {
+                data = await fetch('/api/auth/login-doctor', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -32,26 +42,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (window.DgAuth) DgAuth.setSession(body);
                     return body;
                 });
+            }
 
             if (!data.idToken) {
                 showMessage('Login failed — no session token received.', 'error');
                 return;
             }
 
-            if (data.portal === 'doctor' && data.redirectTo) {
-                showMessage('Redirecting to doctor dashboard…', 'success');
-                setTimeout(() => window.location.replace(data.redirectTo), 600);
+            if (window.DgAuth && DgAuth.redirectAfterAuth(data)) {
                 return;
             }
 
-            if (data.portal !== 'doctor') {
-                showMessage('This account is registered as a patient. Redirecting…', 'info');
-                setTimeout(() => window.location.replace(data.redirectTo || '/patient.html'), 1000);
-                return;
-            }
-
-            showMessage('Login successful!', 'success');
-            setTimeout(() => window.location.replace(data.redirectTo || '/doctor1.html'), 800);
+            window.location.replace(
+                (window.DgAuth && DgAuth.resolveRedirectTarget)
+                    ? DgAuth.resolveRedirectTarget(data)
+                    : (data.redirectTo || '/doctor1.html')
+            );
         } catch (error) {
             console.error('Doctor login error:', error);
             const msg = error.message || 'Invalid email or password.';

@@ -110,13 +110,50 @@
     }
   }
 
+  function resolveRedirectTarget(data) {
+    if (!data) return null;
+    if (data.portal === 'doctor') return data.redirectTo || '/doctor1.html';
+    if (data.portal === 'patient') return data.redirectTo || '/patient.html';
+    return data.redirectTo || null;
+  }
+
+  function redirectAfterAuth(data) {
+    var target = resolveRedirectTarget(data);
+    if (!target) return false;
+    window.location.replace(target);
+    return true;
+  }
+
   function redirectForPortal(data) {
-    if (!data || !data.redirectTo) return false;
-    if (data.portal === 'doctor') {
-      window.location.replace(data.redirectTo);
-      return true;
+    if (!data || data.portal !== 'doctor') return false;
+    return redirectAfterAuth(data);
+  }
+
+  async function fetchAuthMe() {
+    var token = await ensureValidToken();
+    if (!token) return null;
+    try {
+      var res = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } });
+      if (!res.ok) return null;
+      return await parseJsonResponse(res);
+    } catch (_) {
+      return null;
     }
-    return false;
+  }
+
+  async function bootstrapPortal(expectedPortal) {
+    var data = await fetchAuthMe();
+    if (!data) return null;
+    setSession(data);
+    if (expectedPortal && data.portal !== expectedPortal) {
+      redirectAfterAuth(data);
+      return data;
+    }
+    if (data.redirectTo && (data.portal === 'doctor' || data.portal === 'patient')) {
+      redirectAfterAuth(data);
+      return data;
+    }
+    return data;
   }
 
   function clearSession() {
@@ -186,6 +223,10 @@
     clearSession,
     ensureValidToken,
     authHeaders,
+    resolveRedirectTarget,
+    redirectAfterAuth,
+    fetchAuthMe,
+    bootstrapPortal,
     authFetch(url, options) {
       options = options || {};
       const headers = Object.assign({}, options.headers || {}, authHeaders());

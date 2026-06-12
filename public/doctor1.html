@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="css/dheergayush-theme.css">
   <link rel="stylesheet" href="css/dg-platform.css">
   <link rel="stylesheet" href="css/dg-doctor-dashboard.css">
+  <link rel="stylesheet" href="css/dheergayush-forms.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="js/dg-doctor-status.js?v=2"></script>
   <script src="js/dg-doctor-end-calls.js"></script>
@@ -52,7 +53,7 @@
     .dg-profile-section { margin-top: 16px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
   </style>
 </head>
-<body class="dg-doctor-dashboard">
+<body class="dg-doctor-dashboard dg-role-pending">
 
   <div class="dg-doc-shell">
 
@@ -316,26 +317,29 @@
       if (window.DgApi) DgApi.bootstrapApp({ skipOnLocalhost: true });
       const token = window.DgAuth && DgAuth.getToken();
       if (!token) {
-        window.location.href = 'patient.html';
+        window.location.replace('doctor-auth.html');
         return;
       }
       try {
         const res = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } });
         if (!res.ok) {
           if (window.DgAuth) DgAuth.clearSession();
-          window.location.href = 'patient.html';
+          window.location.replace('doctor-auth.html');
           return;
         }
         const me = await res.json();
         if (me.portal !== 'doctor') {
+          if (window.DgAuth) DgAuth.setSession(me);
           window.location.replace(me.redirectTo || 'patient.html');
           return;
         }
         if (window.DgAuth) DgAuth.hydrateDoctorPortal(me);
       } catch (_) {
-        window.location.href = 'patient.html';
+        window.location.replace('doctor-auth.html');
         return;
       }
+
+      document.body.classList.remove('dg-role-pending');
 
       const doctorName = await resolveDoctorName();
       if (!doctorName) {
