@@ -206,6 +206,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         return row ? Number(row.daysRemaining) || 0 : 0;
     }
 
+    function getFreeConsultationsRemaining(doctorName, accessPlans) {
+        const row = (accessPlans || []).find(
+            (p) => p.active && String(p.doctorName || '').trim() === String(doctorName || '').trim()
+        );
+        return row ? Number(row.freeConsultationsRemaining) || 0 : 0;
+    }
+
+    function canStartFreeFollowUp(doctorName, accessPlans) {
+        return getFreeConsultationsRemaining(doctorName, accessPlans) > 0;
+    }
+
     async function startFreeFollowUp(doctorName) {
         const name = localStorage.getItem('patientId') || '';
         const phone = localStorage.getItem('patientPhoneNumber') || '';
@@ -324,6 +335,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const doctorName = appointment.selectedDoctorName || appointment.doctorName || '';
             const hasAccess = doctorHasActiveAccess(doctorName, accessPlans);
             const daysRemaining = hasAccess ? getAccessDaysRemaining(doctorName, accessPlans) : 0;
+            const freeRemaining = hasAccess ? getFreeConsultationsRemaining(doctorName, accessPlans) : 0;
+            const canFollowUp = hasAccess && canStartFreeFollowUp(doctorName, accessPlans);
             const isExpired = !hasAccess;
             if (isExpired) card.classList.add('expired');
             const safeDoctor = doctorName.replace(/"/g, '&quot;');
@@ -335,13 +348,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <p><strong>Amount:</strong> ${consultationFee}</p>
                 <p><strong>Time Slot:</strong> ${appointment.doctorAvailableTime || 'Not set'}</p>
                 <p><strong>Room ID:</strong> <span class="room-id">${appointment.roomName}</span></p>
-                ${hasAccess ? '<p style="color:#16a34a;font-weight:600;">Free follow-up calls available</p>' : ''}
+                ${hasAccess
+                    ? (canFollowUp
+                        ? `<p style="color:#16a34a;font-weight:600;">${freeRemaining} free follow-up call(s) remaining</p>`
+                        : '<p style="color:#b45309;font-weight:600;">All 3 free follow-ups used — pay for a new consultation</p>')
+                    : ''}
                 ${isExpired
-                    ? (hasAccess
+                    ? (canFollowUp
                         ? `<button type="button" class="dg-action-btn dg-action-btn--followup" data-doctor-name="${safeDoctor}">Call doctor free (15-day plan)</button>`
                         : '<button type="button" class="dg-action-btn dg-action-btn--expired" disabled>Consultation Expired</button>')
                     : `<button type="button" class="dg-action-btn dg-action-btn--call" data-room-name="${appointment.roomName}" data-doctor-name="${safeDoctor}">Start Video Call</button>
-                       ${hasAccess ? `<button type="button" class="dg-action-btn dg-action-btn--followup" data-doctor-name="${safeDoctor}">New free follow-up call</button>` : ''}`
+                       ${canFollowUp ? `<button type="button" class="dg-action-btn dg-action-btn--followup" data-doctor-name="${safeDoctor}">New free follow-up call</button>` : ''}`
                 }
             `;
             panel.appendChild(card);

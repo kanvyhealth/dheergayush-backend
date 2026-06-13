@@ -66,6 +66,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 if (payBtn) payBtn.textContent = 'Start free follow-up call';
                 selectedDoctorFeeInput.value = '0';
+            } else if (followUpAccess && followUpAccess.planActive && !followUpAccess.covered) {
+                if (razorpayFeeEl) {
+                    razorpayFeeEl.innerHTML = '<strong style="color:#b45309;">Free follow-ups used</strong> — ' +
+                        (followUpAccess.message || 'Pay for a new consultation to renew your 15-day plan.');
+                }
+                if (payBtn) payBtn.textContent = 'Pay consultation fee';
             }
         } catch (e) {
             console.warn('Access check failed', e);

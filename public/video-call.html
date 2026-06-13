@@ -2866,12 +2866,84 @@ html, body {
 
         window.__vcallRemoteJoined = false;
         let noPeerRefundTimer = null;
+        const CALL_SESSION_END_MS = 60 * 1000;
+        let callHeartbeatInterval = null;
+        let callSessionEndTimer = null;
+        let connectionLostTimer = null;
+        let leaveCallHandled = false;
+        let onVcallLeave = null;
 
         function clearNoPeerRefundTimer() {
             if (noPeerRefundTimer) {
                 clearTimeout(noPeerRefundTimer);
                 noPeerRefundTimer = null;
             }
+        }
+
+        function stopCallHeartbeat() {
+            if (callHeartbeatInterval) {
+                clearInterval(callHeartbeatInterval);
+                callHeartbeatInterval = null;
+            }
+        }
+
+        function clearSessionEndTimer() {
+            if (callSessionEndTimer) {
+                clearTimeout(callSessionEndTimer);
+                callSessionEndTimer = null;
+            }
+            if (connectionLostTimer) {
+                clearTimeout(connectionLostTimer);
+                connectionLostTimer = null;
+            }
+        }
+
+        function clearCallSessionTimers() {
+            stopCallHeartbeat();
+            clearSessionEndTimer();
+        }
+
+        function startCallHeartbeat() {
+            stopCallHeartbeat();
+            if (!roomID) return;
+            const sendHeartbeat = async function () {
+                try {
+                    const res = await fetch('/api/video-room/' + encodeURIComponent(roomID) + '/heartbeat', { method: 'POST' });
+                    const data = await res.json().catch(function () { return {}; });
+                    if (data.sessionEnded) {
+                        clearCallSessionTimers();
+                        if (window.DgAgoraCall && DgAgoraCall.isJoined && DgAgoraCall.isJoined()) {
+                            await DgAgoraCall.leaveCall();
+                        }
+                    }
+                } catch (_) { /* ignore */ }
+            };
+            sendHeartbeat();
+            callHeartbeatInterval = setInterval(sendHeartbeat, 20000);
+        }
+
+        async function notifyCallDisconnected() {
+            if (!roomID) return;
+            try {
+                await fetch('/api/video-room/' + encodeURIComponent(roomID) + '/call-disconnected', { method: 'POST' });
+            } catch (_) { /* ignore */ }
+        }
+
+        function scheduleSessionEnd(reason) {
+            clearSessionEndTimer();
+            const msg = reason === 'peer_left'
+                ? 'Other participant left — ending call in 1 minute'
+                : 'No activity — ending call in 1 minute';
+            setCallStatus(msg, 'ended');
+            callSessionEndTimer = setTimeout(async function () {
+                if (leaveCallHandled) return;
+                clearCallSessionTimers();
+                if (window.DgAgoraCall && DgAgoraCall.isJoined && DgAgoraCall.isJoined()) {
+                    await DgAgoraCall.leaveCall();
+                } else if (typeof onVcallLeave === 'function') {
+                    await onVcallLeave();
+                }
+            }, CALL_SESSION_END_MS);
         }
 
         async function requestConsultationRefund(reason) {
@@ -2885,7 +2957,7 @@ html, body {
                 });
                 return await res.json();
             } catch (err) {
-                console.warn('Refund request failed:', after doctor raise prescription its giving error please login as doctor to prescribe and patient not getting the prescription fix the issueerr);
+                console.warn('Refund request failed:', err);
                 return null;
             }
         }
@@ -2980,7 +3052,7 @@ html, body {
                         'no_peer_connected'
                     );
                 }
-            }, 5 * 60 * 1000);
+            }, CALL_SESSION_END_MS);
         }
 
         messageBoxOkButton.addEventListener('click', () => {
@@ -3289,6 +3361,8 @@ html, body {
             document.getElementById('root').style.display = 'block';
 
             async function handleLeaveCall() {
+                if (leaveCallHandled) return;
+                leaveCallHandled = true;
                 setCallStatus('Call ended', 'ended');
                 console.log(`Left Agora channel ${roomID}`);
                 setDoctorDockVisible(false);
@@ -3297,6 +3371,7 @@ html, body {
                 stopRoomStatusPoll();
 
                 clearNoPeerRefundTimer();
+                clearCallSessionTimers();
                 if (roomID) {
                     const leaveRole = localStorage.getItem('userRole');
                     if (leaveRole === 'patient' && !window.__vcallRemoteJoined) {
@@ -3341,6 +3416,7 @@ html, body {
                     window.location.href = '/patient.html';
                 }
             }
+            onVcallLeave = handleLeaveCall;
 
             try {
                 await DgAgoraCall.joinCall({
@@ -3354,14 +3430,27 @@ html, body {
                     onUserJoined: () => {
                         window.__vcallRemoteJoined = true;
                         clearNoPeerRefundTimer();
+                        clearSessionEndTimer();
                         const role = localStorage.getItem('userRole');
                         const label = role === 'doctor' ? 'Patient joined' : 'Doctor joined';
                         setCallStatus(label, 'connected');
                     },
+                    onUserLeft: () => {
+                        window.__vcallRemoteJoined = false;
+                        notifyCallDisconnected();
+                        scheduleSessionEnd('peer_left');
+                    },
                     onConnectionStateChange: (state) => {
-                        if (state === 'RECONNECTING') {
+                        if (state === 'RECONNECTING' || state === 'DISCONNECTED') {
                             setCallStatus('Reconnecting…', 'reconnecting');
+                            if (!connectionLostTimer) {
+                                connectionLostTimer = setTimeout(function () {
+                                    notifyCallDisconnected();
+                                    scheduleSessionEnd('inactive');
+                                }, CALL_SESSION_END_MS);
+                            }
                         } else if (state === 'CONNECTED') {
+                            clearSessionEndTimer();
                             setCallStatus('Connected', 'connected');
                         }
                     },
@@ -3377,6 +3466,7 @@ html, body {
                             setCallStatus('Connected', 'connected');
                         }
                         startNoPeerRefundWatchdog();
+                        startCallHeartbeat();
                         const currentRole = localStorage.getItem("userRole");
                         if (currentRole === "doctor") {
                             const doctorName = localStorage.getItem("doctorName");

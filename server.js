@@ -162,7 +162,10 @@ const { refundConsultationForRoom, refundCapturedRazorpayPayment } = require('./
 const {
   findActiveAccess,
   grantConsultationAccess,
-  listAccessForPatient
+  listAccessForPatient,
+  consumeFreeFollowUpConsultation,
+  canUseFreeFollowUp,
+  FREE_FOLLOWUP_LIMIT
 } = require('./lib/consultationAccess');
 const {
   resolvePatientUid,
@@ -1840,6 +1843,14 @@ async function completeWebsiteConsultationCheckout({
         { status: 402 }
       );
     }
+    if (!canUseFreeFollowUp(activeAccess)) {
+      throw Object.assign(
+        new Error(
+          `You have used all ${FREE_FOLLOWUP_LIMIT} free follow-up consultations for this 15-day plan. Please pay for a new consultation.`
+        ),
+        { status: 402, requiresPayment: true, freeConsultationsExhausted: true }
+      );
+    }
     isFollowUp = true;
   }
 
@@ -1934,6 +1945,17 @@ async function completeWebsiteConsultationCheckout({
       sourcePaymentId: savedPayment._id,
       amount: effectiveAmount
     });
+  }
+
+  if (isFollowUp && effectiveAmount <= 0) {
+    const consumed = await consumeFreeFollowUpConsultation({
+      patientUid,
+      patientPhone: phone,
+      doctorName: selectedDoctorName
+    });
+    if (!consumed.ok) {
+      throw Object.assign(new Error(consumed.error), { status: 402, requiresPayment: true });
+    }
   }
 
   const appointmentId = consultation._id || consultation.id;
@@ -2280,14 +2302,22 @@ app.get('/api/consultations/access-check', requireFirebaseAuth(), async (req, re
             patientPhone: phone,
             doctorName
         });
+        const remaining = access?.freeConsultationsRemaining ?? 0;
+        const planActive = !!access;
         return res.json({
-            covered: !!access,
+            covered: planActive && remaining > 0,
+            planActive,
+            freeConsultationsRemaining: remaining,
+            freeConsultationsLimit: access?.freeConsultationsLimit ?? FREE_FOLLOWUP_LIMIT,
+            freeConsultationsUsed: access?.freeConsultationsUsed ?? 0,
             doctorName,
             daysRemaining: access?.daysRemaining || 0,
             expiresAt: access?.expiresAt || null,
-            message: access
-                ? `Free follow-up calls with ${doctorName} for ${access.daysRemaining} more day(s).`
-                : 'Consultation fee applies for this doctor.'
+            message: !planActive
+                ? 'Consultation fee applies for this doctor.'
+                : remaining > 0
+                    ? `${remaining} of ${access.freeConsultationsLimit} free follow-up call(s) left with ${doctorName} (${access.daysRemaining} day(s) remaining).`
+                    : `You have used all ${FREE_FOLLOWUP_LIMIT} free follow-ups for this 15-day plan. Please pay for a new consultation.`
         });
     } catch (err) {
         console.error('Access check error:', err);
@@ -2328,6 +2358,13 @@ app.post(
                 return res.status(402).json({
                     message: 'No active 15-day plan for this doctor. Please pay the consultation fee first.',
                     requiresPayment: true
+                });
+            }
+            if (access && !canUseFreeFollowUp(access)) {
+                return res.status(402).json({
+                    message: `You have used all ${FREE_FOLLOWUP_LIMIT} free follow-up consultations for this 15-day plan. Please pay for a new consultation.`,
+                    requiresPayment: true,
+                    freeConsultationsExhausted: true
                 });
             }
             const result = await completeWebsiteConsultationCheckout({
@@ -3463,11 +3500,16 @@ async function markConsultationInCall(roomId) {
     if (!ctx) return;
     const current = consultationStatusOf(ctx.consultation, ctx.payment);
     if (!['accepted', 'in_call'].includes(current)) return;
+    const now = new Date();
     if (ctx.consultation) {
         const id = ctx.consultation._id || ctx.consultation.id;
         if (id) {
             await ConsultationRequest.findByIdAndUpdate(id, {
-                $set: buildConsultationStatusFields('in_call', id)
+                $set: {
+                    ...buildConsultationStatusFields('in_call', id),
+                    lastCallActivityAt: now,
+                    callStartedAt: ctx.consultation.callStartedAt || now
+                }
             });
         }
     }
@@ -3475,6 +3517,30 @@ async function markConsultationInCall(roomId) {
         const id = ctx.payment._id || ctx.payment.id;
         if (id) await Payment.findByIdAndUpdate(id, { consultationStatus: 'in_call' });
     }
+}
+
+async function touchCallActivity(roomId) {
+    const ctx = await loadRoomContext(roomId);
+    if (!ctx?.consultation) return false;
+    const id = ctx.consultation._id || ctx.consultation.id;
+    if (!id) return false;
+    const now = new Date();
+    await ConsultationRequest.findByIdAndUpdate(id, {
+        $set: { lastCallActivityAt: now, updatedAt: now }
+    });
+    return true;
+}
+
+async function markCallDisconnected(roomId) {
+    const ctx = await loadRoomContext(roomId);
+    if (!ctx?.consultation) return false;
+    const id = ctx.consultation._id || ctx.consultation.id;
+    if (!id) return false;
+    const now = new Date();
+    await ConsultationRequest.findByIdAndUpdate(id, {
+        $set: { callDisconnectedAt: now, updatedAt: now }
+    });
+    return true;
 }
 
 async function markConsultationCompleted(roomId) {
@@ -3488,7 +3554,11 @@ async function markConsultationCompleted(roomId) {
         const id = ctx.consultation._id || ctx.consultation.id;
         if (id) {
             await ConsultationRequest.findByIdAndUpdate(id, {
-                $set: buildConsultationStatusFields('completed', id)
+                $set: {
+                    ...buildConsultationStatusFields('completed', id),
+                    callDisconnectedAt: null,
+                    lastCallActivityAt: null
+                }
             });
         }
     }
@@ -3555,6 +3625,41 @@ app.post('/api/video-room/:roomId/call-ended', async (req, res) => {
     } catch (err) {
         console.error('Call ended error:', err);
         return res.status(500).json({ message: 'Could not update consultation status.' });
+    }
+});
+
+app.post('/api/video-room/:roomId/call-disconnected', async (req, res) => {
+    try {
+        const { VIDEO_CALL_INACTIVITY_MS } = require('./lib/consultationSessionCleanup');
+        await markCallDisconnected(req.params.roomId);
+        return res.json({
+            ok: true,
+            endsInMs: VIDEO_CALL_INACTIVITY_MS,
+            message: 'Call will end automatically in 1 minute unless reconnected.'
+        });
+    } catch (err) {
+        console.error('Call disconnected error:', err);
+        return res.status(500).json({ message: 'Could not update call status.' });
+    }
+});
+
+app.post('/api/video-room/:roomId/heartbeat', async (req, res) => {
+    try {
+        const roomId = req.params.roomId;
+        await touchCallActivity(roomId);
+        const ctx = await loadRoomContext(roomId);
+        if (ctx?.consultation?.doctorName) {
+            await clearStaleDoctorConsultations(ctx.consultation.doctorName, { exceptRoomId: roomId });
+        }
+        const refreshed = await loadRoomContext(roomId);
+        const status = consultationStatusOf(refreshed?.consultation, refreshed?.payment);
+        if (status === 'completed') {
+            return res.json({ ok: true, sessionEnded: true, consultationStatus: 'completed' });
+        }
+        return res.json({ ok: true, consultationStatus: status || '' });
+    } catch (err) {
+        console.error('Call heartbeat error:', err);
+        return res.status(500).json({ message: 'Could not update call activity.' });
     }
 });
 
