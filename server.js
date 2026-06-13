@@ -32,6 +32,7 @@ const { getEffectiveStatus, normalizeDbStatus, getScheduleStatus } = require('./
 const {
   updateDoctorPresence,
   syncDoctorRecordsUpdate,
+  deleteAllDoctorRecords,
   findDoctorByName,
   buildPresenceUpdate,
   buildApprovalUpdate,
@@ -176,7 +177,11 @@ const {
   isValidAgoraChannelName,
   agoraUidForUserId
 } = require('./lib/appAppointmentSync');
-const { getDoctorPresenceStatus } = require('./lib/doctorAvailability');
+const {
+  syncPaymentForConsultationStatus,
+  syncActiveCallForStatus
+} = require('./lib/consultationLifecycleSync');
+const { updateActiveCallForAppointment } = require('./lib/activeCallSync');
 const {
   DEFAULT_WORKING_DAYS,
   DEFAULT_WORKING_DAYS_INT,
@@ -1201,6 +1206,15 @@ async function enrichDoctorRows(doctors) {
     return enrichDoctorPhotos(rows);
 }
 
+async function enrichDoctorRowsWithAppSync(doctors) {
+    const list = Array.isArray(doctors) ? doctors : [];
+    const reconciled = [];
+    for (const doctor of list) {
+        reconciled.push((await reconcileDoctorFeeAndPersist(doctor)) || doctor);
+    }
+    return enrichDoctorRows(reconciled);
+}
+
 // 🖼️ Doctor profile photo — streams from Firebase Storage (avoids expired download URLs)
 app.get('/api/media/doctor-photo/:uid', async (req, res) => {
     try {
@@ -1226,7 +1240,7 @@ app.get('/api/doctors', async (req, res) => {
     try {
         const { bookableOnly } = req.query;
         const doctors = await listDoctors({ _webRegstatus: 'approved', _publicOnly: true }).sort({ name: 1 });
-        let result = await enrichDoctorRows(doctors);
+        let result = await enrichDoctorRowsWithAppSync(doctors);
 
         if (bookableOnly === '1' || bookableOnly === 'true') {
             result = result.filter((d) => d.bookable);
@@ -1276,15 +1290,13 @@ app.put('/api/admin/doctors/:id/status', async (req, res) => {
             return res.status(403).json({ message: check.error });
         }
 
-        const doctor = await Doctor.findByIdAndUpdate(
-            id,
-            buildApprovalUpdate(status),
-            { new: true }
-        );
+        const doctor = await syncDoctorRecordsUpdate(existing, buildApprovalUpdate(status));
+        if (!doctor) {
+            return res.status(404).json({ message: 'Doctor not found' });
+        }
 
         if (status === 'approved') {
             await ensureDoctorPublicId(doctor);
-            await mirrorDoctorToAuthUid(doctor);
         }
 
         res.json({
@@ -2003,7 +2015,8 @@ async function completeWebsiteConsultationCheckout({
         await ConsultationRequest.findByIdAndUpdate(c._id || c.id, {
           $set: buildConsultationStatusFields('timeout', c._id || c.id)
         });
-        await Payment.findByIdAndUpdate(savedPayment._id, { consultationStatus: 'timeout' });
+        await syncPaymentForConsultationStatus(savedPayment._id, 'timeout', c._id || c.id);
+        await syncActiveCallForStatus(c._id || c.id, 'timeout');
         const d = await findDoctorByName(selectedDoctorName);
         if (d && isDoctorBusy(d)) {
           await updateDoctorPresence(d, 'Available');
@@ -3062,7 +3075,7 @@ app.delete('/api/admin/doctors/:id', async (req, res) => {
         if (!doctor) {
             return res.status(404).json({ message: 'Doctor not found' });
         }
-        await Doctor.findByIdAndDelete(doctor._id || doctor.uid);
+        await deleteAllDoctorRecords(doctor);
         res.json({ message: 'Doctor deleted successfully' });
     } catch (error) {
         console.error('Error deleting doctor:', error);
@@ -3327,16 +3340,14 @@ app.put('/api/admin/doctors/:id/approve', async (req, res) => {
             return res.status(403).json({ message: check.error });
         }
 
-        const doctor = await Doctor.findByIdAndUpdate(
-            id,
-            buildApprovalUpdate(Regstatus),
-            { new: true }
-        );
+        const doctor = await syncDoctorRecordsUpdate(existing, buildApprovalUpdate(Regstatus));
+        if (!doctor) {
+            return res.status(404).json({ message: 'Doctor not found' });
+        }
 
         if (Regstatus === 'approved') {
             await ensureDoctorPublicId(doctor);
         }
-        await mirrorDoctorToAuthUid(doctor);
 
         res.json({
             message: `Doctor ${Regstatus} successfully`,
@@ -3515,7 +3526,13 @@ async function markConsultationInCall(roomId) {
     }
     if (ctx.payment) {
         const id = ctx.payment._id || ctx.payment.id;
-        if (id) await Payment.findByIdAndUpdate(id, { consultationStatus: 'in_call' });
+        if (id) {
+            await syncPaymentForConsultationStatus(id, 'in_call', ctx.consultation?._id || ctx.consultation?.id);
+        }
+    }
+    const appointmentId = ctx.consultation?._id || ctx.consultation?.id;
+    if (appointmentId) {
+        await syncActiveCallForStatus(appointmentId, 'in_call');
     }
 }
 
@@ -3564,7 +3581,12 @@ async function markConsultationCompleted(roomId) {
     }
     if (ctx.payment) {
         const id = ctx.payment._id || ctx.payment.id;
-        if (id) await Payment.findByIdAndUpdate(id, { consultationStatus: 'completed' });
+        if (id) await syncPaymentForConsultationStatus(id, 'completed', ctx.consultation?._id || ctx.consultation?.id);
+    }
+
+    const appointmentId = ctx.consultation?._id || ctx.consultation?.id;
+    if (appointmentId) {
+        await syncActiveCallForStatus(appointmentId, 'completed');
     }
 
     const doctorName = ctx.consultation?.doctorName || ctx.payment?.selectedDoctorName || ctx.payment?.doctorName;
@@ -3580,8 +3602,7 @@ async function markConsultationCompleted(roomId) {
     try {
         const appointmentId = String(ctx.consultation?._id || ctx.consultation?.id || '');
         if (appointmentId) {
-            const { scheduledCallId } = require('./lib/appAppointmentSync');
-            await getFirestore().collection('active_calls').doc(scheduledCallId(appointmentId)).delete();
+            await syncActiveCallForStatus(appointmentId, 'completed');
         }
     } catch (activeErr) {
         console.warn('active_calls end cleanup:', activeErr.message);
@@ -3878,13 +3899,13 @@ app.post('/api/doctors/heartbeat', async (req, res) => {
   const { doctorName } = req.body;
   if (!doctorName) return res.status(400).json({ message: 'doctorName is required' });
   try {
-    const doctor = await Doctor.findOneAndUpdate(
-      { name: doctorName },
-      { lastSeenAt: new Date() },
-      { new: true }
-    );
+    const doctor = await findDoctorByName(doctorName);
     if (!doctor) return res.status(404).json({ message: 'Doctor not found' });
-    const payload = await buildStatusPayload(doctor);
+    const updated = await syncDoctorRecordsUpdate(doctor, {
+      lastSeenAt: new Date(),
+      updatedAt: new Date()
+    });
+    const payload = await buildStatusPayload(updated || doctor);
     return res.json({ ok: true, ...payload });
   } catch (err) {
     return res.status(500).json({ message: 'Server error' });
@@ -3918,13 +3939,10 @@ app.post('/api/doctors/updateStatus', requireDoctorNameAccess(), async (req, res
 
     await updateDoctorPresence(doctor, normalized);
 
-    const id = doctor._id || doctor.id;
-    if (id) {
-      await Doctor.findByIdAndUpdate(id, { lastSeenAt: new Date() });
-    }
-
     const canonicalName = String(doctor.name || doctorName).trim();
-    const refreshed = (await findDoctorByName(canonicalName)) || (id ? await Doctor.findById(id) : doctor);
+    const refreshed = (await findDoctorByName(canonicalName)) || doctor;
+    await syncDoctorRecordsUpdate(refreshed, { lastSeenAt: new Date(), updatedAt: new Date() });
+
     const payload = await buildStatusPayload(refreshed || doctor);
     emitDoctorStatus(canonicalName, payload);
 
@@ -3977,8 +3995,9 @@ app.post('/api/doctors/:doctorName/end-active-calls', requireDoctorNameAccess('d
             $set: buildConsultationStatusFields('completed', id)
           });
           if (c.paymentId) {
-            await Payment.findByIdAndUpdate(c.paymentId, { consultationStatus: 'completed' }).catch(() => {});
+            await syncPaymentForConsultationStatus(c.paymentId, 'completed', id);
           }
+          await syncActiveCallForStatus(id, 'completed');
         }
       }
     }
@@ -4071,10 +4090,7 @@ app.post('/api/consultations/:id/accept', requireConsultationDoctor(), async (re
       throw err;
     }
 
-    await Payment.findByIdAndUpdate(consultation.paymentId, {
-      consultationStatus: 'accepted',
-      appointmentStatus: 'active'
-    });
+    await syncPaymentForConsultationStatus(consultation.paymentId, 'accepted', req.params.id);
 
     const appointmentId = String(consultation._id || consultation.id || req.params.id);
     try {
@@ -4127,7 +4143,8 @@ app.post('/api/consultations/:id/reject', requireConsultationDoctor(), async (re
       throw err;
     }
 
-    await Payment.findByIdAndUpdate(consultation.paymentId, { consultationStatus: 'rejected' });
+    await syncPaymentForConsultationStatus(consultation.paymentId, 'rejected', req.params.id);
+    await syncActiveCallForStatus(req.params.id, 'rejected');
 
     const doctor = await findDoctorByName(consultation.doctorName);
     if (doctor && isDoctorBusy(doctor)) {
@@ -4167,14 +4184,18 @@ app.post('/api/consultations/:id/cancel', async (req, res) => {
   try {
     let consultation;
     try {
-      consultation = await transitionConsultation(req.params.id, RINGING_STATUSES, buildConsultationStatusFields('cancelled'));
+      consultation = await transitionConsultation(req.params.id, RINGING_STATUSES, {
+        ...buildConsultationStatusFields('cancelled', req.params.id),
+        cancelledAt: new Date()
+      });
     } catch (err) {
       if (err.code === 'NOT_FOUND') return res.status(404).json({ message: 'Consultation not found' });
       if (err.code === 'CONFLICT') return res.status(409).json({ message: err.message });
       throw err;
     }
 
-    await Payment.findByIdAndUpdate(consultation.paymentId, { consultationStatus: 'cancelled' });
+    await syncPaymentForConsultationStatus(consultation.paymentId, 'cancelled', req.params.id);
+    await syncActiveCallForStatus(req.params.id, 'cancelled');
 
     const doctor = await findDoctorByName(consultation.doctorName);
     if (doctor && isDoctorBusy(doctor)) {
@@ -4222,7 +4243,7 @@ app.get('/api/stores', async (req, res) => {
 app.get('/api/doctors/all-approved', async (req, res) => {
     try {
         const doctors = await listDoctors({ role: 'Doctor', _webRegstatus: 'approved', _publicOnly: true });
-        const enriched = await enrichDoctorRows(doctors);
+        const enriched = await enrichDoctorRowsWithAppSync(doctors);
         res.status(200).json(enriched);
     } catch (err) {
         console.error('❌ Error fetching all approved doctors:', err);
