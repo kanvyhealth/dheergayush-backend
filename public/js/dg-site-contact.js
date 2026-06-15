@@ -3,10 +3,10 @@
  */
 (function (global) {
   global.DgSiteContact = {
-    email: 'shaikmasthanjavidvali@gmail.com',
-    phoneDisplay: '9908797474',
-    phoneTel: '+919908797474',
-    phoneFormatted: '+91 9908797474',
+    email: 'support@dheergayush.net',
+    phoneDisplay: '7842736777',
+    phoneTel: '+917842736777',
+    phoneFormatted: '+91 7842736777',
     website: 'https://dheergayush.net',
     companyName: 'DHEERGAYUSH INDIA PRIVATE LIMITED',
     addressLines: [

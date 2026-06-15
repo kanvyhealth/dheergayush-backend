@@ -142,5 +142,5 @@ See `.env.example` for full list including `AGORA_APP_ID`, `AGORA_APP_CERTIFICAT
 
 ## Support
 
-- Email: shaikmasthanjavidvali@gmail.com  
-- Phone: +91 9908797474
+- Email: support@dheergayush.net  
+- Phone: +91 7842736777

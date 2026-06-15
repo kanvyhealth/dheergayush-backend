@@ -10,7 +10,7 @@
       var email = (document.getElementById('dgDeleteEmail') || {}).value || '';
       var phone = (document.getElementById('dgDeletePhone') || {}).value || '';
       var reason = (document.getElementById('dgDeleteReason') || {}).value || '';
-      var supportEmail = (window.DgSiteContact && DgSiteContact.email) || 'shaikmasthanjavidvali@gmail.com';
+      var supportEmail = (window.DgSiteContact && DgSiteContact.email) || 'support@dheergayush.net';
 
       if (!email || email.indexOf('@') === -1) {
         if (statusEl) {

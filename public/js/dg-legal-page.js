@@ -62,9 +62,9 @@
         '<div class="dg-landing-footer-inner">' +
           '<p>&copy; ' + new Date().getFullYear() + ' DHEERGAYUSH INDIA PRIVATE LIMITED</p>' +
           '<p class="dg-legal-footer-contact" style="margin:8px 0 0;font-size:0.9rem;">' +
-            '<a href="tel:+919908797474" class="dg-support-phone">+91 9908797474</a>' +
+            '<a href="tel:+917842736777" class="dg-support-phone">+91 7842736777</a>' +
             ' &nbsp;&middot;&nbsp; ' +
-            '<a href="mailto:shaikmasthanjavidvali@gmail.com" class="dg-support-email">shaikmasthanjavidvali@gmail.com</a>' +
+            '<a href="mailto:support@dheergayush.net" class="dg-support-email">support@dheergayush.net</a>' +
           '</p>' +
           '<nav class="dg-landing-footer-links" aria-label="Legal links">' + links + '</nav>' +
         '</div>' +

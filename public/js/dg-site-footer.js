@@ -9,9 +9,9 @@
   function contact() {
     var c = window.DgSiteContact || {};
     return {
-      email: c.email || 'shaikmasthanjavidvali@gmail.com',
-      phoneTel: c.phoneTel || '+919908797474',
-      phoneFormatted: c.phoneFormatted || '+91 9908797474',
+      email: c.email || 'support@dheergayush.net',
+      phoneTel: c.phoneTel || '+917842736777',
+      phoneFormatted: c.phoneFormatted || '+91 7842736777',
       website: c.website || 'https://dheergayush.net',
       companyName: c.companyName || 'DHEERGAYUSH INDIA PRIVATE LIMITED',
       addressHtml: (c.addressLines || [
