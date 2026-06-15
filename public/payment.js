@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function getDoctorStatusInfo(name) {
         try {
-            const res = await fetch(`/api/doctors/status/${encodeURIComponent(name)}`);
+            const res = await fetch(`/api/doctors/status/${encodeURIComponent(name)}?t=${Date.now()}`);
             if (!res.ok) throw new Error('Failed to fetch status');
             const data = await res.json();
             return {

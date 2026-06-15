@@ -2697,12 +2697,18 @@ html, body {
             return new URLSearchParams(urlStr);
         }
 
-        // Try to get roomID from URL param 'roomID'
-        let roomID = getUrlParams().get("roomID");
+        // Normalize room ID once — keeps doctor/patient/prescription APIs in sync
+        function normalizeCallRoomId(id) {
+            try {
+                return decodeURIComponent(String(id || '').trim());
+            } catch (_) {
+                return String(id || '').trim();
+            }
+        }
 
-        // If roomID is not in URL, try to get it from localStorage (set by dashboard)
-        if (!roomID) {
-            roomID = localStorage.getItem("videoRoomId");
+        let roomID = normalizeCallRoomId(getUrlParams().get("roomID") || localStorage.getItem("videoRoomId") || '');
+        if (roomID) {
+            localStorage.setItem("videoRoomId", roomID);
         }
 
         // --- UI Elements and State Variables ---
@@ -3229,6 +3235,12 @@ html, body {
             if (!token && joinButton) {
                 joinButton.title = 'Log in first — session required for video call';
             }
+            const role = callIdentity.role || localStorage.getItem('userRole') || 'patient';
+            if (role !== 'doctor') {
+                if (typeof startPatientPrescriptionPolling === 'function') {
+                    startPatientPrescriptionPolling();
+                }
+            }
             if (getUrlParams().get('fromPayment') === '1') {
                 await initPostPaymentWaiting();
             }
@@ -3490,6 +3502,10 @@ html, body {
                             setPatientRxActionsVisible(true);
                         }
                         if (typeof initPrescription === 'function') initPrescription();
+                        const pollRole = localStorage.getItem('userRole') || callIdentity?.role || 'patient';
+                        if (pollRole !== 'doctor' && typeof startPatientPrescriptionPolling === 'function') {
+                            startPatientPrescriptionPolling();
+                        }
                     },
                     onLeave: handleLeaveCall
                 });
@@ -3543,13 +3559,19 @@ html, body {
       if (DgAuth.ensureValidToken) await DgAuth.ensureValidToken();
       if (DgAuth.ensureDoctorSession) await DgAuth.ensureDoctorSession();
     }
+    let headers = { 'Content-Type': 'application/json' };
     const hdrFn = window.getFirebaseAuthHeaders;
     if (typeof hdrFn === 'function') {
-      return await hdrFn();
+      headers = await hdrFn();
+    } else {
+      const token = localStorage.getItem('firebaseIdToken') ||
+        sessionStorage.getItem('firebaseIdToken') || '';
+      if (token) headers.Authorization = 'Bearer ' + token;
     }
-    const token = localStorage.getItem('firebaseIdToken') || '';
-    const headers = { 'Content-Type': 'application/json' };
-    if (token) headers.Authorization = 'Bearer ' + token;
+    if (!headers.Authorization) {
+      const retryToken = await resolveFirebaseTokenForCall();
+      if (retryToken) headers.Authorization = 'Bearer ' + retryToken;
+    }
     return headers;
   }
   let cart = JSON.parse(localStorage.getItem(`prescriptionCart_${getActiveRoomId()}`)) || [];
@@ -3807,7 +3829,7 @@ function startPatientPrescriptionPolling() {
     }
   };
   poll();
-  prescriptionPollInterval = setInterval(poll, 2500);
+  prescriptionPollInterval = setInterval(poll, 2000);
 }
 
 async function loadPatientPrescription(silent) {
@@ -3818,6 +3840,24 @@ async function loadPatientPrescription(silent) {
     const res = await fetch('/api/get-prescription/' + encodeURIComponent(activeRoom) + '?t=' + Date.now());
     let data = null;
     try { data = await res.json(); } catch (_) { data = null; }
+
+    if (res.status === 403 || (data && data.roomVerified === false)) {
+      if (!silent) {
+        openPatientRxModal();
+        patientRxDraft = [];
+        renderPatientRxDraft();
+        const emptyEl = document.getElementById('dg-patient-rx-empty');
+        if (emptyEl) {
+          emptyEl.style.display = 'block';
+          emptyEl.textContent = 'Could not verify this consultation room. Rejoin from your appointment link.';
+        }
+      }
+      return { ok: false, roomError: true };
+    }
+
+    if (res.ok && data && data.pending && (!data.cartItems || !data.cartItems.length)) {
+      return { ok: false, pending: true };
+    }
 
     if (!res.ok || !data || !data.cartItems || !data.cartItems.length) {
       if (!silent) {
@@ -4113,6 +4153,12 @@ document.getElementById("empty-cart-btn").addEventListener("click", () => {
       persistPrescriptionCart();
       broadcastPrescriptionUpdate(cart);
       notifyPrescriptionReady();
+
+      if (result.prescribedAt) {
+        try {
+          localStorage.setItem('dgRxSeen_' + roomID, String(new Date(result.prescribedAt).getTime()));
+        } catch (_) { /* ignore */ }
+      }
 
       showMessage(
         wasUpdate

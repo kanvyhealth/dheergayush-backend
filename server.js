@@ -1367,6 +1367,36 @@ function normalizeVideoRoomId(roomId) {
   }
 }
 
+function parseAppointmentIdFromRoom(roomId) {
+  const room = normalizeVideoRoomId(roomId);
+  const match = room.match(/^room_(.+)$/i);
+  return match ? String(match[1]).trim() : '';
+}
+
+async function findConsultationByAppointmentRoom(room) {
+  const normalized = normalizeVideoRoomId(room);
+  if (!normalized) return null;
+
+  let consultation = await findLatestConsultationForRoom(normalized);
+  if (consultation) return consultation;
+
+  const appointmentId = parseAppointmentIdFromRoom(normalized);
+  if (appointmentId) {
+    consultation = await ConsultationRequest.findById(appointmentId);
+    if (consultation) return consultation;
+  }
+
+  const lower = normalized.toLowerCase();
+  const recent = await ConsultationRequest.find({}).sort({ createdAt: -1 }).limit(150);
+  return (
+    recent.find((c) => {
+      const row = c.toObject ? c.toObject() : c;
+      const rid = normalizeVideoRoomId(row.roomId || row.videoRoomId || '');
+      return rid === normalized || rid.toLowerCase() === lower;
+    }) || null
+  );
+}
+
 async function findPrescriptionForRoom(roomId) {
   const room = normalizeVideoRoomId(roomId);
   if (!room) return null;
@@ -1385,10 +1415,10 @@ async function findPrescriptionForRoom(roomId) {
 async function prescriptionVideoRoomExists(roomId) {
   const room = normalizeVideoRoomId(roomId);
   if (!room) return false;
-  const ctx = await loadRoomContext(room);
-  if (ctx) return true;
-  const prescription = await findPrescriptionForRoom(room);
-  return !!prescription;
+  if (await loadRoomContext(room)) return true;
+  if (await findPrescriptionForRoom(room)) return true;
+  const consultation = await findConsultationByAppointmentRoom(room);
+  return !!consultation;
 }
 
 async function enrichPrescribedCartItems(cartItems = []) {
@@ -1467,10 +1497,19 @@ app.post('/api/prescribe-cart', requireDoctorSession('Doctor sign-in required to
       });
     }
 
+    const prescribedAtIso = (() => {
+      const raw = saved?.prescribedAt || prescribedAt;
+      if (!raw) return new Date().toISOString();
+      const d = raw instanceof Date ? raw : new Date(raw);
+      return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+    })();
+
     res.status(200).json({
       message: 'Prescription saved successfully!',
-      prescribedAt: saved?.prescribedAt || prescribedAt,
-      itemCount: enrichedItems.length
+      roomId: normalizedRoomId,
+      prescribedAt: prescribedAtIso,
+      itemCount: enrichedItems.length,
+      cartItems: enrichedItems
     });
 
   } catch (error) {
@@ -1484,13 +1523,21 @@ app.get('/api/get-prescription/:roomId', async (req, res) => {
     const roomId = normalizeVideoRoomId(req.params.roomId);
 
     if (!(await prescriptionVideoRoomExists(roomId))) {
-      return res.status(403).json({ message: 'Invalid or unknown video room.' });
+      return res.status(403).json({
+        message: 'Invalid or unknown video room.',
+        roomVerified: false
+      });
     }
 
     const prescription = await findPrescriptionForRoom(roomId);
 
     if (!prescription) {
-      return res.status(404).json({ message: 'No prescription found for this room.' });
+      return res.status(200).json({
+        roomVerified: true,
+        pending: true,
+        cartItems: [],
+        prescribedAt: null
+      });
     }
 
     const enrichedItems = await enrichPrescribedCartItems(
@@ -1501,6 +1548,8 @@ app.get('/api/get-prescription/:roomId', async (req, res) => {
       ? prescription.toObject()
       : Object.assign({}, prescription);
     res.json(Object.assign({}, payload, {
+      roomVerified: true,
+      pending: false,
       cartItems: enrichedItems,
       prescribedAt: prescription.prescribedAt || prescription.createdAt || null
     }));
@@ -3422,10 +3471,23 @@ async function findLatestConsultationForRoom(room) {
 async function loadRoomContext(roomId) {
     const room = normalizeVideoRoomId(roomId);
     if (!room) return null;
-    const [payment, consultation] = await Promise.all([
+    let [payment, consultation] = await Promise.all([
         findLatestPaymentForRoom(room),
         findLatestConsultationForRoom(room)
     ]);
+
+    if (!consultation) {
+        consultation = await findConsultationByAppointmentRoom(room);
+    }
+    if (!payment && consultation?.paymentId) {
+        payment = await Payment.findById(consultation.paymentId);
+    }
+    if (!payment && consultation) {
+        payment = await findLatestPaymentForRoom(
+            consultation.roomId || consultation.videoRoomId || room
+        );
+    }
+
     if (!payment && !consultation) return null;
     return { room, payment, consultation, createdAt: payment?.createdAt || consultation?.createdAt };
 }
@@ -3510,7 +3572,7 @@ async function markConsultationInCall(roomId) {
     const ctx = await loadRoomContext(roomId);
     if (!ctx) return;
     const current = consultationStatusOf(ctx.consultation, ctx.payment);
-    if (!['accepted', 'in_call'].includes(current)) return;
+    if (!['accepted', 'in_call', 'ringing', 'waiting'].includes(current)) return;
     const now = new Date();
     if (ctx.consultation) {
         const id = ctx.consultation._id || ctx.consultation.id;
@@ -3872,13 +3934,15 @@ app.get('/api/doctors/roomId/:doctorName', async (req, res) => {
 });
 // Get doctor status (effective + schedule-aware)
 app.get('/api/doctors/status/:doctorName', async (req, res) => {
-  const doctorName = req.params.doctorName;
+  const doctorName = decodeURIComponent(req.params.doctorName || '').trim();
 
   try {
+    await clearStaleDoctorConsultations(doctorName);
     const doctor = await findDoctorByName(doctorName);
     if (!doctor) return res.status(404).json({ message: 'Doctor not found' });
 
     const payload = await buildStatusPayload(doctor);
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
     return res.json({
       working: payload.working,
       status: payload.dbStatus,
