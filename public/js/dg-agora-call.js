@@ -312,9 +312,15 @@
       if (typeof options.onCameraToggled === 'function') options.onCameraToggled(camEnabled);
     };
 
-    uiRefs.leaveBtn.onclick = () => leaveCall().then(() => {
-      if (typeof options.onLeave === 'function') options.onLeave();
-    });
+    uiRefs.leaveBtn.onclick = () => {
+      const proceed = window.confirm(
+        'Leave the video call?\n\nThe consultation stays open for 4 minutes so you can rejoin if this was accidental.'
+      );
+      if (!proceed) return;
+      leaveCall().then(() => {
+        if (typeof options.onLeave === 'function') options.onLeave();
+      });
+    };
 
     if (uiRefs.swapBtn) {
       uiRefs.swapBtn.onclick = () => {

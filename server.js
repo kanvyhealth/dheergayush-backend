@@ -3610,16 +3610,76 @@ async function touchCallActivity(roomId) {
     return true;
 }
 
-async function markCallDisconnected(roomId) {
+async function markCallDisconnected(roomId, options = {}) {
+    const {
+      buildDisconnectGracePatch,
+      buildSessionState,
+      DISCONNECT_GRACE_MS
+    } = require('./lib/callDisconnectGrace');
+    const ctx = await loadRoomContext(roomId);
+    if (!ctx?.consultation) return null;
+    const id = ctx.consultation._id || ctx.consultation.id;
+    if (!id) return null;
+
+    const accidental = options.accidental !== false;
+    const role = options.role || '';
+    const patch = accidental
+      ? buildDisconnectGracePatch(role, true)
+      : { callDisconnectedAt: new Date(), callReconnectPending: false, updatedAt: new Date() };
+
+    await ConsultationRequest.findByIdAndUpdate(id, { $set: patch });
+    const updated = await ConsultationRequest.findById(id);
+    const row = updated?.toObject ? updated.toObject() : updated;
+    return {
+      ok: true,
+      graceMs: DISCONNECT_GRACE_MS,
+      session: buildSessionState(row, ctx.payment, role)
+    };
+}
+
+async function clearCallDisconnectGrace(roomId) {
+    const { buildClearGracePatch } = require('./lib/callDisconnectGrace');
     const ctx = await loadRoomContext(roomId);
     if (!ctx?.consultation) return false;
     const id = ctx.consultation._id || ctx.consultation.id;
     if (!id) return false;
-    const now = new Date();
-    await ConsultationRequest.findByIdAndUpdate(id, {
-        $set: { callDisconnectedAt: now, updatedAt: now }
-    });
+    await ConsultationRequest.findByIdAndUpdate(id, { $set: buildClearGracePatch() });
     return true;
+}
+
+async function getCallSessionState(roomId, viewerRole) {
+    const {
+      buildSessionState,
+      isWithinDisconnectGrace,
+      RECONNECT_RING_MS
+    } = require('./lib/callDisconnectGrace');
+    const ctx = await loadRoomContext(roomId);
+    if (!ctx) return null;
+    let consultation = ctx.consultation;
+    if (consultation?._id || consultation?.id) {
+        const fresh = await ConsultationRequest.findById(consultation._id || consultation.id);
+        if (fresh) consultation = fresh.toObject ? fresh.toObject() : fresh;
+    }
+    const id = consultation?._id || consultation?.id;
+    if (
+        id &&
+        consultation?.callReconnectPending &&
+        !isWithinDisconnectGrace(consultation) &&
+        !consultation?.consultationCompletionAnswer
+    ) {
+        const now = new Date();
+        await ConsultationRequest.findByIdAndUpdate(id, {
+            $set: {
+                consultationCompletionAnswer: 'no',
+                reconnectRingActive: true,
+                reconnectRingUntil: new Date(now.getTime() + RECONNECT_RING_MS),
+                updatedAt: now
+            }
+        });
+        const refreshed = await ConsultationRequest.findById(id);
+        if (refreshed) consultation = refreshed.toObject ? refreshed.toObject() : refreshed;
+    }
+    return buildSessionState(consultation, ctx.payment, viewerRole);
 }
 
 async function markConsultationCompleted(roomId) {
@@ -3636,6 +3696,12 @@ async function markConsultationCompleted(roomId) {
                 $set: {
                     ...buildConsultationStatusFields('completed', id),
                     callDisconnectedAt: null,
+                    callGraceUntil: null,
+                    callReconnectPending: false,
+                    callDisconnectedRole: null,
+                    consultationCompletionAnswer: 'yes',
+                    reconnectRingActive: false,
+                    reconnectRingUntil: null,
                     lastCallActivityAt: null
                 }
             });
@@ -3703,22 +3769,121 @@ app.get('/api/video-room/:roomId/access', async (req, res) => {
 
 app.post('/api/video-room/:roomId/call-ended', async (req, res) => {
     try {
+        const official = req.body?.official !== false;
+        if (!official) {
+            await markCallDisconnected(req.params.roomId, {
+                role: req.body?.role || '',
+                accidental: true
+            });
+            return res.json({ ok: true, grace: true });
+        }
         await markConsultationCompleted(req.params.roomId);
-        return res.json({ ok: true });
+        return res.json({ ok: true, completed: true });
     } catch (err) {
         console.error('Call ended error:', err);
         return res.status(500).json({ message: 'Could not update consultation status.' });
     }
 });
 
-app.post('/api/video-room/:roomId/call-disconnected', async (req, res) => {
+app.get('/api/video-room/:roomId/session-state', async (req, res) => {
     try {
-        const { VIDEO_CALL_INACTIVITY_MS } = require('./lib/consultationSessionCleanup');
-        await markCallDisconnected(req.params.roomId);
+        const role = req.query.role || 'patient';
+        const state = await getCallSessionState(req.params.roomId, role);
+        if (!state) {
+            return res.status(404).json({ message: 'Session not found.' });
+        }
+        if (state.consultationStatus === 'completed') {
+            return res.json({ ...state, sessionEnded: true });
+        }
+        return res.json(state);
+    } catch (err) {
+        console.error('Session state error:', err);
+        return res.status(500).json({ message: 'Could not load session state.' });
+    }
+});
+
+app.post('/api/video-room/:roomId/consultation-complete-answer', async (req, res) => {
+    try {
+        const { RECONNECT_RING_MS } = require('./lib/callDisconnectGrace');
+        const answer = String(req.body?.answer || '').trim().toLowerCase();
+        const role = String(req.body?.role || req.query?.role || '').trim().toLowerCase();
+        const ctx = await loadRoomContext(req.params.roomId);
+        if (!ctx?.consultation) {
+            return res.status(404).json({ message: 'Consultation not found.' });
+        }
+        const id = ctx.consultation._id || ctx.consultation.id;
+        if (!id) return res.status(404).json({ message: 'Consultation not found.' });
+
+        if (answer === 'yes') {
+            await ConsultationRequest.findByIdAndUpdate(id, {
+                $set: { consultationCompletionAnswer: 'yes', updatedAt: new Date() }
+            });
+            await markConsultationCompleted(req.params.roomId);
+            return res.json({ ok: true, completed: true, message: 'Consultation marked as completed.' });
+        }
+
+        const now = new Date();
+        await ConsultationRequest.findByIdAndUpdate(id, {
+            $set: {
+                consultationCompletionAnswer: 'no',
+                reconnectRingActive: true,
+                reconnectRingUntil: new Date(now.getTime() + RECONNECT_RING_MS),
+                callReconnectPending: true,
+                updatedAt: now
+            }
+        });
+        const state = await getCallSessionState(req.params.roomId, role);
         return res.json({
             ok: true,
-            endsInMs: VIDEO_CALL_INACTIVITY_MS,
-            message: 'Call will end automatically in 1 minute unless reconnected.'
+            completed: false,
+            reconnecting: true,
+            message: 'Trying to reconnect both participants to continue the consultation.',
+            session: state
+        });
+    } catch (err) {
+        console.error('Consultation complete answer error:', err);
+        return res.status(500).json({ message: 'Could not save your answer.' });
+    }
+});
+
+app.post('/api/video-room/:roomId/rejoin-call', async (req, res) => {
+    try {
+        const role = String(req.body?.role || '').trim().toLowerCase();
+        const ctx = await loadRoomContext(req.params.roomId);
+        if (!ctx?.consultation) {
+            return res.status(404).json({ message: 'Consultation not found.' });
+        }
+        const current = consultationStatusOf(ctx.consultation, ctx.payment);
+        if (current === 'completed') {
+            return res.status(409).json({ message: 'This consultation has already ended.' });
+        }
+        await clearCallDisconnectGrace(req.params.roomId);
+        await markConsultationInCall(req.params.roomId);
+        const state = await getCallSessionState(req.params.roomId, role);
+        return res.json({
+            ok: true,
+            message: 'Rejoined consultation session. Connect video to continue.',
+            session: state
+        });
+    } catch (err) {
+        console.error('Rejoin call error:', err);
+        return res.status(500).json({ message: 'Could not rejoin call.' });
+    }
+});
+
+app.post('/api/video-room/:roomId/call-disconnected', async (req, res) => {
+    try {
+        const { DISCONNECT_GRACE_MS } = require('./lib/callDisconnectGrace');
+        const role = req.body?.role || req.query?.role || '';
+        const result = await markCallDisconnected(req.params.roomId, { role, accidental: true });
+        if (!result) {
+            return res.status(404).json({ message: 'Consultation not found.' });
+        }
+        return res.json({
+            ok: true,
+            graceMs: DISCONNECT_GRACE_MS,
+            message: 'Disconnect recorded. Waiting up to 4 minutes before ending — you can reconnect.',
+            session: result.session
         });
     } catch (err) {
         console.error('Call disconnected error:', err);
@@ -3729,17 +3894,21 @@ app.post('/api/video-room/:roomId/call-disconnected', async (req, res) => {
 app.post('/api/video-room/:roomId/heartbeat', async (req, res) => {
     try {
         const roomId = req.params.roomId;
+        const role = req.body?.role || req.query?.role || '';
         await touchCallActivity(roomId);
         const ctx = await loadRoomContext(roomId);
         if (ctx?.consultation?.doctorName) {
             await clearStaleDoctorConsultations(ctx.consultation.doctorName, { exceptRoomId: roomId });
         }
-        const refreshed = await loadRoomContext(roomId);
-        const status = consultationStatusOf(refreshed?.consultation, refreshed?.payment);
-        if (status === 'completed') {
-            return res.json({ ok: true, sessionEnded: true, consultationStatus: 'completed' });
+        const session = await getCallSessionState(roomId, role);
+        if (session?.consultationStatus === 'completed') {
+            return res.json({ ok: true, sessionEnded: true, consultationStatus: 'completed', session });
         }
-        return res.json({ ok: true, consultationStatus: status || '' });
+        return res.json({
+            ok: true,
+            consultationStatus: session?.consultationStatus || '',
+            session
+        });
     } catch (err) {
         console.error('Call heartbeat error:', err);
         return res.status(500).json({ message: 'Could not update call activity.' });

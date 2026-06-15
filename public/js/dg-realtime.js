@@ -6,7 +6,7 @@
   var heartbeatTimer = null;
   var ringAudio = null;
   var speechInterval = null;
-  var VOICE_MESSAGE = 'DHEERGAYUSH patient is waiting';
+  var VOICE_MESSAGE = 'A patient is waiting for you on Dheergayush';
 
   function connect() {
     if (socket && socket.connected) return socket;
@@ -114,7 +114,8 @@
     try {
       window.speechSynthesis.cancel();
       var utterance = new SpeechSynthesisUtterance(VOICE_MESSAGE);
-      utterance.rate = 0.92;
+      utterance.lang = 'en-IN';
+      utterance.rate = 0.9;
       utterance.pitch = 1;
       utterance.volume = 1;
       var voices = window.speechSynthesis.getVoices();

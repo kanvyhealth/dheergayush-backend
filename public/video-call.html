@@ -2417,6 +2417,100 @@ html, body {
             to { opacity: 1; }
         }
 
+        .dg-grace-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            z-index: 1001;
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px 28px;
+            max-width: 420px;
+            width: calc(100% - 32px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+            display: none;
+            text-align: center;
+        }
+        .dg-grace-modal.show {
+            display: block;
+            animation: fadeInScale 0.25s ease-out forwards;
+        }
+        .dg-grace-modal h3 {
+            margin: 0 0 10px;
+            font-size: 1.2rem;
+            color: #1a3c34;
+        }
+        .dg-grace-modal p {
+            margin: 0 0 20px;
+            color: #555;
+            line-height: 1.5;
+        }
+        .dg-grace-modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .dg-grace-modal-actions button {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .dg-grace-btn-yes {
+            background: #2e7d5a;
+            color: #fff;
+        }
+        .dg-grace-btn-no {
+            background: #eef2f0;
+            color: #1a3c34;
+        }
+        .dg-rejoin-panel {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: linear-gradient(135deg, #1a3c34, #2e7d5a);
+            color: #fff;
+            border-radius: 16px;
+            padding: 18px 22px;
+            max-width: 440px;
+            width: calc(100% - 32px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+            display: none;
+            text-align: center;
+        }
+        .dg-rejoin-panel.show {
+            display: block;
+            animation: fadeInScale 0.3s ease-out forwards;
+        }
+        .dg-rejoin-panel p {
+            margin: 0 0 14px;
+            line-height: 1.45;
+            font-size: 0.95rem;
+        }
+        .dg-rejoin-panel button {
+            background: #fff;
+            color: #1a3c34;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .dg-rejoin-panel.dg-rejoin-panel--ring {
+            animation: dgRejoinPulse 1.2s ease-in-out infinite;
+        }
+        @keyframes dgRejoinPulse {
+            0%, 100% { box-shadow: 0 12px 40px rgba(0,0,0,0.35); }
+            50% { box-shadow: 0 12px 40px rgba(46,125,90,0.6), 0 0 0 8px rgba(46,125,90,0.2); }
+        }
+
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/dheergayush-theme.css">
@@ -2524,6 +2618,20 @@ html, body {
         <button id="message-box-ok">OK</button>
     </div>
     <div id="overlay" class="overlay"></div>
+
+    <div id="dg-grace-completion-modal" class="dg-grace-modal" role="dialog" aria-labelledby="dg-grace-title" aria-modal="true">
+        <h3 id="dg-grace-title">Did the consultation complete?</h3>
+        <p id="dg-grace-message">The other participant left the call. Was your consultation finished?</p>
+        <div class="dg-grace-modal-actions">
+            <button type="button" id="dg-grace-yes" class="dg-grace-btn-yes">Yes, completed</button>
+            <button type="button" id="dg-grace-no" class="dg-grace-btn-no">No, reconnect</button>
+        </div>
+    </div>
+
+    <div id="dg-rejoin-panel" class="dg-rejoin-panel" role="status" aria-live="polite">
+        <p id="dg-rejoin-message">You left the consultation. Tap below to rejoin and continue.</p>
+        <button type="button" id="dg-rejoin-btn"><i class="fa-solid fa-phone"></i> Rejoin call</button>
+    </div>
 
     <div id="root"></div>
 
@@ -2872,12 +2980,195 @@ html, body {
 
         window.__vcallRemoteJoined = false;
         let noPeerRefundTimer = null;
-        const CALL_SESSION_END_MS = 60 * 1000;
+        const DISCONNECT_GRACE_MS = 4 * 60 * 1000;
+        const NO_PEER_REFUND_MS = 60 * 1000;
         let callHeartbeatInterval = null;
-        let callSessionEndTimer = null;
+        let sessionStatePollInterval = null;
         let connectionLostTimer = null;
         let leaveCallHandled = false;
         let onVcallLeave = null;
+        let lastAgoraTokenData = null;
+        let graceCompletionShown = false;
+        let reconnectRingPlaying = false;
+        let reconnectRingInterval = null;
+
+        const graceModal = document.getElementById('dg-grace-completion-modal');
+        const graceModalMessage = document.getElementById('dg-grace-message');
+        const graceYesBtn = document.getElementById('dg-grace-yes');
+        const graceNoBtn = document.getElementById('dg-grace-no');
+        const rejoinPanel = document.getElementById('dg-rejoin-panel');
+        const rejoinMessage = document.getElementById('dg-rejoin-message');
+        const rejoinBtn = document.getElementById('dg-rejoin-btn');
+
+        function getViewerRole() {
+            return localStorage.getItem('userRole') || callIdentity?.role || 'patient';
+        }
+
+        function formatGraceMinutes(ms) {
+            const mins = Math.max(1, Math.ceil((ms || DISCONNECT_GRACE_MS) / 60000));
+            return mins + ' minute' + (mins === 1 ? '' : 's');
+        }
+
+        function stopSessionStatePolling() {
+            if (sessionStatePollInterval) {
+                clearInterval(sessionStatePollInterval);
+                sessionStatePollInterval = null;
+            }
+        }
+
+        function stopReconnectRing() {
+            reconnectRingPlaying = false;
+            if (reconnectRingInterval) {
+                clearInterval(reconnectRingInterval);
+                reconnectRingInterval = null;
+            }
+            if (rejoinPanel) rejoinPanel.classList.remove('dg-rejoin-panel--ring');
+        }
+
+        function startReconnectRing() {
+            if (reconnectRingPlaying) return;
+            reconnectRingPlaying = true;
+            if (rejoinPanel) rejoinPanel.classList.add('dg-rejoin-panel--ring');
+            reconnectRingInterval = setInterval(function () {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.frequency.value = 880;
+                    gain.gain.value = 0.08;
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.15);
+                } catch (_) { /* ignore */ }
+            }, 2800);
+        }
+
+        function hideGraceCompletionModal() {
+            if (graceModal) graceModal.classList.remove('show');
+            if (overlay) overlay.classList.remove('show');
+        }
+
+        function showGraceCompletionModal(session) {
+            if (!graceModal || graceCompletionShown) return;
+            graceCompletionShown = true;
+            const who = session.disconnectedRole === 'doctor' ? 'doctor' : 'patient';
+            if (graceModalMessage) {
+                graceModalMessage.textContent =
+                    'The ' + who + ' left the call unexpectedly. Was your consultation finished? ' +
+                    'You have up to ' + formatGraceMinutes(session.graceMsRemaining || DISCONNECT_GRACE_MS) + ' to decide.';
+            }
+            graceModal.classList.add('show');
+            if (overlay) overlay.classList.add('show');
+        }
+
+        function hideRejoinPanel() {
+            stopReconnectRing();
+            if (rejoinPanel) rejoinPanel.classList.remove('show');
+        }
+
+        function showRejoinPanel(message, ring) {
+            if (rejoinMessage && message) rejoinMessage.textContent = message;
+            if (rejoinPanel) rejoinPanel.classList.add('show');
+            if (ring) startReconnectRing();
+        }
+
+        async function submitCompletionAnswer(answer) {
+            if (!roomID) return null;
+            try {
+                const res = await fetch('/api/video-room/' + encodeURIComponent(roomID) + '/consultation-complete-answer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ answer: answer, role: getViewerRole() })
+                });
+                return await res.json();
+            } catch (err) {
+                console.warn('Completion answer failed:', err);
+                return null;
+            }
+        }
+
+        async function fetchSessionState() {
+            if (!roomID) return null;
+            try {
+                const role = getViewerRole();
+                const res = await fetch('/api/video-room/' + encodeURIComponent(roomID) + '/session-state?role=' + encodeURIComponent(role));
+                if (!res.ok) return null;
+                return await res.json();
+            } catch (_) {
+                return null;
+            }
+        }
+
+        async function finishConsultationSession() {
+            if (leaveCallHandled) return;
+            leaveCallHandled = true;
+            hideGraceCompletionModal();
+            hideRejoinPanel();
+            stopSessionStatePolling();
+            clearCallSessionTimers();
+            setCallStatus('Consultation ended', 'ended');
+            setDoctorDockVisible(false);
+            setPatientRxActionsVisible(false);
+            if (typeof stopPatientPrescriptionPolling === 'function') stopPatientPrescriptionPolling();
+            stopRoomStatusPoll();
+            clearNoPeerRefundTimer();
+            if (window.DgAgoraCall && DgAgoraCall.isJoined && DgAgoraCall.isJoined()) {
+                await DgAgoraCall.leaveCall();
+            }
+            const userRole = localStorage.getItem('userRole');
+            const doctorName = userRole === 'doctor' ? localStorage.getItem('doctorName') : null;
+            if (doctorName) {
+                try {
+                    await fetch('/api/doctors/updateStatus', {
+                        method: 'POST',
+                        headers: await resolveAuthHeaders(),
+                        body: JSON.stringify({ doctorName, status: 'Available' })
+                    });
+                } catch (err) {
+                    console.warn('Could not set doctor Available:', err);
+                }
+            }
+            if (userRole === 'doctor') {
+                window.location.href = '/doctor1.html';
+            } else {
+                window.location.href = '/patient.html';
+            }
+        }
+
+        async function applySessionState(session) {
+            if (!session) return;
+            if (session.sessionEnded || session.consultationStatus === 'completed') {
+                await finishConsultationSession();
+                return;
+            }
+            if (session.showCompletionPrompt) {
+                showGraceCompletionModal(session);
+            }
+            if (session.showRejoinPrompt) {
+                showRejoinPanel(session.reconnectMessage || 'Please rejoin the video call to continue your consultation.', session.reconnectRingActive);
+            } else if (!session.peerReconnecting) {
+                hideRejoinPanel();
+            }
+            if (session.peerReconnecting && session.disconnectedRole && getViewerRole() !== session.disconnectedRole) {
+                const who = session.disconnectedRole === 'doctor' ? 'Doctor' : 'Patient';
+                setCallStatus(who + ' disconnected — waiting up to ' + formatGraceMinutes(session.graceMsRemaining || DISCONNECT_GRACE_MS) + ' to reconnect', 'reconnecting');
+            }
+            if (session.reconnectRingActive && session.showRejoinPrompt) {
+                startReconnectRing();
+            }
+        }
+
+        function startSessionStatePolling() {
+            stopSessionStatePolling();
+            if (!roomID) return;
+            const poll = async function () {
+                const session = await fetchSessionState();
+                await applySessionState(session);
+            };
+            poll();
+            sessionStatePollInterval = setInterval(poll, 5000);
+        }
 
         function clearNoPeerRefundTimer() {
             if (noPeerRefundTimer) {
@@ -2894,10 +3185,6 @@ html, body {
         }
 
         function clearSessionEndTimer() {
-            if (callSessionEndTimer) {
-                clearTimeout(callSessionEndTimer);
-                callSessionEndTimer = null;
-            }
             if (connectionLostTimer) {
                 clearTimeout(connectionLostTimer);
                 connectionLostTimer = null;
@@ -2907,6 +3194,7 @@ html, body {
         function clearCallSessionTimers() {
             stopCallHeartbeat();
             clearSessionEndTimer();
+            stopSessionStatePolling();
         }
 
         function startCallHeartbeat() {
@@ -2914,13 +3202,19 @@ html, body {
             if (!roomID) return;
             const sendHeartbeat = async function () {
                 try {
-                    const res = await fetch('/api/video-room/' + encodeURIComponent(roomID) + '/heartbeat', { method: 'POST' });
+                    const role = getViewerRole();
+                    const res = await fetch('/api/video-room/' + encodeURIComponent(roomID) + '/heartbeat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ role: role })
+                    });
                     const data = await res.json().catch(function () { return {}; });
-                    if (data.sessionEnded) {
-                        clearCallSessionTimers();
-                        if (window.DgAgoraCall && DgAgoraCall.isJoined && DgAgoraCall.isJoined()) {
-                            await DgAgoraCall.leaveCall();
-                        }
+                    if (data.sessionEnded || data.consultationStatus === 'completed') {
+                        await finishConsultationSession();
+                        return;
+                    }
+                    if (data.session) {
+                        await applySessionState(data.session);
                     }
                 } catch (_) { /* ignore */ }
             };
@@ -2928,28 +3222,56 @@ html, body {
             callHeartbeatInterval = setInterval(sendHeartbeat, 20000);
         }
 
-        async function notifyCallDisconnected() {
+        async function notifyCallDisconnected(disconnectedRole) {
             if (!roomID) return;
             try {
-                await fetch('/api/video-room/' + encodeURIComponent(roomID) + '/call-disconnected', { method: 'POST' });
+                await fetch('/api/video-room/' + encodeURIComponent(roomID) + '/call-disconnected', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ role: disconnectedRole || getViewerRole() })
+                });
             } catch (_) { /* ignore */ }
         }
 
-        function scheduleSessionEnd(reason) {
+        function onCallDisconnectedGrace(reason, disconnectedRole) {
             clearSessionEndTimer();
-            const msg = reason === 'peer_left'
-                ? 'Other participant left — ending call in 1 minute'
-                : 'No activity — ending call in 1 minute';
-            setCallStatus(msg, 'ended');
-            callSessionEndTimer = setTimeout(async function () {
-                if (leaveCallHandled) return;
-                clearCallSessionTimers();
-                if (window.DgAgoraCall && DgAgoraCall.isJoined && DgAgoraCall.isJoined()) {
-                    await DgAgoraCall.leaveCall();
-                } else if (typeof onVcallLeave === 'function') {
-                    await onVcallLeave();
+            const msg = reason === 'self_left'
+                ? 'You left the call — session stays open for ' + formatGraceMinutes(DISCONNECT_GRACE_MS)
+                : reason === 'peer_left'
+                    ? 'Other participant left — consultation stays active for ' + formatGraceMinutes(DISCONNECT_GRACE_MS)
+                    : 'Connection lost — consultation stays active for ' + formatGraceMinutes(DISCONNECT_GRACE_MS);
+            setCallStatus(msg, 'reconnecting');
+            notifyCallDisconnected(disconnectedRole);
+            startSessionStatePolling();
+        }
+
+        if (graceYesBtn) {
+            graceYesBtn.addEventListener('click', async function () {
+                hideGraceCompletionModal();
+                graceCompletionShown = true;
+                const result = await submitCompletionAnswer('yes');
+                if (result && result.completed) {
+                    await finishConsultationSession();
                 }
-            }, CALL_SESSION_END_MS);
+            });
+        }
+        if (graceNoBtn) {
+            graceNoBtn.addEventListener('click', async function () {
+                hideGraceCompletionModal();
+                graceCompletionShown = true;
+                const result = await submitCompletionAnswer('no');
+                if (result && result.session) {
+                    await applySessionState(result.session);
+                }
+                startSessionStatePolling();
+            });
+        }
+        if (rejoinBtn) {
+            rejoinBtn.addEventListener('click', function () {
+                if (typeof window.__vcallRejoinFn === 'function') {
+                    window.__vcallRejoinFn();
+                }
+            });
         }
 
         async function requestConsultationRefund(reason) {
@@ -3058,7 +3380,7 @@ html, body {
                         'no_peer_connected'
                     );
                 }
-            }, CALL_SESSION_END_MS);
+            }, NO_PEER_REFUND_MS);
         }
 
         messageBoxOkButton.addEventListener('click', () => {
@@ -3066,6 +3388,7 @@ html, body {
             overlay.classList.remove('show');
         });
         overlay.addEventListener('click', () => {
+            if (graceModal && graceModal.classList.contains('show')) return;
             messageBox.classList.remove('show');
             overlay.classList.remove('show');
         });
@@ -3371,95 +3694,35 @@ html, body {
             }
 
             document.getElementById('root').style.display = 'block';
+            lastAgoraTokenData = tokenData;
 
-            async function handleLeaveCall() {
-                if (leaveCallHandled) return;
-                leaveCallHandled = true;
-                setCallStatus('Call ended', 'ended');
-                console.log(`Left Agora channel ${roomID}`);
-                setDoctorDockVisible(false);
-                setPatientRxActionsVisible(false);
-                if (typeof stopPatientPrescriptionPolling === 'function') stopPatientPrescriptionPolling();
-                stopRoomStatusPoll();
-
-                clearNoPeerRefundTimer();
-                clearCallSessionTimers();
-                if (roomID) {
-                    const leaveRole = localStorage.getItem('userRole');
-                    if (leaveRole === 'patient' && !window.__vcallRemoteJoined) {
-                        try {
-                            await requestConsultationRefund('no_peer_connected');
-                        } catch (err) {
-                            console.warn('Could not request refund:', err);
-                        }
-                    } else {
-                        try {
-                            await fetch(`/api/video-room/${encodeURIComponent(roomID)}/call-ended`, { method: 'POST' });
-                        } catch (err) {
-                            console.warn('Could not mark consultation completed:', err);
-                        }
-                    }
-                }
-
-                const userRole = localStorage.getItem("userRole");
-                const doctorName = userRole === 'doctor'
-                    ? localStorage.getItem("doctorName")
-                    : null;
-                if (doctorName) {
-                    try {
-                        const res = await fetch('/api/doctors/updateStatus', {
-                            method: 'POST',
-                            headers: await resolveAuthHeaders(),
-                            body: JSON.stringify({
-                                doctorName,
-                                status: 'Available'
-                            })
-                        });
-                        if (!res.ok) throw new Error('Status update failed');
-                        console.log("✅ Doctor status set to Available after call");
-                    } catch (err) {
-                        console.error("⚠️ Failed to update doctor status:", err);
-                    }
-                }
-
-                if (userRole === "doctor") {
-                    window.location.href = '/doctor1.html';
-                } else {
-                    window.location.href = '/patient.html';
-                }
-            }
-            onVcallLeave = handleLeaveCall;
-
-            try {
-                await DgAgoraCall.joinCall({
-                    containerId: 'root',
-                    appId: tokenData.appId,
-                    channel: tokenData.channel || roomID,
-                    token: tokenData.token,
-                    uid: tokenData.uid,
-                    cameraEnabled: cameraEnabled,
-                    microphoneEnabled: micEnabled,
+            function buildAgoraHandlers() {
+                return {
                     onUserJoined: () => {
                         window.__vcallRemoteJoined = true;
                         clearNoPeerRefundTimer();
                         clearSessionEndTimer();
+                        hideGraceCompletionModal();
+                        hideRejoinPanel();
+                        graceCompletionShown = false;
+                        stopSessionStatePolling();
                         const role = localStorage.getItem('userRole');
-                        const label = role === 'doctor' ? 'Patient joined' : 'Doctor joined';
+                        const label = role === 'doctor' ? 'Patient connected' : 'Doctor connected';
                         setCallStatus(label, 'connected');
                     },
                     onUserLeft: () => {
                         window.__vcallRemoteJoined = false;
-                        notifyCallDisconnected();
-                        scheduleSessionEnd('peer_left');
+                        const myRole = getViewerRole();
+                        const peerRole = myRole === 'doctor' ? 'patient' : 'doctor';
+                        onCallDisconnectedGrace('peer_left', peerRole);
                     },
                     onConnectionStateChange: (state) => {
                         if (state === 'RECONNECTING' || state === 'DISCONNECTED') {
                             setCallStatus('Reconnecting…', 'reconnecting');
                             if (!connectionLostTimer) {
                                 connectionLostTimer = setTimeout(function () {
-                                    notifyCallDisconnected();
-                                    scheduleSessionEnd('inactive');
-                                }, CALL_SESSION_END_MS);
+                                    onCallDisconnectedGrace('connection_lost');
+                                }, 30000);
                             }
                         } else if (state === 'CONNECTED') {
                             clearSessionEndTimer();
@@ -3479,9 +3742,9 @@ html, body {
                         }
                         startNoPeerRefundWatchdog();
                         startCallHeartbeat();
-                        const currentRole = localStorage.getItem("userRole");
-                        if (currentRole === "doctor") {
-                            const doctorName = localStorage.getItem("doctorName");
+                        const currentRole = localStorage.getItem('userRole');
+                        if (currentRole === 'doctor') {
+                            const doctorName = localStorage.getItem('doctorName');
                             if (doctorName) {
                                 try {
                                     await fetch('/api/doctors/updateStatus', {
@@ -3494,7 +3757,7 @@ html, body {
                                 }
                             }
                         }
-                        if (currentRole === "doctor") {
+                        if (currentRole === 'doctor') {
                             setDoctorDockVisible(true);
                             setPatientRxActionsVisible(false);
                         } else {
@@ -3508,7 +3771,108 @@ html, body {
                         }
                     },
                     onLeave: handleLeaveCall
-                });
+                };
+            }
+
+            async function handleLeaveCall() {
+                if (leaveCallHandled) return;
+                console.log('Left Agora channel ' + roomID);
+                setDoctorDockVisible(false);
+                setPatientRxActionsVisible(false);
+
+                const leaveRole = localStorage.getItem('userRole');
+                if (leaveRole === 'patient' && !window.__vcallRemoteJoined) {
+                    leaveCallHandled = true;
+                    clearCallSessionTimers();
+                    stopRoomStatusPoll();
+                    clearNoPeerRefundTimer();
+                    if (typeof stopPatientPrescriptionPolling === 'function') stopPatientPrescriptionPolling();
+                    try {
+                        await requestConsultationRefund('no_peer_connected');
+                    } catch (err) {
+                        console.warn('Could not request refund:', err);
+                    }
+                    window.location.href = '/patient.html';
+                    return;
+                }
+
+                clearSessionEndTimer();
+                window.__vcallRemoteJoined = false;
+                onCallDisconnectedGrace('self_left');
+                showRejoinPanel(
+                    'You left the consultation. Rejoin within ' + formatGraceMinutes(DISCONNECT_GRACE_MS) + ' to continue.',
+                    false
+                );
+                startCallHeartbeat();
+            }
+            onVcallLeave = handleLeaveCall;
+
+            async function rejoinAgoraCall() {
+                if (!roomID) return;
+                const role = getViewerRole();
+                try {
+                    const rejoinRes = await fetch('/api/video-room/' + encodeURIComponent(roomID) + '/rejoin-call', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ role: role })
+                    });
+                    const rejoinData = await rejoinRes.json();
+                    if (!rejoinRes.ok) {
+                        showMessageBox('Cannot rejoin', rejoinData.message || 'This consultation may have ended.');
+                        return;
+                    }
+                    hideRejoinPanel();
+                    graceCompletionShown = false;
+                    setCallStatus('Reconnecting to video…', 'reconnecting');
+
+                    const userID = callIdentity.userId ||
+                        (role === 'doctor' ? localStorage.getItem('doctorName') : localStorage.getItem('patientId')) ||
+                        ('guest_' + String(roomID).slice(0, 24));
+                    const userName = callIdentity.name;
+                    const agoraPayload = { roomID, userID, userName, role };
+                    let agoraHeaders = await getFirebaseAuthHeaders();
+                    let tokenRes = await fetch('/api/agora/token', {
+                        method: 'POST',
+                        headers: agoraHeaders,
+                        body: JSON.stringify(agoraPayload)
+                    });
+                    let freshToken = await tokenRes.json();
+                    if (!tokenRes.ok) {
+                        showMessageBox('Rejoin failed', freshToken.message || 'Could not get video token.');
+                        return;
+                    }
+                    lastAgoraTokenData = freshToken;
+                    const handlers = buildAgoraHandlers();
+                    await DgAgoraCall.joinCall(Object.assign({
+                        containerId: 'root',
+                        appId: freshToken.appId,
+                        channel: freshToken.channel || roomID,
+                        token: freshToken.token,
+                        uid: freshToken.uid,
+                        cameraEnabled: cameraEnabled,
+                        microphoneEnabled: micEnabled
+                    }, handlers));
+                    if (rejoinData.session) {
+                        await applySessionState(rejoinData.session);
+                    }
+                } catch (err) {
+                    console.error('Rejoin failed:', err);
+                    showMessageBox('Rejoin failed', err.message || 'Could not reconnect to the video call.');
+                }
+            }
+            window.__vcallRejoinFn = rejoinAgoraCall;
+
+            try {
+                const handlers = buildAgoraHandlers();
+                await DgAgoraCall.joinCall(Object.assign({
+                    containerId: 'root',
+                    appId: tokenData.appId,
+                    channel: tokenData.channel || roomID,
+                    token: tokenData.token,
+                    uid: tokenData.uid,
+                    cameraEnabled: cameraEnabled,
+                    microphoneEnabled: micEnabled
+                }, handlers));
             } catch (err) {
                 console.error('Agora join failed:', err);
                 document.getElementById('custom-prejoin').style.display = 'flex';
