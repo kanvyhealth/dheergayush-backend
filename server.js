@@ -4941,6 +4941,10 @@ Object.entries(LEGAL_PAGE_ROUTES).forEach(([route, file]) => {
   app.get(route, (req, res) => serveLegalPage(req, res, file));
 });
 
+app.get('/auth-action', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'auth-action.html'));
+});
+
 const LEGACY_LEGAL_REDIRECTS = {
   '/about-us.html': '/about-us',
   '/PrivacyPage.html': '/privacy-policy',
