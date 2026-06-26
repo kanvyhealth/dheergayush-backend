@@ -1,6 +1,8 @@
 /* DHEERGAYUSH Stores — paginated catalog with lazy images */
 (function () {
-  var PAGE_SIZE = 48;
+  var PAGE_SIZE = 36;
+  var STORE_CACHE_PREFIX = 'dg-store-page-v2:';
+  var STORE_CACHE_TTL_MS = 5 * 60 * 1000;
   var stores = [];
   var products = [];
   var cart = [];
@@ -73,6 +75,55 @@
     return params.toString();
   }
 
+  function storeCacheKey() {
+    var q = (els.searchInput && els.searchInput.value.trim()) || '';
+    return STORE_CACHE_PREFIX + [
+      currentStoreFilter || 'all',
+      currentCategory || 'all',
+      q,
+      els.sortSelect ? els.sortSelect.value : 'featured',
+      PAGE_SIZE
+    ].join('|');
+  }
+
+  function readStoreCache() {
+    try {
+      var raw = sessionStorage.getItem(storeCacheKey());
+      if (!raw) return null;
+      var cached = JSON.parse(raw);
+      if (!cached || Date.now() - cached.savedAt > STORE_CACHE_TTL_MS) return null;
+      return cached;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writeStoreCache(pageData) {
+    try {
+      sessionStorage.setItem(storeCacheKey(), JSON.stringify({
+        savedAt: Date.now(),
+        stores: stores,
+        currentStoreFilter: currentStoreFilter,
+        currentCategory: currentCategory,
+        pageData: pageData
+      }));
+    } catch (_) { /* storage can be unavailable or full */ }
+  }
+
+  function renderCachedStore(cached) {
+    if (!cached || !cached.pageData) return false;
+    stores = cached.stores || stores;
+    currentPage = 1;
+    products = [];
+    hasMore = true;
+    totalProducts = 0;
+    renderStoresStrip();
+    updateBreadcrumb();
+    if (els.productGrid) els.productGrid.innerHTML = '';
+    applyProductsPage(cached.pageData, { skipCacheWrite: true });
+    return true;
+  }
+
   function sortProducts(list) {
     var sort = els.sortSelect ? els.sortSelect.value : 'featured';
     if (sort === 'price-low') {
@@ -116,8 +167,8 @@
       var eager = cardIdx !== undefined && cardIdx < 12;
       var loadAttrs = eager
         ? 'loading="eager" fetchpriority="high" decoding="async"'
-        : 'loading="lazy" decoding="async"';
-      return '<img src="' + url + '" alt="" class="product-img" ' + loadAttrs + ' ' +
+        : 'loading="lazy" fetchpriority="low" decoding="async"';
+      return '<img src="' + escapeHtml(url) + '" alt="" class="product-img" width="220" height="220" ' + loadAttrs + ' ' +
         'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' + fallback;
     }
     return '<div class="product-img-fallback" style="display:flex"><i class="fas fa-pills"></i></div>';
@@ -370,7 +421,8 @@
     }
   }
 
-  function applyProductsPage(data) {
+  function applyProductsPage(data, opts) {
+    opts = opts || {};
     var items = data.items || data;
     if (Array.isArray(data.items)) {
       totalProducts = data.total || items.length;
@@ -390,6 +442,9 @@
     appendProducts(items);
     if (currentPage === 1) preloadProductImages(items);
     updateProductCount();
+    if (currentPage === 1 && !opts.skipCacheWrite) {
+      writeStoreCache(data);
+    }
   }
 
   function appendLegacyPage() {
@@ -406,8 +461,8 @@
     updateProductCount();
   }
 
-  async function fetchProductsPage() {
-    if (loading || !hasMore) return;
+  async function fetchProductsPage(force) {
+    if (loading || (!force && !hasMore)) return;
     loading = true;
     setLoadingState(true);
     try {
@@ -415,7 +470,7 @@
         appendLegacyPage();
         return;
       }
-      var res = await fetch('/api/medicines?' + apiQuery());
+      var res = await fetch('/api/medicines?' + apiQuery(), { cache: 'force-cache' });
       if (!res.ok) throw new Error('fail');
       var data = await res.json();
       applyProductsPage(data);
@@ -549,9 +604,10 @@
     legacyFiltered = [];
     hasMore = true;
     totalProducts = 0;
-    if (els.productGrid) els.productGrid.innerHTML = '';
     currentPage = 1;
-    fetchProductsPage();
+    var renderedCached = renderCachedStore(readStoreCache());
+    if (!renderedCached && els.productGrid) els.productGrid.innerHTML = '';
+    fetchProductsPage(true);
   }
 
   function setupInfiniteScroll() {
@@ -652,15 +708,11 @@
     els.cartBadge.style.display = n > 0 ? 'flex' : 'none';
   }
 
-  function isTestOnlyCart() {
-    return cart.length === 1 && cart[0].medicineId === 'dheergayush_test_1rupee';
-  }
-
   function computeCartTotals() {
     var subtotal = cart.reduce(function (t, i) { return t + i.pricePerUnit * i.quantity; }, 0);
     var discount = isDoctor ? Math.round(subtotal * DOCTOR_DISCOUNT_RATE) : 0;
     var after = subtotal - discount;
-    var delivery = isTestOnlyCart() ? 0 : (after > 1000 ? 0 : 150);
+    var delivery = after > 1000 ? 0 : 150;
     var total = after + delivery;
     return { subtotal: subtotal, discount: discount, delivery: delivery, total: total };
   }
@@ -720,7 +772,7 @@
     var subtotal = cart.reduce(function (t, i) { return t + i.pricePerUnit * i.quantity; }, 0);
     var discount = isDoctor ? Math.round(subtotal * DOCTOR_DISCOUNT_RATE) : 0;
     var after = subtotal - discount;
-    var delivery = isTestOnlyCart() ? 0 : (after > 1000 ? 0 : 150);
+    var delivery = after > 1000 ? 0 : 150;
     var total = after + delivery;
     els.cartTotal.innerHTML =
       '<div class="sum-row"><span>Subtotal</span><span>₹' + subtotal + '</span></div>' +
@@ -754,10 +806,12 @@
       products = [];
       hasMore = true;
       totalProducts = 0;
-      if (els.productGrid) els.productGrid.innerHTML = '';
+      var renderedCached = renderCachedStore(readStoreCache());
+      if (!renderedCached && els.productGrid) els.productGrid.innerHTML = '';
 
-      var summaryPromise = fetch('/api/stores/summary').catch(function () { return fetch('/api/stores'); });
-      var productsPromise = fetch('/api/medicines?' + apiQuery());
+      var fetchOpts = { cache: 'force-cache' };
+      var summaryPromise = fetch('/api/stores/summary', fetchOpts).catch(function () { return fetch('/api/stores', fetchOpts); });
+      var productsPromise = fetch('/api/medicines?' + apiQuery(), fetchOpts);
 
       var summaryRes = await summaryPromise;
       if (!summaryRes.ok) throw new Error('fail');
@@ -767,7 +821,7 @@
       renderStoresStrip();
 
       loading = true;
-      setLoadingState(true);
+      if (!renderedCached) setLoadingState(true);
       var productsRes = await productsPromise;
       if (!productsRes.ok) throw new Error('products fail');
       applyProductsPage(await productsRes.json());
