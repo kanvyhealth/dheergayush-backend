@@ -64,7 +64,7 @@
           '<p class="dg-legal-footer-contact" style="margin:8px 0 0;font-size:0.9rem;">' +
             '<a href="tel:+917842736777" class="dg-support-phone">+91 7842736777</a>' +
             ' &nbsp;&middot;&nbsp; ' +
-            '<a href="mailto:support@dheergayush.net" class="dg-support-email">support@dheergayush.net</a>' +
+            '<a href="mailto:contact@dheergayush.net" class="dg-support-email">contact@dheergayush.net</a>' +
           '</p>' +
           '<nav class="dg-landing-footer-links" aria-label="Legal links">' + links + '</nav>' +
         '</div>' +

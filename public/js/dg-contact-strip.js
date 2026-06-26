@@ -1,11 +1,11 @@
-ï»¿/**
- * Slim scrolling contact strip â€” tap phone or email for support.
+/**
+ * Slim scrolling contact strip — tap phone or email for support.
  */
 (function () {
   function contact() {
     var c = window.DgSiteContact || {};
     return {
-      email: c.email || 'support@dheergayush.net',
+      email: c.email || 'contact@dheergayush.net',
       phoneDisplay: c.phoneDisplay || '7842736777',
       phoneTel: c.phoneTel || '+917842736777'
     };
@@ -38,9 +38,9 @@
       '<span class="dg-contact-strip__chunk">' +
       '<span class="dg-contact-strip__icon" aria-hidden="true">' + PHONE_ICON + '</span>' +
       '<span>Support</span>' +
-      '<span class="dg-contact-strip__dot" aria-hidden="true">â€¢</span>' +
+      '<span class="dg-contact-strip__dot" aria-hidden="true">•</span>' +
       '<a class="dg-contact-strip__link dg-contact-strip__number" href="tel:' + info.phoneTel + '">' + info.phoneDisplay + '</a>' +
-      '<span class="dg-contact-strip__dot" aria-hidden="true">â€¢</span>' +
+      '<span class="dg-contact-strip__dot" aria-hidden="true">•</span>' +
       '<a class="dg-contact-strip__link dg-contact-strip__email" href="mailto:' + info.email + '">' + info.email + '</a>' +
       '</span>'
     );

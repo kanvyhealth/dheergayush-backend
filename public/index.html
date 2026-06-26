@@ -374,7 +374,10 @@
             text-decoration: none;
             font-weight: bold;
             transition: background 0.3s ease, padding 0.3s ease, box-shadow 0.3s ease;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .btn-primary {
@@ -390,6 +393,22 @@
             border: 2px solid rgba(255, 215, 0, 0.5);
             backdrop-filter: blur(10px);
             font-weight: 600;
+        }
+
+        .hero-button-icon {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            flex: 0 0 auto;
+        }
+
+        .hero-button-fallback-icon {
+            display: none;
+            font-size: 1.1rem;
+        }
+
+        .hero-button-icon.is-hidden + .hero-button-fallback-icon {
+            display: inline-block;
         }
 
         .btn-primary:hover, .btn-secondary:hover {
@@ -1190,7 +1209,10 @@
             text-decoration: none;
             font-weight: bold;
             transition: background 0.3s ease, padding 0.3s ease, box-shadow 0.3s ease;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .btn-primary {
@@ -1206,6 +1228,22 @@
             border: 2px solid rgba(255, 215, 0, 0.5);
             backdrop-filter: blur(10px);
             font-weight: 600;
+        }
+
+        .hero-button-icon {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            flex: 0 0 auto;
+        }
+
+        .hero-button-fallback-icon {
+            display: none;
+            font-size: 1.1rem;
+        }
+
+        .hero-button-icon.is-hidden + .hero-button-fallback-icon {
+            display: inline-block;
         }
 
         .btn-primary:hover, .btn-secondary:hover {
@@ -1736,9 +1774,12 @@
             <p class="subtitle">Your Trusted Digital Healthcare &amp; Online Consultation Platform</p>
             <p class="subtitle" style="font-size:1rem;max-width:720px;margin:12px auto 0;opacity:0.95;">Connect with qualified healthcare professionals, book consultations, manage appointments, upload medical reports, and access healthcare services securely from anywhere.</p>
             <div class="hero-buttons">
-                <a href="landingpage.html" class="btn-primary">Book Consultations</a>
-                <a href="telemedicine_platform.html" class="btn-secondary">Connect with Doctors</a>
-                <a href="patient.html" class="btn-secondary">Manage Health Digitally</a>
+                <a href="telemedicine_platform.html" class="btn-primary">Connect with Doctor</a>
+                <a href="stores.html" class="btn-secondary">
+                    <img class="hero-button-icon" src="https://cdn-icons-png.flaticon.com/512/16951/16951195.png" alt="" aria-hidden="true" onerror="this.classList.add('is-hidden');">
+                    <i class="fas fa-briefcase-medical hero-button-fallback-icon" aria-hidden="true"></i>
+                    <span>Visit Store</span>
+                </a>
             </div>
         </div>
     </section>
