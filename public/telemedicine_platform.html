@@ -1443,7 +1443,7 @@
                     
                     <button class="btn" type="button" onclick="registerPatient()">Register</button>
                     <button class="btn" type="button" style="margin-left:8px;background:#555" onclick="loginExistingPatient()">Login</button>
-                    <button class="btn" type="button" style="margin-left:8px;background:#fff;color:#f26727;border:1px solid rgba(242,103,39,0.35)" onclick="forgotPatientPassword()">Forgot Password?</button>
+                    <button class="btn dg-inline-action-btn" type="button" style="margin-left:8px;background:#fff;color:#f26727;border:1px solid rgba(242,103,39,0.35);position:static !important;" onclick="forgotPatientPassword()">Forgot Password?</button>
                 </div>
                 
 
@@ -2592,8 +2592,9 @@ function updateTimePickerSelection() {
                     }
                     throw new Error(msg);
                 }
-                setDoctorRegStatus(data.message || 'Registration submitted! Please verify your email. Pending admin approval.', 'success');
-                alert((data.message || 'Registration submitted! Please verify your email. Pending admin approval.') + '\n\nOpen the verification link sent to your email before logging in.');
+                setDoctorRegStatus(data.message || 'Registration submitted! Pending admin approval.', 'success');
+                alert((data.message || 'Registration submitted! Pending admin approval.') +
+                    (data.requiresEmailVerification ? '\n\nOpen the verification link sent to your email before logging in.' : ''));
                 afterSuccessfulRegistration();
             } catch (error) {
                 setDoctorRegStatus(error.message, 'error');

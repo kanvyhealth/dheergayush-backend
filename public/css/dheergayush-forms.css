@@ -506,6 +506,18 @@ form button[type='submit']:not(.button),
   bottom: calc(52px + max(0px, env(safe-area-inset-bottom)));
 }
 
+.dg-scroll-region .auth-form > .dg-inline-action-btn,
+.auth-form > .dg-inline-action-btn {
+  position: static !important;
+  bottom: auto !important;
+  z-index: auto !important;
+}
+
+.dg-scroll-region .auth-form > .dg-inline-action-btn::before,
+.auth-form > .dg-inline-action-btn::before {
+  content: none !important;
+}
+
 .dg-scroll-region form button[type='submit']:not(.button)::before,
 .dg-scroll-region .auth-form > .btn::before,
 .dg-scroll-region .submit-btn:not(.tab-btn):not(.button)::before,

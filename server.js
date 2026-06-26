@@ -44,7 +44,6 @@ const {
   verifyIdToken,
   syncUserFromToken,
   getUserProfile,
-  isEmailVerificationRequired,
   requireFirebaseAuth
 } = require('./lib/firebaseAuth');
 const { generateVideoRoomId, resolveFileUrl, uploadFile } = require('./lib/firebaseStorage');
@@ -376,16 +375,9 @@ function getRequestOrigin(req) {
   return `${proto}://${req.get('host')}`;
 }
 
-function buildAuthContinueUrl(req, portal) {
-  const origin = getRequestOrigin(req);
-  return `${origin}${portal === 'doctor' ? '/doctor-auth.html' : '/patient.html'}`;
-}
-
 async function safeSendEmailVerification(auth, req, portal) {
   try {
-    await sendEmailVerification(auth.idToken, {
-      continueUrl: buildAuthContinueUrl(req, portal)
-    });
+    await sendEmailVerification(auth.idToken);
     return true;
   } catch (err) {
     console.warn('Email verification send failed:', err.message);
@@ -397,13 +389,10 @@ async function ensureAuthEmailVerified(auth, req, res, portal) {
   const authUser = await getAuthUserByUid(auth.localId);
   if (!authUser.email || authUser.emailVerified) return true;
   const sent = await safeSendEmailVerification(auth, req, portal);
-  res.status(403).json({
-    message: sent
-      ? 'Please verify your email address before logging in. A fresh verification link has been sent to your email.'
-      : 'Please verify your email address before logging in.',
-    requiresEmailVerification: true
-  });
-  return false;
+  if (!sent) {
+    console.warn('Allowing login for unverified email because verification email could not be sent.');
+  }
+  return true;
 }
 
 app.post('/api/auth/verify', async (req, res) => {
@@ -411,12 +400,6 @@ app.post('/api/auth/verify', async (req, res) => {
     const idToken = req.body.idToken || (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
     if (!idToken) return res.status(400).json({ message: 'idToken is required' });
     const decoded = await verifyIdToken(idToken);
-    if (isEmailVerificationRequired(decoded)) {
-      return res.status(403).json({
-        message: 'Please verify your email address before continuing.',
-        requiresEmailVerification: true
-      });
-    }
     const profile = await getUserProfile(decoded.uid);
     res.json({ ok: true, uid: decoded.uid, email: decoded.email || null, phone: decoded.phone_number || null, profile });
   } catch (err) {
@@ -429,12 +412,6 @@ app.post('/api/auth/sync', async (req, res) => {
     const idToken = req.body.idToken || (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
     if (!idToken) return res.status(400).json({ message: 'idToken is required' });
     const decoded = await verifyIdToken(idToken);
-    if (isEmailVerificationRequired(decoded)) {
-      return res.status(403).json({
-        message: 'Please verify your email address before continuing.',
-        requiresEmailVerification: true
-      });
-    }
     const profile = await syncUserFromToken(decoded, req.body || {});
     res.json({ ok: true, profile });
   } catch (err) {
@@ -466,11 +443,12 @@ app.post('/api/auth/forgot-password', authLimiter, async (req, res) => {
   }
 
   try {
-    await sendPasswordResetEmail(email, {
-      continueUrl: `${getRequestOrigin(req)}/patient.html`
-    });
+    await sendPasswordResetEmail(email);
   } catch (err) {
-    console.warn('Password reset email skipped:', err.message);
+    console.warn('Password reset email failed:', err.message);
+    return res.status(502).json({
+      message: 'Could not send password reset email right now. Please try again later.'
+    });
   }
 
   return res.json({
@@ -512,9 +490,9 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
 
     res.status(201).json({
       message: verificationSent
-        ? 'Account created. Please verify your email address before logging in. A verification link has been sent to your email.'
-        : 'Account created. Please verify your email address before logging in.',
-      requiresEmailVerification: true,
+        ? 'Account created. A verification link has been sent to your email.'
+        : 'Account created. You can log in now.',
+      requiresEmailVerification: verificationSent,
       user: userDoc,
       uid
     });
@@ -565,12 +543,6 @@ app.post('/api/auth/refresh', authLimiter, async (req, res) => {
     const uid = auth.user_id || auth.localId;
     const refreshedToken = auth.id_token || auth.idToken;
     const decoded = await verifyIdToken(refreshedToken);
-    if (isEmailVerificationRequired(decoded)) {
-      return res.status(403).json({
-        message: 'Please verify your email address before continuing.',
-        requiresEmailVerification: true
-      });
-    }
     const profile = await getUserProfile(uid);
     const portalInfo = await resolveAuthPortal(uid);
     return res.json({
@@ -1080,9 +1052,9 @@ app.post('/api/register-doctor', upload.fields([
 
         res.status(201).json({
             message: verificationSent
-                ? 'Doctor registration submitted successfully. Please verify your email address. Pending admin approval.'
+                ? 'Doctor registration submitted successfully. A verification link has been sent to your email. Pending admin approval.'
                 : 'Doctor registration submitted successfully. Pending admin approval.',
-            requiresEmailVerification: true,
+            requiresEmailVerification: verificationSent,
             doctorId: doctor._id,
             videoRoomId: doctor.videoRoomId
         });
@@ -1445,13 +1417,6 @@ async function assertDoctorBearerToken(req, res) {
   }
   try {
     const decoded = await verifyIdToken(bearer);
-    if (isEmailVerificationRequired(decoded)) {
-      res.status(403).json({
-        message: 'Please verify your email address before continuing.',
-        requiresEmailVerification: true
-      });
-      return false;
-    }
     return true;
   } catch (err) {
     res.status(401).json({ message: 'Invalid or expired Firebase token.', error: err.message });
@@ -1761,12 +1726,6 @@ app.post('/api/doctor-login', async (req, res) => {
 
     try {
         const decoded = await verifyIdToken(idToken);
-        if (isEmailVerificationRequired(decoded)) {
-            return res.status(403).json({
-                message: 'Please verify your email address before logging in.',
-                requiresEmailVerification: true
-            });
-        }
         const doctor = await findDoctorByUid(decoded.uid);
         if (!doctor) {
             return res.status(404).json({ message: 'Doctor profile not found for this account.' });
