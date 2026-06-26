@@ -206,6 +206,10 @@
     return data;
   }
 
+  async function forgotPassword(email) {
+    return authPost('/api/auth/forgot-password', { email: email });
+  }
+
   function getUser() {
     try {
       return JSON.parse(localStorage.getItem(USER_KEY) || 'null');
@@ -238,6 +242,7 @@
     registerCustomer,
     login,
     loginDoctor,
+    forgotPassword,
     getUser,
     redirectForPortal
   };

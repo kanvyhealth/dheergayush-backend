@@ -44,6 +44,7 @@ const {
   verifyIdToken,
   syncUserFromToken,
   getUserProfile,
+  isEmailVerificationRequired,
   requireFirebaseAuth
 } = require('./lib/firebaseAuth');
 const { generateVideoRoomId, resolveFileUrl, uploadFile } = require('./lib/firebaseStorage');
@@ -53,8 +54,11 @@ const {
   getPublicFirebaseConfig,
   signInWithPassword,
   refreshIdToken,
+  sendEmailVerification,
+  sendPasswordResetEmail,
   createAuthUser,
   getAuthUserByEmail,
+  getAuthUserByUid,
   updateAuthUserPassword
 } = require('./lib/firebaseAuthRest');
 const { initFirebase, getAdmin } = require('./lib/firebase');
@@ -365,11 +369,54 @@ async function resolveAuthPortal(uid) {
   };
 }
 
+function getRequestOrigin(req) {
+  const configured = String(process.env.SITE_URL || process.env.PUBLIC_SITE_URL || '').trim();
+  if (configured) return configured.replace(/\/+$/, '');
+  const proto = req.get('x-forwarded-proto') || req.protocol || 'https';
+  return `${proto}://${req.get('host')}`;
+}
+
+function buildAuthContinueUrl(req, portal) {
+  const origin = getRequestOrigin(req);
+  return `${origin}${portal === 'doctor' ? '/doctor-auth.html' : '/patient.html'}`;
+}
+
+async function safeSendEmailVerification(auth, req, portal) {
+  try {
+    await sendEmailVerification(auth.idToken, {
+      continueUrl: buildAuthContinueUrl(req, portal)
+    });
+    return true;
+  } catch (err) {
+    console.warn('Email verification send failed:', err.message);
+    return false;
+  }
+}
+
+async function ensureAuthEmailVerified(auth, req, res, portal) {
+  const authUser = await getAuthUserByUid(auth.localId);
+  if (!authUser.email || authUser.emailVerified) return true;
+  const sent = await safeSendEmailVerification(auth, req, portal);
+  res.status(403).json({
+    message: sent
+      ? 'Please verify your email address before logging in. A fresh verification link has been sent to your email.'
+      : 'Please verify your email address before logging in.',
+    requiresEmailVerification: true
+  });
+  return false;
+}
+
 app.post('/api/auth/verify', async (req, res) => {
   try {
     const idToken = req.body.idToken || (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
     if (!idToken) return res.status(400).json({ message: 'idToken is required' });
     const decoded = await verifyIdToken(idToken);
+    if (isEmailVerificationRequired(decoded)) {
+      return res.status(403).json({
+        message: 'Please verify your email address before continuing.',
+        requiresEmailVerification: true
+      });
+    }
     const profile = await getUserProfile(decoded.uid);
     res.json({ ok: true, uid: decoded.uid, email: decoded.email || null, phone: decoded.phone_number || null, profile });
   } catch (err) {
@@ -382,6 +429,12 @@ app.post('/api/auth/sync', async (req, res) => {
     const idToken = req.body.idToken || (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
     if (!idToken) return res.status(400).json({ message: 'idToken is required' });
     const decoded = await verifyIdToken(idToken);
+    if (isEmailVerificationRequired(decoded)) {
+      return res.status(403).json({
+        message: 'Please verify your email address before continuing.',
+        requiresEmailVerification: true
+      });
+    }
     const profile = await syncUserFromToken(decoded, req.body || {});
     res.json({ ok: true, profile });
   } catch (err) {
@@ -404,6 +457,25 @@ app.get('/api/auth/me', requireFirebaseAuth(), async (req, res) => {
 
 app.get('/api/firebase/config', (req, res) => {
   res.json(getPublicFirebaseConfig());
+});
+
+app.post('/api/auth/forgot-password', authLimiter, async (req, res) => {
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required.' });
+  }
+
+  try {
+    await sendPasswordResetEmail(email, {
+      continueUrl: `${getRequestOrigin(req)}/patient.html`
+    });
+  } catch (err) {
+    console.warn('Password reset email skipped:', err.message);
+  }
+
+  return res.json({
+    message: 'If an account exists for this email, a password reset link has been sent.'
+  });
 });
 
 app.post('/api/auth/register', authLimiter, async (req, res) => {
@@ -435,9 +507,14 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
     });
 
     await linkAppointmentsToAuthUid({ authUid: uid, phone });
+    const auth = await signInWithPassword(email, password);
+    const verificationSent = await safeSendEmailVerification(auth, req, 'patient');
 
     res.status(201).json({
-      message: 'Account created. You can log in now.',
+      message: verificationSent
+        ? 'Account created. Please verify your email address before logging in. A verification link has been sent to your email.'
+        : 'Account created. Please verify your email address before logging in.',
+      requiresEmailVerification: true,
       user: userDoc,
       uid
     });
@@ -454,6 +531,7 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required.' });
     }
     const auth = await signInWithPassword(email, password);
+    if (!(await ensureAuthEmailVerified(auth, req, res, 'patient'))) return;
     const profile = await getUserProfile(auth.localId);
     if (profile?.phone) {
       await linkAppointmentsToAuthUid({ authUid: auth.localId, phone: profile.phone });
@@ -485,11 +563,19 @@ app.post('/api/auth/refresh', authLimiter, async (req, res) => {
     }
     const auth = await refreshIdToken(refreshToken);
     const uid = auth.user_id || auth.localId;
+    const refreshedToken = auth.id_token || auth.idToken;
+    const decoded = await verifyIdToken(refreshedToken);
+    if (isEmailVerificationRequired(decoded)) {
+      return res.status(403).json({
+        message: 'Please verify your email address before continuing.',
+        requiresEmailVerification: true
+      });
+    }
     const profile = await getUserProfile(uid);
     const portalInfo = await resolveAuthPortal(uid);
     return res.json({
       message: 'Session refreshed',
-      idToken: auth.id_token || auth.idToken,
+      idToken: refreshedToken,
       refreshToken: auth.refresh_token || auth.refreshToken || refreshToken,
       user: profile || { uid, email: auth.email },
       portal: portalInfo.portal,
@@ -511,6 +597,7 @@ app.post('/api/auth/login-doctor', authLimiter, async (req, res) => {
     }
 
     const auth = await signInWithPassword(email, password);
+    if (!(await ensureAuthEmailVerified(auth, req, res, 'doctor'))) return;
     const doctor = await findDoctorByUid(auth.localId);
     if (!doctor) {
       return res.status(404).json({ message: 'Doctor profile not found for this account.' });
@@ -988,9 +1075,14 @@ app.post('/api/register-doctor', upload.fields([
 
         await doctor.save();
         await mirrorDoctorToAuthUid(doctor);
+        const auth = await signInWithPassword(trimmedEmail, password);
+        const verificationSent = await safeSendEmailVerification(auth, req, 'doctor');
 
         res.status(201).json({
-            message: 'Doctor registration submitted successfully. Pending admin approval.',
+            message: verificationSent
+                ? 'Doctor registration submitted successfully. Please verify your email address. Pending admin approval.'
+                : 'Doctor registration submitted successfully. Pending admin approval.',
+            requiresEmailVerification: true,
             doctorId: doctor._id,
             videoRoomId: doctor.videoRoomId
         });
@@ -1326,6 +1418,7 @@ app.post('/api/login-patient', authLimiter, async (req, res) => {
         }
 
         const auth = await signInWithPassword(email, password);
+        if (!(await ensureAuthEmailVerified(auth, req, res, 'patient'))) return;
         const profile = await getUserProfile(auth.localId);
         if (profile && profile.role && profile.role !== 'Customer') {
             return res.status(403).json({ message: 'This account is not a patient account.' });
@@ -1351,7 +1444,14 @@ async function assertDoctorBearerToken(req, res) {
     return false;
   }
   try {
-    await verifyIdToken(bearer);
+    const decoded = await verifyIdToken(bearer);
+    if (isEmailVerificationRequired(decoded)) {
+      res.status(403).json({
+        message: 'Please verify your email address before continuing.',
+        requiresEmailVerification: true
+      });
+      return false;
+    }
     return true;
   } catch (err) {
     res.status(401).json({ message: 'Invalid or expired Firebase token.', error: err.message });
@@ -1661,6 +1761,12 @@ app.post('/api/doctor-login', async (req, res) => {
 
     try {
         const decoded = await verifyIdToken(idToken);
+        if (isEmailVerificationRequired(decoded)) {
+            return res.status(403).json({
+                message: 'Please verify your email address before logging in.',
+                requiresEmailVerification: true
+            });
+        }
         const doctor = await findDoctorByUid(decoded.uid);
         if (!doctor) {
             return res.status(404).json({ message: 'Doctor profile not found for this account.' });

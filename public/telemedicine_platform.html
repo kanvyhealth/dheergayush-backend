@@ -1443,6 +1443,7 @@
                     
                     <button class="btn" type="button" onclick="registerPatient()">Register</button>
                     <button class="btn" type="button" style="margin-left:8px;background:#555" onclick="loginExistingPatient()">Login</button>
+                    <button class="btn" type="button" style="margin-left:8px;background:#fff;color:#f26727;border:1px solid rgba(242,103,39,0.35)" onclick="forgotPatientPassword()">Forgot Password?</button>
                 </div>
                 
 
@@ -2591,8 +2592,8 @@ function updateTimePickerSelection() {
                     }
                     throw new Error(msg);
                 }
-                setDoctorRegStatus('Registration submitted! Pending admin approval.', 'success');
-                alert('Registration submitted!\n\nWait for admin approval, then log in on the doctor page.');
+                setDoctorRegStatus(data.message || 'Registration submitted! Please verify your email. Pending admin approval.', 'success');
+                alert((data.message || 'Registration submitted! Please verify your email. Pending admin approval.') + '\n\nOpen the verification link sent to your email before logging in.');
                 afterSuccessfulRegistration();
             } catch (error) {
                 setDoctorRegStatus(error.message, 'error');
@@ -2815,7 +2816,7 @@ function updateTimePickerSelection() {
       alert(data.message || 'Registration failed.');
       return;
     }
-    alert(data.message || 'Registration successful. You can log in now.');
+    alert(data.message || 'Registration successful. Please verify your email before logging in.');
     afterSuccessfulRegistration();
   })
   .catch(err => alert('Error: ' + err.message));
@@ -2850,6 +2851,25 @@ function loginExistingPatient() {
     localStorage.setItem('userEmail', email);
     alert('Login successful!');
     window.location.href = 'telemedicine_platform.html?mode=new-appointment';
+  })
+  .catch(err => alert('Error: ' + err.message));
+}
+
+function forgotPatientPassword() {
+  const email = document.getElementById('patientEmail').value.trim() || prompt('Enter your registered email address:');
+  if (!email) return;
+  fetch('/api/auth/forgot-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  })
+  .then(async (res) => {
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      alert(data.message || 'Could not send password reset link.');
+      return;
+    }
+    alert(data.message || 'If an account exists, a password reset link has been sent.');
   })
   .catch(err => alert('Error: ' + err.message));
 }

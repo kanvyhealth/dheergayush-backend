@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const doctorLoginForm = document.getElementById('doctorLoginForm');
     const emailInput = document.getElementById('doctorEmail');
     const passwordInput = document.getElementById('doctorPassword');
+    const forgotPasswordBtn = document.getElementById('doctorForgotPasswordBtn');
     const messageDiv = document.getElementById('message');
 
     if (!doctorLoginForm) return;
@@ -68,6 +69,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    if (forgotPasswordBtn) {
+        forgotPasswordBtn.addEventListener('click', async () => {
+            const email = (emailInput && emailInput.value.trim()) || prompt('Enter your registered email address:');
+            if (!email) return;
+            showMessage('Sending password reset link...', 'info');
+            try {
+                const data = window.DgAuth && DgAuth.forgotPassword
+                    ? await DgAuth.forgotPassword(email)
+                    : await fetch('/api/auth/forgot-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    }).then(async (r) => {
+                        const body = await r.json().catch(() => ({}));
+                        if (!r.ok) throw new Error(body.message || 'Could not send reset link');
+                        return body;
+                    });
+                showMessage(data.message || 'If an account exists, a password reset link has been sent.', 'success');
+            } catch (error) {
+                showMessage(error.message || 'Could not send reset link.', 'error');
+            }
+        });
+    }
 
     function showMessage(msg, type) {
         if (!messageDiv) return;

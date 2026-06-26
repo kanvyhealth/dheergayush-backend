@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mainOptionsCard = document.getElementById('mainOptionsCard');
     const appointmentsSection = document.getElementById('appointmentsSection');
     const patientLoginForm = document.getElementById('patientLoginForm');
+    const patientForgotPasswordBtn = document.getElementById('patientForgotPasswordBtn');
     const loginMessageDiv = document.getElementById('message');
     const dashboardMessageDiv = document.getElementById('dashboardMessage');
     const yourAppointmentsBtn = document.getElementById('yourAppointmentsBtn');
@@ -164,6 +165,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             showMessage(error.message || 'Invalid email or password.', 'error', 'login');
         }
     });
+
+    if (patientForgotPasswordBtn) {
+        patientForgotPasswordBtn.addEventListener('click', async () => {
+            const email = document.getElementById('patientEmail').value.trim() || prompt('Enter your registered email address:');
+            if (!email) return;
+            showMessage('Sending password reset link...', 'info', 'login');
+            try {
+                const data = window.DgAuth && DgAuth.forgotPassword
+                    ? await DgAuth.forgotPassword(email)
+                    : await fetch('/api/auth/forgot-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    }).then(async (r) => {
+                        const body = await r.json().catch(() => ({}));
+                        if (!r.ok) throw new Error(body.message || 'Could not send reset link');
+                        return body;
+                    });
+                showMessage(data.message || 'If an account exists, a password reset link has been sent.', 'success', 'login');
+            } catch (error) {
+                showMessage(error.message || 'Could not send reset link.', 'error', 'login');
+            }
+        });
+    }
 
     function initDashboardTabs() {
         if (dashboardTabsReady) return;
