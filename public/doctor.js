@@ -72,8 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (forgotPasswordBtn) {
         forgotPasswordBtn.addEventListener('click', async () => {
-            const email = (emailInput && emailInput.value.trim()) || prompt('Enter your registered email address:');
-            if (!email) return;
+            const email = emailInput ? emailInput.value.trim() : '';
+            if (!email) {
+                showMessage('Enter your registered email above, then tap Forgot Password.', 'error');
+                return;
+            }
             showMessage('Sending password reset link...', 'info');
             try {
                 const data = window.DgAuth && DgAuth.forgotPassword

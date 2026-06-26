@@ -53,7 +53,8 @@ async function main() {
     else fail('Razorpay API authenticated', health.body.razorpayError || 'create-order auth failed');
   } catch (e) {
     fail('Health endpoint', e.message);
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   try {
@@ -97,7 +98,7 @@ async function main() {
   if (failed.length) {
     console.log('\nFix Razorpay: Dashboard -> API Keys -> Generate Test Key (pair).');
     console.log('Update Render: RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET -> Manual Deploy.');
-    process.exit(1);
+    process.exitCode = 1;
   }
 }
 

@@ -445,6 +445,11 @@ app.post('/api/auth/forgot-password', authLimiter, async (req, res) => {
   try {
     await sendPasswordResetEmail(email);
   } catch (err) {
+    if (err.code === 'EMAIL_NOT_FOUND' || /email not found/i.test(err.message || '')) {
+      return res.json({
+        message: 'If an account exists for this email, a password reset link has been sent.'
+      });
+    }
     console.warn('Password reset email failed:', err.message);
     return res.status(502).json({
       message: 'Could not send password reset email right now. Please try again later.'

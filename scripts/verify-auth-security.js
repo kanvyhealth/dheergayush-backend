@@ -14,7 +14,7 @@ async function req(path, options = {}) {
       'Content-Type': 'application/json',
       ...(options.headers || {})
     }
-  });s
+  });
   let body = null;
   const ct = res.headers.get('content-type') || '';
   if (ct.includes('application/json')) {
@@ -47,7 +47,8 @@ async function main() {
   } catch (e) {
     fail('Health endpoint', e.message);
     console.error('Server not reachable. Start with: npm start');
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   try {
@@ -85,7 +86,7 @@ async function main() {
   try {
     const r = await req('/api/agora/token', {
       method: 'POST',
-      body: JSON.stringify({ channelName: 'test', uid: 1 })
+      body: JSON.stringify({ roomID: 'security-test-room', userID: 1, role: 'doctor' })
     });
     if (r.status === 401) pass('Agora token requires Firebase auth');
     else fail('Agora token requires Firebase auth', r.status + ' ' + JSON.stringify(r.body).slice(0, 80));
@@ -153,7 +154,7 @@ async function main() {
 
   const failed = results.filter((x) => !x.ok);
   console.log('\n' + results.length + ' checks, ' + failed.length + ' failed');
-  process.exit(failed.length ? 1 : 0);
+  process.exitCode = failed.length ? 1 : 0;
 }
 
 main().catch((e) => {

@@ -2857,8 +2857,11 @@ function loginExistingPatient() {
 }
 
 function forgotPatientPassword() {
-  const email = document.getElementById('patientEmail').value.trim() || prompt('Enter your registered email address:');
-  if (!email) return;
+  const email = document.getElementById('patientEmail').value.trim();
+  if (!email) {
+    alert('Enter your registered email above, then tap Forgot Password.');
+    return;
+  }
   fetch('/api/auth/forgot-password', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
