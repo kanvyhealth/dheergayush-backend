@@ -776,17 +776,20 @@ tr:hover {
     display: none;
     font-size: 0.95em;
 }
-#adminLoginForm .form-group {
+#adminLoginForm .form-group,
+#adminOtpForm .form-group {
     margin-bottom: 18px;
 }
-#adminLoginForm label {
+#adminLoginForm label,
+#adminOtpForm label {
     display: block;
     margin-bottom: 6px;
     font-weight: 500;
     color: #2c3e50;
 }
 #adminLoginForm input[type="text"],
-#adminLoginForm input[type="password"] {
+#adminLoginForm input[type="password"],
+#adminOtpForm input[type="text"] {
     width: 100%;
     padding: 10px 12px;
     border: 1px solid #dcdde1;
@@ -795,9 +798,40 @@ tr:hover {
     background: #f5f6fa;
     color: #2c3e50;
 }
-#adminLoginForm .login-btn {
+#adminLoginForm .login-btn,
+#adminOtpForm .login-btn {
     width: 100%;
     margin-top: 18px;
+}
+
+.admin-otp-hint,
+.admin-otp-timer {
+    color: #475569;
+    font-size: 0.94rem;
+    line-height: 1.45;
+    text-align: center;
+}
+
+.admin-otp-timer {
+    margin-top: 12px;
+    font-weight: 600;
+}
+
+.admin-otp-resend,
+.admin-otp-back {
+    width: 100%;
+    margin-top: 10px;
+    border: 1px solid #dcdde1;
+    border-radius: 6px;
+    padding: 10px 12px;
+    background: #fff;
+    color: #2c3e50;
+    cursor: pointer;
+}
+
+.admin-otp-resend:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
 }
 
 /* Responsive */

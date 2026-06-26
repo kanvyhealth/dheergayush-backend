@@ -89,6 +89,13 @@ const {
   revokeAdminToken,
   requireAdmin
 } = require('./lib/adminAuth');
+const {
+  createAdminOtpChallenge,
+  verifyAdminOtp,
+  regenerateAdminOtp,
+  sendAdminOtp,
+  dropAdminOtpChallenge
+} = require('./lib/adminOtp');
 const { generateAgoraToken } = require('./lib/agoraToken');
 const {
   listPaymentsForPatient,
@@ -262,6 +269,8 @@ applyWriteRateLimit(app);
 app.use((req, res, next) => {
   const p = req.path;
   if (p === '/api/admin/login' && req.method === 'POST') return next();
+  if (p === '/api/admin/login/verify' && req.method === 'POST') return next();
+  if (p === '/api/admin/login/resend' && req.method === 'POST') return next();
   if (p === '/api/admin/logout' && req.method === 'POST') return next();
   if (p.startsWith('/api/admin/')) return requireAdmin(req, res, next);
   if (p === '/api/doctors/debug') return requireAdmin(req, res, next);
@@ -514,7 +523,6 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required.' });
     }
     const auth = await signInWithPassword(email, password);
-    if (!(await ensureAuthEmailVerified(auth, req, res, 'patient'))) return;
     const profile = await getUserProfile(auth.localId);
     if (profile?.phone) {
       await linkAppointmentsToAuthUid({ authUid: auth.localId, phone: profile.phone });
@@ -574,7 +582,6 @@ app.post('/api/auth/login-doctor', authLimiter, async (req, res) => {
     }
 
     const auth = await signInWithPassword(email, password);
-    if (!(await ensureAuthEmailVerified(auth, req, res, 'doctor'))) return;
     const doctor = await findDoctorByUid(auth.localId);
     if (!doctor) {
       return res.status(404).json({ message: 'Doctor profile not found for this account.' });
@@ -1395,7 +1402,6 @@ app.post('/api/login-patient', authLimiter, async (req, res) => {
         }
 
         const auth = await signInWithPassword(email, password);
-        if (!(await ensureAuthEmailVerified(auth, req, res, 'patient'))) return;
         const profile = await getUserProfile(auth.localId);
         if (profile && profile.role && profile.role !== 'Customer') {
             return res.status(403).json({ message: 'This account is not a patient account.' });
@@ -3478,14 +3484,86 @@ app.put('/api/admin/doctors/:id/approve', async (req, res) => {
     }
 });
 
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/admin/login', authLimiter, (req, res) => {
     const username = (req.body.username || req.body.email || '').trim();
     const password = req.body.password || '';
     if (!validateAdminCredentials(username, password)) {
         return res.status(401).json({ message: 'Invalid credentials' });
     }
+    const challenge = createAdminOtpChallenge({
+        ip: clientIp(req),
+        ua: req.get('user-agent') || ''
+    });
+    sendAdminOtp(challenge.otp)
+        .then((delivery) => {
+            if (!delivery.ok) {
+                dropAdminOtpChallenge(challenge.challengeId);
+                return res.status(503).json({
+                    ok: false,
+                    message: 'Admin OTP delivery is not configured. Configure email and SMS OTP providers, then try again.',
+                    delivery
+                });
+            }
+            return res.json({
+                ok: true,
+                mfaRequired: true,
+                message: 'OTP sent to admin mobile and email.',
+                challengeId: challenge.challengeId,
+                expiresIn: challenge.expiresIn,
+                resendIn: challenge.resendIn,
+                maskedEmail: challenge.maskedEmail,
+                maskedPhone: challenge.maskedPhone
+            });
+        })
+        .catch((err) => {
+            dropAdminOtpChallenge(challenge.challengeId);
+            return res.status(503).json({
+                ok: false,
+                message: 'Could not send admin OTP. Please try again later.',
+                error: err.message
+            });
+        });
+});
+
+app.post('/api/admin/login/resend', authLimiter, async (req, res) => {
+    try {
+        const result = regenerateAdminOtp(req.body?.challengeId);
+        if (!result.ok) {
+            return res.status(result.status || 400).json({
+                ok: false,
+                message: result.message,
+                resendIn: result.resendIn || 0
+            });
+        }
+        const delivery = await sendAdminOtp(result.otp);
+        if (!delivery.ok) {
+            return res.status(503).json({
+                ok: false,
+                message: 'Could not send admin OTP. Please try again later.',
+                delivery
+            });
+        }
+        return res.json({
+            ok: true,
+            message: 'OTP resent to admin mobile and email.',
+            challengeId: result.challengeId,
+            expiresIn: result.expiresIn,
+            resendIn: result.resendIn,
+            maskedEmail: result.maskedEmail,
+            maskedPhone: result.maskedPhone
+        });
+    } catch (err) {
+        return res.status(503).json({ ok: false, message: 'Could not resend admin OTP.', error: err.message });
+    }
+});
+
+app.post('/api/admin/login/verify', authLimiter, (req, res) => {
+    const result = verifyAdminOtp(req.body?.challengeId, req.body?.otp);
+    if (!result.ok) {
+        return res.status(result.status || 401).json({ ok: false, message: result.message });
+    }
     const token = issueAdminToken();
-    res.json({ message: 'Login successful', ok: true, token });
+    return res.json({ message: 'Login successful', ok: true, token });
 });
 
 app.post('/api/admin/logout', (req, res) => {

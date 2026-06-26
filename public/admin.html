@@ -25,6 +25,18 @@
             <button type="submit" class="login-btn dg-btn-primary">Login</button>
             <div id="adminLoginError" class="admin-login-error"></div>
         </form>
+        <form id="adminOtpForm" class="admin-otp-form" style="display:none;">
+            <p id="adminOtpHint" class="admin-otp-hint"></p>
+            <div class="form-group">
+                <label for="adminOtp">OTP</label>
+                <input type="text" id="adminOtp" name="adminOtp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required>
+            </div>
+            <button type="submit" class="login-btn dg-btn-primary">Verify OTP</button>
+            <button type="button" id="adminOtpResend" class="admin-otp-resend" disabled>Resend OTP</button>
+            <button type="button" id="adminOtpBack" class="admin-otp-back">Back to login</button>
+            <div id="adminOtpTimer" class="admin-otp-timer"></div>
+            <div id="adminOtpError" class="admin-login-error"></div>
+        </form>
         <div id="adminLoginSuccess" class="admin-login-success">Admin login successful!</div>
     </div>
     <div class="admin-container" id="adminDashboardContainer" style="display:none;">

@@ -18,6 +18,17 @@ const adminLoginContainer = document.getElementById('adminLoginContainer');
 const adminDashboardContainer = document.getElementById('adminDashboardContainer');
 const adminLoginForm = document.getElementById('adminLoginForm');
 const adminLoginError = document.getElementById('adminLoginError');
+const adminOtpForm = document.getElementById('adminOtpForm');
+const adminOtpInput = document.getElementById('adminOtp');
+const adminOtpHint = document.getElementById('adminOtpHint');
+const adminOtpTimer = document.getElementById('adminOtpTimer');
+const adminOtpError = document.getElementById('adminOtpError');
+const adminOtpResend = document.getElementById('adminOtpResend');
+const adminOtpBack = document.getElementById('adminOtpBack');
+let adminOtpChallengeId = '';
+let adminOtpExpiresAt = 0;
+let adminOtpResendAt = 0;
+let adminOtpTimerHandle = null;
 
 // Show notification function
 function showNotification(message, type = 'info') {
@@ -1421,11 +1432,13 @@ window.showEditModal = showEditModal;
 window.showDeleteModal = showDeleteModal;
 
 function showLogin() {
+    resetAdminOtpStep();
     adminLoginContainer.style.display = 'block';
     adminDashboardContainer.style.display = 'none';
 }
 
 function showDashboard() {
+    stopAdminOtpTimer();
     adminLoginContainer.style.display = 'none';
     adminDashboardContainer.style.display = 'block';
     const activeTab = document.querySelector('.tab-btn.active');
@@ -1502,6 +1515,72 @@ function setupAdminRealtime() {
     });
 }
 
+function setAdminOtpError(message) {
+    if (!adminOtpError) return;
+    adminOtpError.textContent = message || '';
+    adminOtpError.style.display = message ? 'block' : 'none';
+}
+
+function stopAdminOtpTimer() {
+    if (adminOtpTimerHandle) {
+        clearInterval(adminOtpTimerHandle);
+        adminOtpTimerHandle = null;
+    }
+}
+
+function formatSeconds(seconds) {
+    const s = Math.max(0, Number(seconds) || 0);
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${m}:${String(r).padStart(2, '0')}`;
+}
+
+function updateAdminOtpTimer() {
+    const now = Date.now();
+    const expiresIn = Math.max(0, Math.ceil((adminOtpExpiresAt - now) / 1000));
+    const resendIn = Math.max(0, Math.ceil((adminOtpResendAt - now) / 1000));
+    if (adminOtpTimer) {
+        adminOtpTimer.textContent = expiresIn
+            ? `OTP expires in ${formatSeconds(expiresIn)}`
+            : 'OTP expired. Please go back and login again.';
+    }
+    if (adminOtpResend) {
+        adminOtpResend.disabled = resendIn > 0 || expiresIn <= 0;
+        adminOtpResend.textContent = resendIn > 0 ? `Resend OTP (${resendIn}s)` : 'Resend OTP';
+    }
+    if (expiresIn <= 0) stopAdminOtpTimer();
+}
+
+function showAdminOtpStep(data) {
+    adminOtpChallengeId = data.challengeId || '';
+    adminOtpExpiresAt = Date.now() + Number(data.expiresIn || 300) * 1000;
+    adminOtpResendAt = Date.now() + Number(data.resendIn || 60) * 1000;
+    if (adminLoginForm) adminLoginForm.style.display = 'none';
+    if (adminOtpForm) adminOtpForm.style.display = 'block';
+    if (adminOtpHint) {
+        adminOtpHint.textContent = `OTP sent to ${data.maskedPhone || 'admin mobile'} and ${data.maskedEmail || 'admin email'}.`;
+    }
+    if (adminOtpInput) {
+        adminOtpInput.value = '';
+        setTimeout(() => adminOtpInput.focus(), 50);
+    }
+    setAdminOtpError('');
+    stopAdminOtpTimer();
+    updateAdminOtpTimer();
+    adminOtpTimerHandle = setInterval(updateAdminOtpTimer, 1000);
+}
+
+function resetAdminOtpStep() {
+    adminOtpChallengeId = '';
+    adminOtpExpiresAt = 0;
+    adminOtpResendAt = 0;
+    stopAdminOtpTimer();
+    if (adminOtpForm) adminOtpForm.style.display = 'none';
+    if (adminLoginForm) adminLoginForm.style.display = 'block';
+    if (adminLoginError) adminLoginError.style.display = 'none';
+    setAdminOtpError('');
+}
+
 if (adminLoginForm) {
     adminLoginForm.addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -1514,7 +1593,9 @@ if (adminLoginForm) {
                 body: JSON.stringify({ username, password })
             });
             const data = await res.json();
-            if (res.ok && data.token) {
+            if (res.ok && data.mfaRequired && data.challengeId) {
+                showAdminOtpStep(data);
+            } else if (res.ok && data.token) {
                 DgApi.setAdminToken(data.token);
                 adminLoginError.style.display = 'none';
                 const successMsg = document.getElementById('adminLoginSuccess');
@@ -1531,6 +1612,73 @@ if (adminLoginForm) {
         } catch (err) {
             adminLoginError.textContent = 'Could not connect to server.';
             adminLoginError.style.display = 'block';
+        }
+    });
+}
+
+if (adminOtpBack) {
+    adminOtpBack.addEventListener('click', function () {
+        resetAdminOtpStep();
+    });
+}
+
+if (adminOtpResend) {
+    adminOtpResend.addEventListener('click', async function () {
+        if (!adminOtpChallengeId) return;
+        try {
+            adminOtpResend.disabled = true;
+            const res = await fetch('/api/admin/login/resend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ challengeId: adminOtpChallengeId })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                if (data.resendIn) {
+                    adminOtpResendAt = Date.now() + Number(data.resendIn) * 1000;
+                    updateAdminOtpTimer();
+                }
+                throw new Error(data.message || 'Could not resend OTP.');
+            }
+            showAdminOtpStep(data);
+        } catch (err) {
+            setAdminOtpError(err.message || 'Could not resend OTP.');
+            updateAdminOtpTimer();
+        }
+    });
+}
+
+if (adminOtpForm) {
+    adminOtpForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const otp = adminOtpInput ? adminOtpInput.value.trim() : '';
+        if (!/^\d{6}$/.test(otp)) {
+            setAdminOtpError('Enter the 6-digit OTP.');
+            return;
+        }
+        try {
+            const res = await fetch('/api/admin/login/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ challengeId: adminOtpChallengeId, otp })
+            });
+            const data = await res.json();
+            if (res.ok && data.token) {
+                DgApi.setAdminToken(data.token);
+                stopAdminOtpTimer();
+                setAdminOtpError('');
+                const successMsg = document.getElementById('adminLoginSuccess');
+                if (successMsg) successMsg.style.display = 'block';
+                setTimeout(() => {
+                    if (successMsg) successMsg.style.display = 'none';
+                    showDashboard();
+                }, 600);
+                adminOtpForm.reset();
+            } else {
+                setAdminOtpError(data.message || 'Invalid OTP.');
+            }
+        } catch (err) {
+            setAdminOtpError('Could not verify OTP.');
         }
     });
 }
