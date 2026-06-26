@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "node --check server.js && node scripts/verify-auth-security.js",
+    "test": "node --check server.js && node scripts/verify-auth-security.js && node scripts/verify-cross-platform-contract.js",
     "test:auth": "node scripts/verify-auth-security.js",
     "test:razorpay": "node scripts/verify-razorpay-checkout.js",
+    "test:cross-platform": "node scripts/verify-cross-platform-contract.js",
     "check": "node --check server.js",
     "start": "node server.js",
     "db:migrate-firebase": "node scripts/migrateMongoToFirebase.js",

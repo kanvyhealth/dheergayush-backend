@@ -102,6 +102,7 @@ Backend: `lib/doctorFields.js`. Flutter: `lib/utils/doctor_profile_utils.dart`.
 | `users` | Patient accounts (`role: Customer`) |
 | `payments` | Payment records |
 | `appointments` | Consultation booking requests (same as mobile app; not `consultationRequests`) |
+| `active_calls` | App/web Agora handoff records for accepted or in-progress consultations |
 | `orders` | Medicine orders |
 | `stores` | Ayurvedic store catalog |
 | `prescriptions` | Prescriptions |

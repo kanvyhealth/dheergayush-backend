@@ -61861,24 +61861,6 @@
         ]
       },
       {
-        "_id": "81874cd3b2b73256df26b729",
-        "name": "T1-V2506: Bottled Veda Syrup #2506 - 450mL pre-order testing",
-        "imageFile": "81874cd3b2b73256df26b729.jpg",
-        "description": "Ashwagandharistham For more information about this product, please talk to your health professional.",
-        "category": "Ayurvedic Medicines",
-        "brand": "Maharishi Ayurveda",
-        "company": "Maharishi Ayurveda",
-        "weights": [
-          {
-            "value": 450,
-            "unit": "ml",
-            "price": 75,
-            "pack_label": "450mL",
-            "variant_id": "45654243311766.0"
-          }
-        ]
-      },
-      {
         "_id": "369c07fa9ce41b8a1f989f89",
         "name": "T1-V2508: Bottled Veda Syrup #2508 - 200mL",
         "imageFile": "369c07fa9ce41b8a1f989f89.jpg",
