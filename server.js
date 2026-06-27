@@ -183,6 +183,7 @@ const {
   buildWebPaidAppointmentFields,
   buildWebPaidPaymentFields,
   buildActiveCallRecord,
+  canonicalVideoChannelForAppointment,
   videoRoomIdForAppointment,
   isValidAgoraChannelName,
   agoraUidForUserId
@@ -4102,19 +4103,24 @@ app.post('/api/video-room/:roomId/refund', async (req, res) => {
 async function handleCreateAgoraRtcToken(req, res) {
     try {
         const appointmentId = String(req.body?.appointmentId || '').trim();
-        const channelName = String(req.body?.channelName || '').trim();
+        const requestedChannelName = String(req.body?.channelName || '').trim();
         const uid = req.firebaseUid;
 
         if (!appointmentId) {
             return res.status(400).json({ success: false, error: 'appointmentId is required' });
         }
-        if (!isValidAgoraChannelName(channelName)) {
-            return res.status(400).json({ success: false, error: 'Invalid Agora channel name' });
-        }
 
         const appointment = await ConsultationRequest.findById(appointmentId);
         if (!appointment) {
             return res.status(404).json({ success: false, error: 'Appointment not found' });
+        }
+        const channelName = canonicalVideoChannelForAppointment(
+            appointment.toObject ? appointment.toObject() : appointment,
+            appointmentId,
+            requestedChannelName
+        );
+        if (!isValidAgoraChannelName(channelName)) {
+            return res.status(400).json({ success: false, error: 'Invalid Agora channel name' });
         }
 
         const participantIds = new Set(
@@ -4146,6 +4152,7 @@ async function handleCreateAgoraRtcToken(req, res) {
             success: true,
             appId: result.appId,
             channelName,
+            channel: channelName,
             uid: agoraUid,
             token: result.token,
             tokenRequired: true,

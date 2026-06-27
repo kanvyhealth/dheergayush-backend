@@ -11,6 +11,7 @@ const {
   buildAppInCallFields,
   buildAppCompletedFields,
   buildAppTerminalFields,
+  canonicalVideoChannelForAppointment,
   isValidAgoraChannelName,
   agoraUidForUserId
 } = require('../lib/appAppointmentSync');
@@ -167,7 +168,17 @@ function run() {
   );
   assert.strictEqual(activeCall._id, scheduledCallId(appointmentId));
   assert.strictEqual(activeCall.callRoomId, roomId);
+  assert.strictEqual(activeCall.channelName, roomId);
+  assert.strictEqual(activeCall.agoraChannel, roomId);
   assert.strictEqual(activeCall.provider, 'agora');
+  assert.strictEqual(
+    canonicalVideoChannelForAppointment(appointment, appointmentId, scheduledCallId(appointmentId)),
+    roomId
+  );
+  assert.strictEqual(
+    canonicalVideoChannelForAppointment(appointment, appointmentId, appointmentId),
+    roomId
+  );
 
   const acceptedPaymentPatch = buildPaymentLifecyclePatch('accepted', appointmentId);
   assert.strictEqual(acceptedPaymentPatch.status, 'accepted');
