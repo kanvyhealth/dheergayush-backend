@@ -139,14 +139,27 @@
   }
 
   function minPrice(med) {
-    if (!med.weights || !med.weights.length) return 0;
+    if (!med.weights || !med.weights.length) return Number(med.price || med.mrp || med.pricePerUnit || med.unitPrice || 0) || 0;
     return Math.min.apply(null, med.weights.map(function (w) { return w.price; }));
   }
 
   function mergeProducts(items, defaultBrand) {
-    return window.DgCatalogMerge
+    var list = window.DgCatalogMerge
       ? DgCatalogMerge.mergeProducts(items, defaultBrand)
       : items;
+    return (list || []).map(function (item) {
+      if (Array.isArray(item.weights) && item.weights.length) return item;
+      var price = Number(item.price || item.mrp || item.pricePerUnit || item.unitPrice || 0);
+      if (price <= 0) return item;
+      return Object.assign({}, item, {
+        weights: [{
+          medicineId: item._id || item.id || item.medicineId || item.name,
+          value: item.weightValue || item.packSize || item.pack || 1,
+          unit: item.weightUnit || item.unit || 'unit',
+          price: price
+        }]
+      });
+    });
   }
 
   function dedupeStores(list) {
@@ -999,6 +1012,29 @@
     return { added: added, skipped: skipped };
   }
 
+  function consumeSavedPrescriptionCart() {
+    var raw = '';
+    try {
+      raw = localStorage.getItem('dgStorePrescriptionCartHandoff') || '';
+    } catch (_) {
+      raw = '';
+    }
+    if (!raw) return;
+    try {
+      var payload = JSON.parse(raw);
+      var result = addPrescriptionItemsToCart(payload.items || []);
+      if (payload.roomId) consultationContext.appointmentId = consultationContext.appointmentId || String(payload.roomId);
+      if (result.added > 0) {
+        renderCart();
+        updateCartBadge();
+        showSection('cartSection');
+      }
+      localStorage.removeItem('dgStorePrescriptionCartHandoff');
+    } catch (err) {
+      console.warn('Could not import saved prescription cart:', err);
+    }
+  }
+
   window.DgStoreCartBridge = {
     addPrescriptionItems: addPrescriptionItemsToCart,
     openCart: function () {
@@ -1019,5 +1055,6 @@
   setupInfiniteScroll();
   setupProductGridEvents();
   loadStores();
+  consumeSavedPrescriptionCart();
   updateCartBadge();
 })();

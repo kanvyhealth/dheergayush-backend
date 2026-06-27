@@ -20,9 +20,22 @@
   }
 
   function mergeProducts(items, brand) {
-    return global.DgCatalogMerge
+    var list = global.DgCatalogMerge
       ? DgCatalogMerge.mergeProducts(items || [], brand)
       : (items || []);
+    return (list || []).map(function (item) {
+      if (Array.isArray(item.weights) && item.weights.length) return item;
+      var price = Number(item.price || item.mrp || item.pricePerUnit || item.unitPrice || 0);
+      if (price <= 0) return item;
+      return Object.assign({}, item, {
+        weights: [{
+          medicineId: item._id || item.id || item.medicineId || item.name,
+          value: item.weightValue || item.packSize || item.pack || 1,
+          unit: item.weightUnit || item.unit || 'unit',
+          price: price
+        }]
+      });
+    });
   }
 
   function dedupeStores(list) {
@@ -109,7 +122,9 @@
         ? '<input type="hidden" class="vcall-product-weight" value="' + idx + '|' + (weights[0].medicineId || med._id) +
           '|' + weights[0].value + '|' + weights[0].unit + '|' + weights[0].price + '">' +
           '<div class="vcall-pack-single">' + weights[0].value + ' ' + weights[0].unit + ' — ₹' + weights[0].price + '</div>'
-        : '<p class="vcall-no-pack">Price unavailable</p>');
+        : '<input type="hidden" class="vcall-product-weight" value="' + idx + '|' + (med._id || med.id || med.medicineId || med.name) +
+          '|1|unit|' + minP + '">' +
+          '<div class="vcall-pack-single">Standard pack — ₹' + minP + '</div>');
     var storeLabel = displayStoreLabel(med);
     var actions = productActionsHtml(idx, browseOnly, cartQty, prescribeSent);
 
@@ -124,7 +139,7 @@
       '<span class="vcall-review-count">(' + Number(reviews).toLocaleString() + ')</span></div>' +
       '<div class="vcall-product-price">₹<span>' + minP + '</span>' +
       (weights.length > 1 ? '<span class="vcall-price-note"> onwards</span>' : '') + '</div>' +
-      packSelect +
+      (minP > 0 ? packSelect : '<p class="vcall-no-pack">Price unavailable</p>') +
       '<div class="vcall-product-actions">' + actions + '</div>' +
       '</div></article>';
   }

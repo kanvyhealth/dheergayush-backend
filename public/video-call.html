@@ -3711,6 +3711,9 @@ html, body {
                         setCallStatus(label, 'connected');
                     },
                     onUserLeft: () => {
+                        if (!window.__vcallRemoteJoined) {
+                            return;
+                        }
                         window.__vcallRemoteJoined = false;
                         const myRole = getViewerRole();
                         const peerRole = myRole === 'doctor' ? 'patient' : 'doctor';
@@ -3721,7 +3724,7 @@ html, body {
                             setCallStatus('Reconnecting…', 'reconnecting');
                             if (!connectionLostTimer) {
                                 connectionLostTimer = setTimeout(function () {
-                                    onCallDisconnectedGrace('connection_lost');
+                                    onCallDisconnectedGrace('connection_lost', getViewerRole());
                                 }, 30000);
                             }
                         } else if (state === 'CONNECTED') {
@@ -4321,12 +4324,20 @@ if (saveRxBtn) {
       return;
     }
     recalcPatientRxTotals();
-    localStorage.setItem(getPatientSavedCartKey(), JSON.stringify({
-      items: latestPrescription,
+    const savedItems = cloneRxItems(patientRxDraft);
+    const savedPayload = {
+      items: savedItems,
       total: totalAmount,
       savedAt: new Date().toISOString(),
       roomId: getActiveRoomId()
+    };
+    localStorage.setItem(getPatientSavedCartKey(), JSON.stringify({
+      items: savedPayload.items,
+      total: savedPayload.total,
+      savedAt: savedPayload.savedAt,
+      roomId: savedPayload.roomId
     }));
+    localStorage.setItem('dgStorePrescriptionCartHandoff', JSON.stringify(savedPayload));
     showMessage('Prescription saved to your cart. Buy anytime from the store.', 'success');
   });
 }

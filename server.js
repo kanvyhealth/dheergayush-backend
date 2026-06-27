@@ -1562,9 +1562,11 @@ app.post('/api/prescribe-cart', requireDoctorSession('Doctor sign-in required to
 
     let saved;
     if (existing?._id) {
-      saved = await PrescribedCart.findByIdAndUpdate(existing._id, {
-        $set: { cartItems: enrichedItems, prescribedAt, roomId: normalizedRoomId }
-      });
+      saved = await PrescribedCart.findByIdAndUpdate(
+        existing._id,
+        { $set: { cartItems: enrichedItems, prescribedAt, roomId: normalizedRoomId } },
+        { new: true }
+      );
     } else {
       saved = await PrescribedCart.create({
         roomId: normalizedRoomId,
@@ -3729,7 +3731,14 @@ async function markConsultationInCall(roomId) {
                 $set: {
                     ...buildConsultationStatusFields('in_call', id),
                     lastCallActivityAt: now,
-                    callStartedAt: ctx.consultation.callStartedAt || now
+                    callStartedAt: ctx.consultation.callStartedAt || now,
+                    callDisconnectedAt: null,
+                    callGraceUntil: null,
+                    callReconnectPending: false,
+                    callDisconnectedRole: null,
+                    consultationCompletionAnswer: null,
+                    reconnectRingActive: false,
+                    reconnectRingUntil: null
                 }
             });
         }
