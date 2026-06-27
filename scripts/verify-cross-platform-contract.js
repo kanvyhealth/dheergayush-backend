@@ -17,6 +17,7 @@ const {
 } = require('../lib/appAppointmentSync');
 const {
   buildConsultationStatusFields,
+  normalizeConsultationStatus,
   patientCanJoinVideo
 } = require('../lib/consultationWorkflow');
 const { buildPaymentLifecyclePatch } = require('../lib/consultationLifecycleSync');
@@ -191,6 +192,13 @@ function run() {
   assert.strictEqual(patientCanJoinVideo('accepted'), true);
   assert.strictEqual(patientCanJoinVideo('in_call'), true);
   assert.strictEqual(patientCanJoinVideo('completed'), false);
+  assert.strictEqual(normalizeConsultationStatus({ status: 'accepted', consultationStatus: 'active' }, null), 'accepted');
+  assert.strictEqual(normalizeConsultationStatus({ consultationStatus: 'active' }, null), 'accepted');
+  assert.strictEqual(normalizeConsultationStatus({ consultationStatus: 'in_progress' }, null), 'in_call');
+  assert.strictEqual(
+    normalizeConsultationStatus(null, { status: 'completed', paymentStatus: 'completed', roomName: roomId }),
+    'ringing'
+  );
   assert.strictEqual(isValidAgoraChannelName(roomId), true);
   assert.strictEqual(isValidAgoraChannelName('invalid room with spaces'), false);
   assert(Number.isInteger(agoraUidForUserId(patientId)), 'Agora UID must be numeric for native SDKs');

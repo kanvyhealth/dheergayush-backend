@@ -574,11 +574,16 @@
       }
     }
 
-    async function setDoctorAvailability(status) {
+    async function setDoctorAvailability(status, previousCheckedOverride) {
       const doctorName = await resolveDoctorName();
       if (!doctorName) return alert('Doctor name not found. Please sign in again.');
       const switchWrap = document.getElementById('doctorOnlineSwitchWrap');
+      const toggle = document.getElementById('doctorOnlineToggle');
+      const previousChecked = previousCheckedOverride != null
+        ? !!previousCheckedOverride
+        : (toggle ? toggle.checked : false);
       if (switchWrap) switchWrap.classList.add('is-loading');
+      if (toggle) toggle.disabled = true;
       doctorStatusPollPausedUntil = Date.now() + 15000;
       applyDoctorStatusUI(status, { dbStatus: status });
       try {
@@ -595,9 +600,12 @@
       } catch (e) {
         alert(e.message || 'Could not update status');
         doctorStatusPollPausedUntil = 0;
+        if (toggle) toggle.checked = previousChecked;
         await checkDoctorStatus();
       } finally {
         if (switchWrap) switchWrap.classList.remove('is-loading');
+        const toggleNorm = (window.DgDoctorStatus && DgDoctorStatus.normalizeDbStatus(status)) || status;
+        if (toggle && toggleNorm !== 'Busy') toggle.disabled = false;
       }
     }
 
@@ -605,7 +613,8 @@
       var toggle = document.getElementById('doctorOnlineToggle');
       if (!toggle) return;
       toggle.addEventListener('change', function () {
-        setDoctorAvailability(toggle.checked ? 'Available' : 'Offline');
+        const nextChecked = toggle.checked;
+        setDoctorAvailability(nextChecked ? 'Available' : 'Offline', !nextChecked);
       });
     });
 

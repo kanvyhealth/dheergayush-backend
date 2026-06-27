@@ -4329,9 +4329,14 @@ app.post('/api/doctors/updateStatus', requireDoctorNameAccess(), async (req, res
 
     const currentPresence = getDoctorPresenceStatus(doctor);
     if (normalized === 'Offline' && currentPresence === 'Busy') {
+      const live = await hasLiveActiveConsultation(doctor.name || doctorName);
+      if (!live) {
+        await clearStaleDoctorConsultations(doctor.name || doctorName);
+      } else {
         return res.status(409).json({
             message: 'Cannot go offline while in a consultation. End the video call first.'
         });
+      }
     }
 
     await updateDoctorPresence(doctor, normalized);
