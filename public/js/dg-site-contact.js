@@ -2,8 +2,8 @@
  * Site-wide support contact - single source of truth for phone and email.
  */
 (function (global) {
-  global.DgSiteContact = {
-    email: 'contact@dheergayush.net',
+  var supportContact = {
+    email: 'support@dheergayush.net',
     phoneDisplay: '7842736777',
     phoneTel: '+917842736777',
     phoneFormatted: '+91 7842736777',
@@ -17,4 +17,6 @@
       'Andhra Pradesh, India'
     ]
   };
+
+  global.DgSiteContact = Object.freeze ? Object.freeze(supportContact) : supportContact;
 })(typeof window !== 'undefined' ? window : this);
