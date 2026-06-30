@@ -1595,18 +1595,8 @@ if (adminLoginForm) {
             const data = await res.json();
             if (res.ok && data.mfaRequired && data.challengeId) {
                 showAdminOtpStep(data);
-            } else if (res.ok && data.token) {
-                DgApi.setAdminToken(data.token);
-                adminLoginError.style.display = 'none';
-                const successMsg = document.getElementById('adminLoginSuccess');
-                if (successMsg) successMsg.style.display = 'block';
-                setTimeout(() => {
-                    if (successMsg) successMsg.style.display = 'none';
-                    showDashboard();
-                }, 800);
-                adminLoginForm.reset();
             } else {
-                adminLoginError.textContent = data.message || 'Invalid username or password.';
+                adminLoginError.textContent = data.message || 'OTP verification is required before admin access.';
                 adminLoginError.style.display = 'block';
             }
         } catch (err) {

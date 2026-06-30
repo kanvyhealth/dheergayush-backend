@@ -152,6 +152,27 @@ async function main() {
     fail('Create-order public access', e.message);
   }
 
+  try {
+    const r = await req('/api/admin/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        username: process.env.ADMIN_USERNAME || 'muralimohan',
+        password: process.env.ADMIN_PASSWORD || 'Muralimohan123@'
+      })
+    });
+    if (r.ok && r.body.mfaRequired === true && r.body.challengeId && !r.body.token) {
+      pass('Admin login requires OTP before token');
+    } else if (r.status === 503 && !r.body.token) {
+      pass('Admin login blocks access when OTP delivery is unavailable', r.body.message || '503');
+    } else if (r.status === 401) {
+      pass('Admin login rejects invalid configured credentials');
+    } else {
+      fail('Admin login must not grant token before OTP', r.status + ' ' + JSON.stringify(r.body).slice(0, 120));
+    }
+  } catch (e) {
+    fail('Admin login OTP gate', e.message);
+  }
+
   const failed = results.filter((x) => !x.ok);
   console.log('\n' + results.length + ' checks, ' + failed.length + ' failed');
   process.exitCode = failed.length ? 1 : 0;

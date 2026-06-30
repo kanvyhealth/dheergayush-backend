@@ -10,7 +10,7 @@
 | `SITE_URL` | CORS + production URL |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | Store + consultation payments |
 | `AGORA_APP_ID`, `AGORA_APP_CERTIFICATE` | Cross-platform video calls |
-| `ADMIN_USERNAME`, `ADMIN_PASSWORD` | Admin dashboard |
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ADMIN_OTP_EMAIL`, `ADMIN_OTP_PHONE` | Admin dashboard password + OTP login |
 
 Verify Razorpay keys:
 

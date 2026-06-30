@@ -3540,9 +3540,10 @@ app.post('/api/admin/login/resend', authLimiter, async (req, res) => {
         }
         const delivery = await sendAdminOtp(result.otp);
         if (!delivery.ok) {
+            dropAdminOtpChallenge(result.challengeId);
             return res.status(503).json({
                 ok: false,
-                message: 'Could not send admin OTP. Please try again later.',
+                message: 'Could not send admin OTP. Please login again and try later.',
                 delivery
             });
         }

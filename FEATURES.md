@@ -86,9 +86,9 @@
 - Tabs: doctors, patients, payments, prescriptions, orders
 - Approve/reject doctors, edit/delete records
 
-**Env:** `ADMIN_USERNAME`, `ADMIN_PASSWORD` (change in production!)
+**Env:** `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ADMIN_OTP_EMAIL`, `ADMIN_OTP_PHONE` (change in production!)
 
-**APIs:** `/api/admin/login`, `/api/admin/*` (protected)
+**APIs:** `/api/admin/login` starts OTP delivery, `/api/admin/login/verify` grants the admin token, `/api/admin/*` is protected.
 
 ---
 
