@@ -19,7 +19,6 @@
   var legacyMode = false;
   var legacyFiltered = [];
   var DOCTOR_DISCOUNT_RATE = 0.2;
-  var DOCTOR_DISCOUNT_PERCENT = 20;
   var isDoctor = localStorage.getItem('isDoctor') === '1' ||
     localStorage.getItem('userRole') === 'doctor';
   var consultationContext = { appointmentId: '', prescriptionId: '' };
@@ -753,7 +752,7 @@
       '<div class="checkout-bill-title">Order summary</div>' +
       itemLines +
       '<div class="sum-row"><span>Subtotal</span><span>₹' + totals.subtotal + '</span></div>' +
-      (isDoctor ? '<div class="sum-row discount"><span>Doctor discount (' + DOCTOR_DISCOUNT_PERCENT + '%)</span><span>-₹' + totals.discount + '</span></div>' : '') +
+      (isDoctor ? '<div class="sum-row discount"><span>Discount</span><span>-₹' + totals.discount + '</span></div>' : '') +
       '<div class="sum-row"><span>Delivery</span><span>' + (totals.delivery ? '₹' + totals.delivery : 'FREE') + '</span></div>' +
       '<div class="sum-row total"><span>Total payable</span><span>₹' + totals.total + '</span></div>';
   }
@@ -783,13 +782,10 @@
         '<button type="button" class="cart-remove" data-i="' + i + '" aria-label="Remove">&times;</button></div>';
     }).join('');
     var subtotal = cart.reduce(function (t, i) { return t + i.pricePerUnit * i.quantity; }, 0);
-    var discount = isDoctor ? Math.round(subtotal * DOCTOR_DISCOUNT_RATE) : 0;
-    var after = subtotal - discount;
-    var delivery = after > 1000 ? 0 : 150;
-    var total = after + delivery;
+    var delivery = subtotal > 1000 ? 0 : 150;
+    var total = subtotal + delivery;
     els.cartTotal.innerHTML =
       '<div class="sum-row"><span>Subtotal</span><span>₹' + subtotal + '</span></div>' +
-      (isDoctor ? '<div class="sum-row discount"><span>Doctor discount (' + DOCTOR_DISCOUNT_PERCENT + '%)</span><span>-₹' + discount + '</span></div>' : '') +
       '<div class="sum-row"><span>Delivery</span><span>' + (delivery ? '₹' + delivery : 'FREE') + '</span></div>' +
       '<div class="sum-row total"><span>Total</span><span>₹' + total + '</span></div>';
     els.checkoutBtn.disabled = false;
@@ -967,13 +963,6 @@
       if (els.placeOrderBtn) els.placeOrderBtn.disabled = false;
     }
   });
-
-  if (isDoctor) {
-    var banner = document.createElement('div');
-    banner.className = 'doctor-banner';
-    banner.textContent = 'Doctor discount: ' + DOCTOR_DISCOUNT_PERCENT + '% applied at checkout';
-    document.querySelector('.shop-layout').prepend(banner);
-  }
 
   function addPrescriptionItemsToCart(items) {
     if (!Array.isArray(items)) {
