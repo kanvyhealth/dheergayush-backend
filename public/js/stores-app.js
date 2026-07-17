@@ -22,6 +22,16 @@
   var isDoctor = localStorage.getItem('isDoctor') === '1' ||
     localStorage.getItem('userRole') === 'doctor';
   var consultationContext = { appointmentId: '', prescriptionId: '' };
+  var appUserContext = {
+    uid: '',
+    email: '',
+    name: '',
+    phone: '',
+    addresses: [],
+    defaultAddressId: '',
+    selectedAddressId: '',
+    source: ''
+  };
 
   (function readConsultationContextFromUrl() {
     try {
@@ -48,8 +58,113 @@
     checkoutStatus: document.getElementById('checkoutStatus'),
     successMessage: document.getElementById('successMessage'),
     breadcrumb: document.getElementById('breadcrumb'),
-    loadSentinel: document.getElementById('loadSentinel')
+    loadSentinel: document.getElementById('loadSentinel'),
+    savedAddressGroup: document.getElementById('savedAddressGroup'),
+    savedAddressSelect: document.getElementById('savedAddressSelect'),
+    deliveryAddress: document.getElementById('deliveryAddress'),
+    deliveryAddressId: document.getElementById('deliveryAddressId'),
+    appUserUid: document.getElementById('appUserUid'),
+    mobileFilterToggle: document.getElementById('mobileFilterToggle'),
+    filtersSidebar: document.getElementById('filtersSidebar')
   };
+
+  function formatAddressLine(address) {
+    if (!address || typeof address !== 'object') return '';
+    var parts = [
+      address.line1 || address.address,
+      address.line2,
+      address.city,
+      address.state,
+      address.pincode
+    ].map(function (p) { return String(p || '').trim(); }).filter(Boolean);
+    return parts.join(', ');
+  }
+
+  function applySelectedAddress(addressId) {
+    var addresses = appUserContext.addresses || [];
+    var chosen = null;
+    for (var i = 0; i < addresses.length; i++) {
+      if (String(addresses[i].id) === String(addressId)) {
+        chosen = addresses[i];
+        break;
+      }
+    }
+    if (!chosen && addressId === '__manual__') {
+      appUserContext.selectedAddressId = '';
+      if (els.deliveryAddressId) els.deliveryAddressId.value = '';
+      return;
+    }
+    if (!chosen) return;
+    appUserContext.selectedAddressId = String(chosen.id);
+    if (els.deliveryAddress) {
+      els.deliveryAddress.value = formatAddressLine(chosen);
+    }
+    if (els.deliveryAddressId) {
+      els.deliveryAddressId.value = String(chosen.id);
+    }
+    if (chosen.phone && document.getElementById('customerPhone')) {
+      var phoneEl = document.getElementById('customerPhone');
+      if (!phoneEl.value.trim()) {
+        phoneEl.value = String(chosen.phone).replace(/\D/g, '').slice(-10);
+      }
+    }
+  }
+
+  function renderSavedAddressPicker() {
+    var addresses = appUserContext.addresses || [];
+    if (!els.savedAddressGroup || !els.savedAddressSelect) return;
+    if (!addresses.length) {
+      els.savedAddressGroup.style.display = 'none';
+      return;
+    }
+    els.savedAddressGroup.style.display = 'block';
+    var selected = appUserContext.selectedAddressId ||
+      appUserContext.defaultAddressId ||
+      (addresses[0] && addresses[0].id) ||
+      '';
+    var html = addresses.map(function (a) {
+      var label = (a.label || 'Address') + ': ' + formatAddressLine(a);
+      var sel = String(a.id) === String(selected) ? ' selected' : '';
+      return '<option value="' + escapeHtml(String(a.id)) + '"' + sel + '>' +
+        escapeHtml(label) + '</option>';
+    }).join('');
+    html += '<option value="__manual__">Enter a different address</option>';
+    els.savedAddressSelect.innerHTML = html;
+    applySelectedAddress(selected);
+  }
+
+  function setAppUserContext(payload) {
+    if (!payload || typeof payload !== 'object') return;
+    appUserContext.uid = String(payload.uid || '').trim();
+    appUserContext.email = String(payload.email || '').trim();
+    appUserContext.name = String(payload.name || '').trim();
+    appUserContext.phone = String(payload.phone || '').trim();
+    appUserContext.source = String(payload.source || '').trim();
+    appUserContext.defaultAddressId = String(payload.defaultAddressId || '').trim();
+    appUserContext.selectedAddressId = String(
+      payload.selectedAddressId || payload.defaultAddressId || ''
+    ).trim();
+    appUserContext.addresses = Array.isArray(payload.addresses)
+      ? payload.addresses.filter(function (a) {
+          return a && typeof a === 'object' && String(a.line1 || a.address || '').trim();
+        })
+      : [];
+
+    if (els.appUserUid) els.appUserUid.value = appUserContext.uid;
+    var nameEl = document.getElementById('customerName');
+    var phoneEl = document.getElementById('customerPhone');
+    var emailEl = document.getElementById('customerEmail');
+    if (nameEl && appUserContext.name && !nameEl.value.trim()) {
+      nameEl.value = appUserContext.name;
+    }
+    if (phoneEl && appUserContext.phone && !phoneEl.value.trim()) {
+      phoneEl.value = appUserContext.phone.replace(/\D/g, '').slice(-10);
+    }
+    if (emailEl && appUserContext.email && !emailEl.value.trim()) {
+      emailEl.value = appUserContext.email;
+    }
+    renderSavedAddressPicker();
+  }
 
   function showSection(id) {
     document.querySelectorAll('.store-section').forEach(function (s) {
@@ -906,6 +1021,10 @@
     var email = document.getElementById('customerEmail').value.trim();
     var address = document.getElementById('deliveryAddress').value.trim();
     var notes = document.getElementById('notes').value.trim();
+    var deliveryAddressId = (els.deliveryAddressId && els.deliveryAddressId.value) ||
+      appUserContext.selectedAddressId ||
+      '';
+    var appUid = (els.appUserUid && els.appUserUid.value) || appUserContext.uid || '';
     if (!/^[A-Za-z ]+$/.test(name)) { alert('Name: letters only.'); return; }
     if (!/^\d{10}$/.test(phone)) { alert('Phone: 10 digits.'); return; }
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('Invalid email.'); return; }
@@ -915,6 +1034,15 @@
       return;
     }
     var totals = computeCartTotals();
+    var selectedAddressSnapshot = null;
+    if (deliveryAddressId) {
+      for (var ai = 0; ai < (appUserContext.addresses || []).length; ai++) {
+        if (String(appUserContext.addresses[ai].id) === String(deliveryAddressId)) {
+          selectedAddressSnapshot = appUserContext.addresses[ai];
+          break;
+        }
+      }
+    }
     var orderData = {
       customerName: name, customerPhone: phone, customerEmail: email,
       deliveryAddress: address, notes: notes, items: cart,
@@ -922,8 +1050,19 @@
       totalAmount: totals.total, orderStatus: 'pending', orderDate: new Date(),
       source: (consultationContext.appointmentId || consultationContext.prescriptionId)
         ? 'prescription'
-        : 'website'
+        : (appUserContext.source === 'flutter_app' ? 'flutter_app' : 'website')
     };
+    if (appUid) {
+      orderData.uid = appUid;
+      orderData.userId = appUid;
+      orderData.patientId = appUid;
+    }
+    if (deliveryAddressId) {
+      orderData.deliveryAddressId = deliveryAddressId;
+    }
+    if (selectedAddressSnapshot) {
+      orderData.deliveryAddressSnapshot = selectedAddressSnapshot;
+    }
     if (consultationContext.appointmentId) {
       orderData.appointmentId = consultationContext.appointmentId;
     }
@@ -1025,6 +1164,7 @@
   }
 
   window.DgStoreCartBridge = {
+    setAppUserContext: setAppUserContext,
     addPrescriptionItems: addPrescriptionItemsToCart,
     openCart: function () {
       showSection('cartSection');
@@ -1039,6 +1179,22 @@
       }
     }
   };
+
+  if (els.savedAddressSelect) {
+    els.savedAddressSelect.addEventListener('change', function () {
+      applySelectedAddress(els.savedAddressSelect.value);
+    });
+  }
+
+  if (els.mobileFilterToggle && els.filtersSidebar) {
+    els.mobileFilterToggle.addEventListener('click', function () {
+      var open = els.filtersSidebar.classList.toggle('is-open');
+      els.mobileFilterToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      els.mobileFilterToggle.innerHTML = open
+        ? '<i class="fas fa-times"></i> Hide filters'
+        : '<i class="fas fa-sliders-h"></i> Filters';
+    });
+  }
 
   updateBreadcrumb();
   setupInfiniteScroll();

@@ -1,0 +1,82 @@
+/* Store-specific responsive polish (mobile + desktop) — does not change API/data loading */
+
+.mobile-filter-toggle {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto 12px;
+  max-width: 1400px;
+  width: calc(100% - 10%);
+  justify-content: center;
+}
+
+@media (max-width: 900px) {
+  .filters-sidebar {
+    display: none;
+  }
+
+  .filters-sidebar.is-open {
+    display: block;
+    margin-bottom: 12px;
+    position: static;
+    top: auto;
+  }
+
+  .mobile-filter-toggle {
+    display: inline-flex !important;
+  }
+
+  .checkout-grid {
+    padding: 0 12px 32px;
+  }
+
+  .checkout-grid .dg-form-panel {
+    max-width: 100%;
+  }
+
+  .search-bar-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sort-select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .amazon-search {
+    width: 100%;
+  }
+
+  .cart-panel {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .btn-add-cart {
+    min-height: 36px;
+  }
+
+  .delivery-banner {
+    font-size: 0.8rem;
+    padding: 8px 12px;
+  }
+}
+
+/* Safe areas for notched phones / Flutter WebView */
+body {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.dg-navbar,
+.store-top-nav {
+  padding-left: max(12px, env(safe-area-inset-left));
+  padding-right: max(12px, env(safe-area-inset-right));
+}
