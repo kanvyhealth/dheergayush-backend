@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>CMEs & Webinars — DHEERGAYUSH Ayurveda Learning</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -592,6 +592,7 @@
         @media (max-width: 1100px) {
             .yt-layout {
                 grid-template-columns: 1fr;
+                padding: 0 max(12px, env(safe-area-inset-left)) 32px max(12px, env(safe-area-inset-right));
             }
             .topics-panel, .queue-panel { display: none; }
             .topics-mobile { display: flex; }
@@ -605,6 +606,22 @@
             .logo img { height: 52px; }
             .video-grid {
                 grid-template-columns: 1fr;
+            }
+            .search-bar,
+            .page-hero {
+                padding-left: max(12px, env(safe-area-inset-left));
+                padding-right: max(12px, env(safe-area-inset-right));
+            }
+            .player-wrap iframe,
+            #ytPlayer {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 300px) {
+            .yt-layout {
+                gap: 12px;
             }
         }
     </style>

@@ -2,20 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Payment Receipt - Dheergayush</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dg-responsive.css">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
             color: #333;
-            background-color: #f4f5f6; /* Light background for the page */
+            background-color: #f4f5f6;
+            overflow-x: hidden;
         }
         .receipt-container {
-            width: 150mm; /* Standard receipt width, ideal for printing */
-            min-height: 120mm; /* Minimum height */
+            width: 150mm;
+            max-width: 100%;
+            min-height: 120mm;
             margin: 20px auto;
             border: 1px solid #ccc;
             padding: 20px;
@@ -35,23 +38,32 @@
         .detail-row {
             display: flex;
             justify-content: space-between;
+            gap: 12px;
             margin-bottom: 8px;
             line-height: 1.4;
         }
         .detail-row span:first-child {
             font-weight: 600;
             color: #444;
-            flex-basis: 40%; /* Adjust as needed */
+            flex: 0 1 40%;
+            min-width: 0;
         }
         .detail-row span:last-child {
             text-align: right;
-            flex-basis: 60%; /* Adjust as needed */
+            flex: 1 1 60%;
+            min-width: 0;
+            word-break: break-word;
+        }
+        .receipt-details {
+            margin-right: 0;
+            margin-left: 0;
+            padding: 0 8px;
         }
         .total-section {
             text-align: center;
             margin-top: 25px;
             padding: 15px;
-            background-color: #e6ffed; /* Light green background for total */
+            background-color: #e6ffed;
             border-radius: 8px;
             border: 1px solid #c3e6cb;
         }
@@ -59,6 +71,7 @@
             color: #28a745;
             font-size: 2em;
             margin: 0;
+            word-break: break-word;
         }
         .footer {
             text-align: center;
@@ -77,21 +90,38 @@
             cursor: pointer;
             font-size: 1.1em;
             transition: background-color 0.3s ease;
+            min-height: 44px;
+            max-width: 100%;
+            box-sizing: border-box;
         }
         .print-button:hover {
             background-color: #0056b3;
         }
 
+        @media (max-width: 768px) {
+            .receipt-container {
+                width: 100%;
+                margin: 12px auto;
+                padding: 16px;
+            }
+            h1 { font-size: 1.4em; }
+            h2 { font-size: 1.2em; }
+            .total-section h2 { font-size: 1.5em; }
+            .print-button { width: min(100%, 280px); }
+        }
+
         /* Styles for printing */
         @media print {
-            body { background-color: #fff; } /* White background for print */
+            body { background-color: #fff; }
             .receipt-container {
+                width: 150mm;
+                max-width: none;
                 box-shadow: none;
                 border: none;
                 margin: 0 auto;
             }
             .print-button {
-                display: none; /* Hide the print button when printing */
+                display: none;
             }
         }
     </style>
@@ -101,7 +131,7 @@
         <h1>Dheergayush</h1>
         <h2>Payment Receipt</h2>
         <hr>
-        <div style="margin-right: 50px;margin-left: 40px;">
+        <div class="receipt-details">
         <div class="detail-row"><span>Transaction ID:</span> <span id="receiptTransactionId"></span></div>
         <div class="detail-row"><span>Date:</span> <span id="receiptDate"></span></div>
         <hr>

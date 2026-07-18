@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>E-Library — Curated Samhitas for Ayurvedic Physicians | DHEERGAYUSH</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -109,7 +109,7 @@
         .topic-header h2 { font-family: 'Playfair Display', serif; font-size: 1.35rem; margin-bottom: 4px; }
         .topic-header p { font-size: 0.88rem; color: var(--muted); }
         .doc-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 22px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 22px;
         }
         .doc-grid-wrap { max-width: 1400px; margin: 0 auto; padding: 0 5% 48px; }
         .doc-card {
@@ -186,7 +186,7 @@
             font-family: 'Playfair Display', serif; font-size: 1.25rem; margin-bottom: 6px;
         }
         .niimh-section > p { font-size: 0.88rem; color: var(--muted); margin-bottom: 16px; }
-        .niimh-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+        .niimh-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 12px; }
         .niimh-card {
             display: block; padding: 16px 18px; background: var(--card); border-radius: 12px;
             border: 1px solid var(--border); text-decoration: none; color: var(--text);
@@ -278,6 +278,17 @@
         @media (max-width: 768px) {
             .logo img { height: 52px; }
             .doc-grid { grid-template-columns: 1fr; }
+            .doc-grid-wrap,
+            .trust-banner,
+            .page-hero {
+                padding-left: max(12px, env(safe-area-inset-left));
+                padding-right: max(12px, env(safe-area-inset-right));
+            }
+            .niimh-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .doc-card:hover { transform: none; }
+            .topic-header { flex-wrap: wrap; }
         }
     </style>
 </head>

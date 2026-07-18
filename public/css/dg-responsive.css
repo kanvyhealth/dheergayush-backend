@@ -972,3 +972,268 @@ select.dg-select,
   width: 100%;
   max-width: 280px;
 }
+
+/* ── Sitewide responsive hardening (all devices) ── */
+.dg-legal-contact-card {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .dg-legal-contact-card {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.dg-legal-contact-item {
+  min-width: 0;
+  word-break: break-word;
+}
+
+.dg-legal-contact-item a,
+.dg-support-email,
+.dg-support-phone {
+  word-break: break-word;
+}
+
+/* Landing / about / contact / support shells */
+.dg-landing-hero,
+.dg-landing-main,
+.dg-landing-shell,
+.dg-landing-panel,
+.dg-landing-stats,
+.dg-landing-grid {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.dg-landing-orb {
+  max-width: 70vw;
+  max-height: 70vw;
+}
+
+img,
+video,
+iframe,
+canvas,
+embed,
+object {
+  max-width: 100%;
+}
+
+iframe {
+  width: 100%;
+}
+
+/* Auth / thank-you / developer fluid cards */
+.thank-you-card,
+.profile-card,
+.auth-action-card,
+#loginCard,
+.login-card,
+.card#loginCard {
+  width: 100%;
+  max-width: min(520px, 100%);
+  box-sizing: border-box;
+}
+
+/* Payment / telemedicine forms */
+#paymentFormContainer,
+.form-container,
+#paymentSection .form-container {
+  width: 100% !important;
+  max-width: min(560px, 100%) !important;
+  box-sizing: border-box;
+}
+
+#doctorsSection .doctors-grid,
+.doctors-grid,
+.doctor-cards,
+.doctors-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  #doctorsSection .doctors-grid,
+  .doctors-grid,
+  .doctor-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 992px) {
+  #doctorsSection .doctors-grid,
+  .doctors-grid,
+  .doctor-cards {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  }
+}
+
+.doctor-card,
+.selected-doctor-card {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Admin / doctor tables: always horizontally scrollable on narrow screens */
+.admin-container table,
+.admin-page table,
+.doctor-dashboard table,
+.data-table,
+table.data-table {
+  max-width: 100%;
+}
+
+.data-table-wrapper,
+.table-container,
+.table-scroll,
+.admin-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Invoice / receipt screen safety (print rules stay page-local) */
+.receipt-container,
+.invoice-container {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .dg-landing-nav {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+
+  .dg-landing-nav-inner {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .dg-landing-nav-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .dg-landing-nav-actions .dg-home-link,
+  .dg-landing-nav-actions a {
+    flex: 1 1 auto;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dg-legal-shell,
+  .dg-legal-wrap {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .dg-legal-card {
+    width: 100%;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .dg-legal-card ul,
+  .dg-legal-card ol {
+    padding-left: 1.2em;
+  }
+
+  .patient-portal-shell,
+  .portal-shell {
+    width: 100%;
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    box-sizing: border-box;
+  }
+
+  #paymentSection,
+  #doctorsSection,
+  #regdocsec,
+  .registration-section {
+    padding-left: max(12px, env(safe-area-inset-left)) !important;
+    padding-right: max(12px, env(safe-area-inset-right)) !important;
+  }
+
+  .tab-navigation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .admin-container .tab-btn,
+  .tab-btn {
+    min-height: 44px;
+  }
+
+  button,
+  .btn,
+  .dg-btn-primary,
+  .dg-btn-outline,
+  input[type='submit'],
+  input[type='button'] {
+    max-width: 100%;
+  }
+
+  /* Prevent fixed mm invoices from forcing page scroll */
+  .receipt-container,
+  .invoice-container {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .dg-landing-hero h1,
+  .dg-landing-panel h1,
+  .page-hero h1 {
+    font-size: clamp(1.35rem, 7vw, 1.85rem);
+  }
+
+  .dg-landing-stats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .library-layout,
+  .yt-layout {
+    padding-left: max(8px, env(safe-area-inset-left));
+    padding-right: max(8px, env(safe-area-inset-right));
+  }
+
+  .category-scroll,
+  .stores-strip,
+  .toolbar {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 300px) {
+  .dg-legal-card,
+  .thank-you-card,
+  .profile-card,
+  .form-container,
+  #paymentFormContainer {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .dg-landing-nav-actions {
+    flex-direction: column;
+  }
+
+  .dg-landing-nav-actions .dg-home-link,
+  .dg-landing-nav-actions a {
+    width: 100%;
+  }
+}
+

@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Thank You - DHEERGAYUSH</title>
+    <link rel="stylesheet" href="css/dg-responsive.css">
     <style>
         * {
             margin: 0;
@@ -14,22 +15,25 @@
 
         body {
             min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             align-items: center;
             justify-content: center;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            padding: 20px;
+            padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+            overflow-x: hidden;
         }
 
         .thank-you-card {
             background: white;
-            padding: 40px;
+            padding: clamp(24px, 6vw, 40px);
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             text-align: center;
             max-width: 500px;
-            width: 90%;
+            width: 100%;
             animation: fadeIn 0.5s ease-out;
+            box-sizing: border-box;
         }
 
         @keyframes fadeIn {
@@ -55,14 +59,15 @@
 
         .message {
             color: #34495e;
-            font-size: 1.8em;
+            font-size: clamp(1.25rem, 5vw, 1.8em);
             margin-bottom: 15px;
             line-height: 1.4;
+            word-wrap: break-word;
         }
 
         .sub-message {
             color: #7f8c8d;
-            font-size: 1.2em;
+            font-size: clamp(0.95rem, 3.5vw, 1.2em);
             margin-bottom: 30px;
             line-height: 1.6;
         }
@@ -78,6 +83,16 @@
             transition: all 0.3s ease;
             text-decoration: none;
             display: inline-block;
+            min-height: 44px;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 480px) {
+            .return-btn {
+                width: 100%;
+                padding: 14px 20px;
+            }
         }
 
         .return-btn:hover {

@@ -871,6 +871,17 @@ tr:hover {
         min-width: 0;
     }
 
+    .table-container,
+    .data-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        min-width: 480px;
+    }
+
     .filter-buttons {
         width: 100%;
     }

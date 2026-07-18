@@ -279,11 +279,12 @@ button[type="submit"]:hover {
   background: #fff;
   border-radius: 20px;
   padding: 30px;
-  width: 400px;
-  max-width: 90%;
+  width: min(400px, calc(100vw - 32px));
+  max-width: 100%;
   text-align: center;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   position: relative;
+  box-sizing: border-box;
 }
 
 .close-btn {

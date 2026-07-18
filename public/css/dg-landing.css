@@ -914,6 +914,35 @@
     flex-direction: column;
     text-align: center;
   }
+
+  .dg-landing-orb--1,
+  .dg-landing-orb--2,
+  .dg-landing-orb--3 {
+    width: min(280px, 80vw);
+    height: min(280px, 80vw);
+  }
+}
+
+@media (max-width: 300px) {
+  .dg-landing-shell,
+  .dg-landing-panel-wrap {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .dg-landing-panel {
+    padding: 1.15rem 0.85rem;
+  }
+
+  .dg-landing-nav-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .dg-home-link {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

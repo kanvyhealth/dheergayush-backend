@@ -2,16 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Store Invoice - Dheergayush</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/dg-responsive.css">
   <style>
     body {
       font-family: 'Poppins', sans-serif;
       margin: 0;
-      padding: 20px;
+      padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
       color: #3c3c3c;
       background: #f7f7f7;
+      overflow-x: hidden;
     }
     .invoice-container {
       width: 180mm;
@@ -71,6 +73,12 @@
       border-collapse: collapse;
       margin-top: 8px;
       font-size: 0.85rem;
+      display: table;
+    }
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
     table.items th,
     table.items td {
@@ -108,6 +116,23 @@
       font-size: 0.85rem;
       color: #666;
     }
+    @media (max-width: 768px) {
+      .invoice-container {
+        width: 100%;
+        padding: 16px;
+      }
+      .brand h1 { font-size: 1.35rem; }
+      table.items { font-size: 0.8rem; }
+    }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .invoice-container {
+        width: 180mm;
+        max-width: none;
+        box-shadow: none;
+        border: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -130,6 +155,7 @@
     <div class="detail-row"><span>Delivery:</span> <span id="invDeliveryAddress"></span></div>
     <hr>
     <h3 style="margin:0 0 8px;font-size:1rem;color:#F26727;">Items</h3>
+    <div class="table-scroll">
     <table class="items">
       <thead>
         <tr>
@@ -141,6 +167,7 @@
       </thead>
       <tbody id="invItemsBody"></tbody>
     </table>
+    </div>
     <div class="totals">
       <div class="detail-row"><span>Subtotal:</span> <span id="invSubtotal"></span></div>
       <div class="detail-row"><span>Discount:</span> <span id="invDiscount"></span></div>

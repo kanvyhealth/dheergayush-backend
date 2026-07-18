@@ -405,16 +405,23 @@
 
 @media (max-width: 768px) {
   .dg-services-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
     gap: 1rem;
   }
 
   .about-features {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
   }
 
   .dg-disclaimer-box {
     padding: 1.25rem 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dg-services-grid,
+  .about-features {
+    grid-template-columns: 1fr;
   }
 }
 

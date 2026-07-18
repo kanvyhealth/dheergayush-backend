@@ -591,6 +591,17 @@ body.vcall-in-call .prescription-modal {
   .right-panel h2 {
     text-align: center !important;
   }
+
+  .prescription-modal,
+  .reports-modal-content,
+  .diagnosis-modal-content {
+    left: max(12px, env(safe-area-inset-left)) !important;
+    right: max(12px, env(safe-area-inset-right)) !important;
+    width: auto !important;
+    max-width: calc(100vw - 24px) !important;
+    height: auto !important;
+    max-height: min(600px, calc(100dvh - 100px)) !important;
+  }
 }
 
 @media (max-width: 896px) and (orientation: landscape) {
