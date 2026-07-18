@@ -932,6 +932,13 @@ select.dg-select,
   }
 }
 
+@media (max-width: 300px) {
+  .product-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+}
+
 /* Invoice success panel on store */
 .store-invoice-success {
   display: none;

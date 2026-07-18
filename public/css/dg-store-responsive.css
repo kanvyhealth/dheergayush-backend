@@ -103,6 +103,13 @@
   }
 }
 
+@media (max-width: 300px) {
+  .product-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+}
+
 body {
   padding-bottom: env(safe-area-inset-bottom, 0);
 }

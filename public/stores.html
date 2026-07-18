@@ -306,6 +306,30 @@
                 min-width: 20px;
             }
         }
+
+        /* Very narrow viewports: one product per row */
+        @media (max-width: 300px) {
+            .product-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .product-desc,
+            .product-rating {
+                display: block;
+            }
+
+            .product-title {
+                font-size: 0.9rem;
+                min-height: auto;
+            }
+
+            .btn-add-cart {
+                font-size: 0.85rem;
+                padding: 10px 12px;
+            }
+        }
+
         .product-card {
             background: #fff;
             border: 1px solid var(--dg-border);
