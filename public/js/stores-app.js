@@ -65,8 +65,14 @@
     deliveryAddressId: document.getElementById('deliveryAddressId'),
     appUserUid: document.getElementById('appUserUid'),
     mobileFilterToggle: document.getElementById('mobileFilterToggle'),
-    filtersSidebar: document.getElementById('filtersSidebar')
+    filtersSidebar: document.getElementById('filtersSidebar'),
+    storeInvoiceSuccess: document.getElementById('storeInvoiceSuccess'),
+    downloadInvoiceBtn: document.getElementById('downloadInvoiceBtn'),
+    invoiceContinueShopping: document.getElementById('invoiceContinueShopping'),
+    storeInvoiceSuccessText: document.getElementById('storeInvoiceSuccessText')
   };
+
+  var lastInvoicePayload = null;
 
   function formatAddressLine(address) {
     if (!address || typeof address !== 'object') return '';
@@ -1079,16 +1085,55 @@
         }
       }
       setCheckoutStatus('Complete payment in the Razorpay window…', false);
-      await DgStorePayment.checkoutCartOrder({
+      var invoiceSnapshot = {
+        orderData: JSON.parse(JSON.stringify(orderData)),
+        paymentResponse: null,
+        order: null
+      };
+      var paidResult = await DgStorePayment.checkoutCartOrder({
         orderData: orderData,
         description: 'DHEERGAYUSH Store — ' + cart.length + ' item(s)',
         prefill: { name: name, contact: phone, email: email }
       });
+      invoiceSnapshot.order = paidResult || {};
+      invoiceSnapshot.paymentResponse = {
+        razorpay_payment_id:
+          (paidResult && (paidResult.razorpayPaymentId || paidResult.razorpay_payment_id)) ||
+          (orderData.razorpayPaymentId || ''),
+        razorpay_order_id:
+          (paidResult && (paidResult.razorpayOrderId || paidResult.razorpay_order_id)) ||
+          (orderData.razorpayOrderId || ''),
+        razorpay_signature:
+          (paidResult && (paidResult.razorpay_signature || paidResult.signature)) || ''
+      };
+      if (paidResult && paidResult.paymentResponse) {
+        invoiceSnapshot.paymentResponse = paidResult.paymentResponse;
+      }
+      lastInvoicePayload = invoiceSnapshot;
+
       cart = [];
       updateCartBadge();
       showSection('shopSection');
+      if (els.storeInvoiceSuccess) {
+        els.storeInvoiceSuccess.classList.add('show');
+        if (els.storeInvoiceSuccessText) {
+          var oid = (paidResult && (paidResult.orderId || paidResult.id || paidResult._id)) || '';
+          els.storeInvoiceSuccessText.textContent = oid
+            ? ('Order ' + oid + ' confirmed. Download your invoice below.')
+            : 'Your order is confirmed. Download your invoice below.';
+        }
+        els.storeInvoiceSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       els.successMessage.classList.add('show');
       setTimeout(function () { els.successMessage.classList.remove('show'); }, 4000);
+      if (window.DgStoreInvoice && DgStoreInvoice.download) {
+        try {
+          await DgStoreInvoice.download(lastInvoicePayload);
+        } catch (invoiceErr) {
+          console.warn('Auto invoice download failed:', invoiceErr);
+          setCheckoutStatus('Order paid. Use Download Invoice if the PDF did not start.', false);
+        }
+      }
       if (isDoctor) localStorage.removeItem('isDoctor');
     } catch (err) {
       var msg = err.message || 'Payment failed';
@@ -1193,6 +1238,36 @@
       els.mobileFilterToggle.innerHTML = open
         ? '<i class="fas fa-times"></i> Hide filters'
         : '<i class="fas fa-sliders-h"></i> Filters';
+    });
+  }
+
+  if (els.downloadInvoiceBtn) {
+    els.downloadInvoiceBtn.addEventListener('click', async function () {
+      if (!lastInvoicePayload) {
+        alert('No invoice available yet. Complete a paid order first.');
+        return;
+      }
+      if (!window.DgStoreInvoice || !DgStoreInvoice.download) {
+        alert('Invoice download is unavailable. Refresh the page and try again.');
+        return;
+      }
+      els.downloadInvoiceBtn.disabled = true;
+      try {
+        await DgStoreInvoice.download(lastInvoicePayload);
+      } catch (err) {
+        console.error(err);
+        alert(err.message || 'Could not download invoice');
+      } finally {
+        els.downloadInvoiceBtn.disabled = false;
+      }
+    });
+  }
+
+  if (els.invoiceContinueShopping) {
+    els.invoiceContinueShopping.addEventListener('click', function () {
+      if (els.storeInvoiceSuccess) els.storeInvoiceSuccess.classList.remove('show');
+      showSection('shopSection');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 

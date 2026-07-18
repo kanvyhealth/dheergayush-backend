@@ -1,4 +1,4 @@
-/* Store-specific responsive polish (mobile + desktop) — does not change API/data loading */
+/* Store-specific responsive polish (mobile + desktop) */
 
 .mobile-filter-toggle {
   display: none;
@@ -6,8 +6,41 @@
   gap: 8px;
   margin: 0 auto 12px;
   max-width: 1400px;
-  width: calc(100% - 10%);
+  width: calc(100% - 24px);
   justify-content: center;
+  min-height: 44px;
+}
+
+.amazon-search {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.amazon-search input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  outline: none;
+}
+
+.amazon-search button {
+  flex: 0 0 auto;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  min-height: 44px;
+  padding: 0 18px;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: var(--dg-orange, #f26727);
+  color: var(--dg-charcoal, #3c3c3c);
+  cursor: pointer;
 }
 
 @media (max-width: 900px) {
@@ -70,7 +103,6 @@
   }
 }
 
-/* Safe areas for notched phones / Flutter WebView */
 body {
   padding-bottom: env(safe-area-inset-bottom, 0);
 }

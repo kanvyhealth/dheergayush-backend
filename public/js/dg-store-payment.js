@@ -32,7 +32,13 @@
     });
     var data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Order failed');
-    return data;
+    return Object.assign({}, data, {
+      paymentResponse: opts.paymentResponse,
+      razorpay_payment_id: opts.paymentResponse && opts.paymentResponse.razorpay_payment_id,
+      razorpay_order_id: opts.paymentResponse && opts.paymentResponse.razorpay_order_id,
+      razorpayPaymentId: opts.paymentResponse && opts.paymentResponse.razorpay_payment_id,
+      razorpayOrderId: opts.paymentResponse && opts.paymentResponse.razorpay_order_id
+    });
   }
 
   async function checkoutCartOrder(opts) {

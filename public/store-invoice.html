@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Store Invoice - Dheergayush</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 20px;
+      color: #3c3c3c;
+      background: #f7f7f7;
+    }
+    .invoice-container {
+      width: 180mm;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+      background: #fff;
+      border: 1px solid #e8e8e8;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      box-sizing: border-box;
+    }
+    .brand {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 1.6rem;
+      color: #F26727;
+    }
+    .brand p {
+      margin: 4px 0 0;
+      color: #666;
+      font-size: 0.9rem;
+    }
+    h2 {
+      text-align: center;
+      margin: 12px 0;
+      font-size: 1.2rem;
+      color: #3c3c3c;
+    }
+    hr {
+      border: none;
+      border-top: 1px dashed #ddd;
+      margin: 14px 0;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+    .detail-row span:first-child {
+      font-weight: 600;
+      color: #555;
+      flex: 0 0 38%;
+    }
+    .detail-row span:last-child {
+      text-align: right;
+      flex: 1;
+      word-break: break-word;
+    }
+    table.items {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.85rem;
+    }
+    table.items th,
+    table.items td {
+      border-bottom: 1px solid #eee;
+      padding: 8px 4px;
+      text-align: left;
+    }
+    table.items th {
+      color: #F26727;
+      font-weight: 600;
+    }
+    table.items td.num,
+    table.items th.num {
+      text-align: right;
+    }
+    .totals {
+      margin-top: 12px;
+    }
+    .total-box {
+      margin-top: 16px;
+      padding: 14px;
+      text-align: center;
+      background: #fff8f3;
+      border: 1px solid rgba(242, 103, 39, 0.3);
+      border-radius: 10px;
+    }
+    .total-box h3 {
+      margin: 0;
+      color: #F26727;
+      font-size: 1.35rem;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.85rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="invoice-container" id="storeInvoiceRoot">
+    <div class="brand">
+      <h1>Dheergayush</h1>
+      <p>Ayurvedic Wellness Store Invoice</p>
+    </div>
+    <h2>Tax Invoice / Receipt</h2>
+    <hr>
+    <div class="detail-row"><span>Invoice / Order ID:</span> <span id="invOrderId"></span></div>
+    <div class="detail-row"><span>Date:</span> <span id="invDate"></span></div>
+    <div class="detail-row"><span>Payment ID:</span> <span id="invPaymentId"></span></div>
+    <div class="detail-row"><span>Razorpay Order:</span> <span id="invRazorpayOrderId"></span></div>
+    <hr>
+    <h3 style="margin:0 0 8px;font-size:1rem;color:#F26727;">Customer</h3>
+    <div class="detail-row"><span>Name:</span> <span id="invCustomerName"></span></div>
+    <div class="detail-row"><span>Phone:</span> <span id="invCustomerPhone"></span></div>
+    <div class="detail-row"><span>Email:</span> <span id="invCustomerEmail"></span></div>
+    <div class="detail-row"><span>Delivery:</span> <span id="invDeliveryAddress"></span></div>
+    <hr>
+    <h3 style="margin:0 0 8px;font-size:1rem;color:#F26727;">Items</h3>
+    <table class="items">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th class="num">Qty</th>
+          <th class="num">Rate</th>
+          <th class="num">Amount</th>
+        </tr>
+      </thead>
+      <tbody id="invItemsBody"></tbody>
+    </table>
+    <div class="totals">
+      <div class="detail-row"><span>Subtotal:</span> <span id="invSubtotal"></span></div>
+      <div class="detail-row"><span>Discount:</span> <span id="invDiscount"></span></div>
+      <div class="detail-row"><span>Delivery:</span> <span id="invDelivery"></span></div>
+    </div>
+    <div class="total-box">
+      <h3>Total Paid: <span id="invTotal"></span></h3>
+    </div>
+    <div class="footer">
+      <p>Thank you for shopping with Dheergayush.</p>
+      <p>Support: +91 7842736777 · support@dheergayush.net</p>
+    </div>
+  </div>
+</body>
+</html>
