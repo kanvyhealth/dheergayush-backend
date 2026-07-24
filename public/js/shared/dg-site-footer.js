@@ -84,7 +84,7 @@
   function loadFabScript() {
     if (document.querySelector('script[src*="dg-doctor-fab.js"]')) return;
     var s = document.createElement('script');
-    s.src = 'js/dg-doctor-fab.js';
+    s.src = 'js/shared/dg-doctor-fab.js';
     s.defer = true;
     document.body.appendChild(s);
   }
@@ -94,7 +94,7 @@
     if (document.querySelector('script[src*="dg-scroll.js"]')) return;
     window.__dgScrollRequested = true;
     var s = document.createElement('script');
-    s.src = 'js/dg-scroll.js';
+    s.src = 'js/shared/dg-scroll.js';
     s.defer = true;
     document.body.appendChild(s);
   }

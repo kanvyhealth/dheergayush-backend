@@ -10,9 +10,9 @@
   <link rel="stylesheet" href="css/dg-responsive.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js"></script>
-  <script src="js/dg-auth.js"></script>
-  <script src="js/dg-agora-call.js"></script>
-  <script src="js/dg-doctor-end-calls.js"></script>
+  <script src="js/shared/dg-auth.js"></script>
+  <script src="js/video/dg-agora-call.js"></script>
+  <script src="js/doctor/dg-doctor-end-calls.js"></script>
     <style>
               @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 html, body {
@@ -2788,14 +2788,14 @@ html, body {
     </div>
   </div>
 
-  <script src="js/dg-razorpay-checkout.js"></script>
+  <script src="js/store/dg-razorpay-checkout.js"></script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="js/dg-store-payment.js"></script>
-  <script src="js/dg-catalog-merge.js"></script>
-  <script src="js/dg-fuzzy-search.js"></script>
-  <script src="js/dg-store-categories.js"></script>
-  <script src="js/medicine-images.js"></script>
-  <script src="js/dg-vcall-store.js"></script>
+  <script src="js/store/dg-store-payment.js"></script>
+  <script src="js/store/dg-catalog-merge.js"></script>
+  <script src="js/shared/dg-fuzzy-search.js"></script>
+  <script src="js/store/dg-store-categories.js"></script>
+  <script src="js/store/medicine-images.js"></script>
+  <script src="js/video/dg-vcall-store.js"></script>
 <script>
         // Agora credentials loaded from server (set AGORA_APP_ID + AGORA_APP_CERTIFICATE in .env)
 
@@ -2807,11 +2807,16 @@ html, body {
 
         // Normalize room ID once — keeps doctor/patient/prescription APIs in sync
         function normalizeCallRoomId(id) {
+            let raw;
             try {
-                return decodeURIComponent(String(id || '').trim());
+                raw = decodeURIComponent(String(id || '').trim());
             } catch (_) {
-                return String(id || '').trim();
+                raw = String(id || '').trim();
             }
+            if (raw.startsWith('consultation_')) {
+                return 'room_' + raw.slice('consultation_'.length);
+            }
+            return raw;
         }
 
         let roomID = normalizeCallRoomId(getUrlParams().get("roomID") || localStorage.getItem("videoRoomId") || '');
@@ -2860,7 +2865,7 @@ html, body {
                             role = data.portal === 'doctor' ? 'doctor' : 'patient';
                         }
                         name = String(profile.name || profile.displayName || '').trim();
-                        userId = String(profile.name || profile.uid || data.uid || '').trim();
+                        userId = String(profile.uid || data.uid || '').trim();
                     }
                 } catch (err) {
                     console.warn('Could not load profile for video call:', err);
@@ -2881,9 +2886,14 @@ html, body {
                     ).trim();
             }
             if (!userId) {
-                userId = role === 'doctor'
-                    ? String(localStorage.getItem('doctorName') || '').trim()
-                    : String(localStorage.getItem('patientId') || localStorage.getItem('firebaseUid') || '').trim();
+                userId = String(
+                    localStorage.getItem('firebaseUid') ||
+                    localStorage.getItem('uid') ||
+                    ''
+                ).trim();
+            }
+            if (!userId && role === 'patient') {
+                userId = String(localStorage.getItem('patientId') || '').trim();
             }
 
             callIdentity = { role: role, name: name, userId: userId };
@@ -3621,7 +3631,8 @@ html, body {
             setCallStatus('Connecting to secure video server…', 'connecting');
 
             const userID = callIdentity.userId ||
-                (role === 'doctor' ? localStorage.getItem('doctorName') : localStorage.getItem('patientId')) ||
+                localStorage.getItem('firebaseUid') ||
+                localStorage.getItem('uid') ||
                 ('guest_' + String(roomID).slice(0, 24));
 
             const firebaseToken = await resolveFirebaseTokenForCall();
@@ -3639,23 +3650,39 @@ html, body {
 
             let tokenData;
             try {
-                const agoraPayload = { roomID, userID, userName, role };
-                let agoraHeaders = await getFirebaseAuthHeaders();
-                let tokenRes = await fetch('/api/agora/token', {
-                    method: 'POST',
-                    headers: agoraHeaders,
-                    body: JSON.stringify(agoraPayload)
-                });
-                tokenData = await tokenRes.json();
-                if (!tokenRes.ok && tokenRes.status === 401 && role === 'patient') {
-                    clearStaleVideoTokens();
-                    agoraHeaders = { 'Content-Type': 'application/json' };
+                const appointmentId =
+                    (getUrlParams().get('appointmentId') || localStorage.getItem('appointmentId') || '').trim() ||
+                    (String(roomID).startsWith('room_') ? String(roomID).slice(5) : '');
+                const agoraHeaders = await getFirebaseAuthHeaders();
+                let tokenRes = null;
+                if (firebaseToken && appointmentId) {
+                    tokenRes = await fetch('/api/createAgoraRtcToken', {
+                        method: 'POST',
+                        headers: agoraHeaders,
+                        body: JSON.stringify({ appointmentId: appointmentId, channelName: roomID })
+                    });
+                    tokenData = await tokenRes.json().catch(() => ({}));
+                    if (tokenRes.ok && tokenData) {
+                        tokenData.channel = tokenData.channel || tokenData.channelName || roomID;
+                    }
+                }
+                if (!tokenRes || !tokenRes.ok) {
+                    const agoraPayload = { roomID, channel: roomID, userID, userName, role, appointmentId };
                     tokenRes = await fetch('/api/agora/token', {
                         method: 'POST',
                         headers: agoraHeaders,
                         body: JSON.stringify(agoraPayload)
                     });
                     tokenData = await tokenRes.json();
+                    if (!tokenRes.ok && tokenRes.status === 401 && role === 'patient') {
+                        clearStaleVideoTokens();
+                        tokenRes = await fetch('/api/agora/token', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(agoraPayload)
+                        });
+                        tokenData = await tokenRes.json();
+                    }
                 }
                 if (!tokenRes.ok) {
                     document.getElementById('custom-prejoin').style.display = 'flex';
@@ -3829,10 +3856,14 @@ html, body {
                     setCallStatus('Reconnecting to video…', 'reconnecting');
 
                     const userID = callIdentity.userId ||
-                        (role === 'doctor' ? localStorage.getItem('doctorName') : localStorage.getItem('patientId')) ||
+                        localStorage.getItem('firebaseUid') ||
+                        localStorage.getItem('uid') ||
                         ('guest_' + String(roomID).slice(0, 24));
                     const userName = callIdentity.name;
-                    const agoraPayload = { roomID, userID, userName, role };
+                    const appointmentId =
+                        (getUrlParams().get('appointmentId') || localStorage.getItem('appointmentId') || '').trim() ||
+                        (String(roomID).startsWith('room_') ? String(roomID).slice(5) : '');
+                    const agoraPayload = { roomID, channel: roomID, userID, userName, role, appointmentId };
                     let agoraHeaders = await getFirebaseAuthHeaders();
                     let tokenRes = await fetch('/api/agora/token', {
                         method: 'POST',
@@ -6121,6 +6152,6 @@ document.querySelectorAll('.category-btn').forEach(btn => {
 });
 
     </script>
-    <script src="js/dg-responsive-nav.js"></script>
+    <script src="js/shared/dg-responsive-nav.js"></script>
 </body>
 </html>

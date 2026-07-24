@@ -10,19 +10,19 @@
 require('dotenv').config();
 
 const mongoose = require('mongoose');
-const { initFirebase, getFirestore } = require('../lib/firebase');
+const { initFirebase, getFirestore } = require('../src/core/firebase');
 
 const COLLECTION_MAP = [
-  [require('../models/Doctor'), 'doctors'],
-  [require('../models/Patient'), 'patients'],
-  [require('../models/Payment'), 'payments'],
-  [require('../models/ConsultationRequest'), 'consultationRequests'],
-  [require('../models/Order'), 'orders'],
-  [require('../models/Store'), 'stores'],
-  [require('../models/Prescription'), 'prescriptions'],
-  [require('../models/AccountDeletionRequest'), 'account_deletion_requests'],
-  [require('../models/writtenpresc'), 'writtenPrescs'],
-  [require('../models/prescribedCart.model'), 'prescribedCarts']
+  [require('../legacy/models/Doctor'), 'doctors'],
+  [require('../legacy/models/Patient'), 'patients'],
+  [require('../legacy/models/Payment'), 'payments'],
+  [require('../legacy/models/ConsultationRequest'), 'consultationRequests'],
+  [require('../legacy/models/Order'), 'orders'],
+  [require('../legacy/models/Store'), 'stores'],
+  [require('../legacy/models/Prescription'), 'prescriptions'],
+  [require('../legacy/models/AccountDeletionRequest'), 'account_deletion_requests'],
+  [require('../legacy/models/writtenpresc'), 'writtenPrescs'],
+  [require('../legacy/models/prescribedCart.model'), 'prescribedCarts']
 ];
 
 function serializeDoc(doc) {

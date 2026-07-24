@@ -1,6 +1,6 @@
 const assert = require('assert');
 
-const { MOBILE_COLLECTIONS } = require('../lib/mobileSchema');
+const { MOBILE_COLLECTIONS } = require('../src/core/mobileSchema');
 const {
   scheduledCallId,
   videoRoomIdForAppointment,
@@ -12,16 +12,17 @@ const {
   buildAppCompletedFields,
   buildAppTerminalFields,
   canonicalVideoChannelForAppointment,
+  canonicalizeAgoraChannelAlias,
   isValidAgoraChannelName,
   agoraUidForUserId
-} = require('../lib/appAppointmentSync');
+} = require('../src/modules/consultations/appAppointmentSync');
 const {
   buildConsultationStatusFields,
   normalizeConsultationStatus,
   patientCanJoinVideo
-} = require('../lib/consultationWorkflow');
-const { buildPaymentLifecyclePatch } = require('../lib/consultationLifecycleSync');
-const { buildFirestoreOrderPayload } = require('../lib/webOrderSync');
+} = require('../src/modules/consultations/consultationWorkflow');
+const { buildPaymentLifecyclePatch } = require('../src/modules/consultations/consultationLifecycleSync');
+const { buildFirestoreOrderPayload } = require('../src/modules/store/webOrderSync');
 
 function hasOwn(obj, key) {
   return Object.prototype.hasOwnProperty.call(obj, key);
@@ -172,6 +173,10 @@ function run() {
   assert.strictEqual(activeCall.channelName, roomId);
   assert.strictEqual(activeCall.agoraChannel, roomId);
   assert.strictEqual(activeCall.provider, 'agora');
+  assert.ok(Array.isArray(activeCall.participants), 'active call participants array');
+  assert.deepStrictEqual(activeCall.participants, [doctorId, patientId]);
+  assert.strictEqual(activeCall.caller, doctorId);
+  assert.strictEqual(activeCall.callee, patientId);
   assert.strictEqual(
     canonicalVideoChannelForAppointment(appointment, appointmentId, scheduledCallId(appointmentId)),
     roomId
@@ -180,6 +185,16 @@ function run() {
     canonicalVideoChannelForAppointment(appointment, appointmentId, appointmentId),
     roomId
   );
+  assert.strictEqual(
+    canonicalVideoChannelForAppointment(appointment, appointmentId, `consultation_${appointmentId}`),
+    roomId
+  );
+  assert.strictEqual(canonicalizeAgoraChannelAlias(`consultation_${appointmentId}`), roomId);
+  assert.strictEqual(canonicalizeAgoraChannelAlias('', appointmentId), roomId);
+  const uidA = agoraUidForUserId('firebase-uid-abc');
+  const uidB = agoraUidForUserId('firebase-uid-abc');
+  assert.strictEqual(uidA, uidB);
+  assert.ok(Number.isInteger(uidA) && uidA > 0);
 
   const acceptedPaymentPatch = buildPaymentLifecyclePatch('accepted', appointmentId);
   assert.strictEqual(acceptedPaymentPatch.status, 'accepted');

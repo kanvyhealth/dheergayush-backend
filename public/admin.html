@@ -57,6 +57,7 @@
             <button class="tab-btn" data-tab="settlements">Settlements</button>
             <button class="tab-btn" data-tab="prescriptions">Prescriptions</button>
             <button class="tab-btn" data-tab="orders">Orders</button>
+            <button class="tab-btn" data-tab="medicines">Medicines</button>
         </nav>
 
         <main>
@@ -272,6 +273,48 @@
                     </table>
                 </div>
             </section>
+
+            <!-- Medicines Tab -->
+            <section id="medicines" class="tab-content">
+                <div class="section-header">
+                    <h2>Manage Medicines</h2>
+                    <div class="filter-buttons">
+                        <button type="button" class="filter-btn" onclick="showEditModal('medicines', {})">Add medicine</button>
+                        <button type="button" class="clear-btn" onclick="exportMedicinesCatalog()">Export JSON</button>
+                    </div>
+                </div>
+                <div class="filter-controls">
+                    <div class="filter-group">
+                        <label for="medicineSearchQ">Search</label>
+                        <input type="text" id="medicineSearchQ" placeholder="Name or id">
+                    </div>
+                    <div class="filter-group">
+                        <label for="medicineBrandFilter">Brand</label>
+                        <input type="text" id="medicineBrandFilter" placeholder="Brand">
+                    </div>
+                    <div class="filter-group filter-group--actions">
+                        <span class="filter-group-label">Actions</span>
+                        <div class="filter-buttons">
+                            <button type="button" onclick="loadMedicinesTab()" class="filter-btn">Search</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="medicinesTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Brand</th>
+                                <th>Category</th>
+                                <th>Variants</th>
+                                <th>Visible</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="medicinesTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -353,11 +396,11 @@
 
     <div id="notification" class="notification"></div>
 
-    <script src="js/dg-api.js"></script>
-    <script src="js/dg-doctor-status.js"></script>
+    <script src="js/shared/dg-api.js"></script>
+    <script src="js/doctor/dg-doctor-status.js"></script>
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
-    <script src="js/dg-realtime.js"></script>
+    <script src="js/shared/dg-realtime.js"></script>
     <script src="admin.js"></script>
-    <script src="js/dg-responsive-nav.js"></script>
+    <script src="js/shared/dg-responsive-nav.js"></script>
 </body>
 </html> 

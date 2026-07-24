@@ -26,8 +26,8 @@ function walk(dir) {
 }
 
 const sandbox = { window: {} };
-vm.runInNewContext(read('public/js/dg-site-contact.js'), sandbox, {
-  filename: 'public/js/dg-site-contact.js'
+vm.runInNewContext(read('public/js/shared/dg-site-contact.js'), sandbox, {
+  filename: 'public/js/shared/dg-site-contact.js'
 });
 const siteContact = sandbox.window.DgSiteContact;
 

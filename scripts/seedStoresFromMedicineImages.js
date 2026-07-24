@@ -3,8 +3,8 @@
  * Run: npm run seed:medicines
  */
 require('dotenv').config();
-const { connectDatabase, disconnectDatabase } = require('./lib/db');
-const { syncStoreCatalogFromImages } = require('./lib/storeCatalog');
+const { connectDatabase, disconnectDatabase } = require('../src/core/db');
+const { syncStoreCatalogFromImages } = require('../src/modules/store/storeCatalog');
 
 async function seedDatabase() {
   try {

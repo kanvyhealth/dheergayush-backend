@@ -9,8 +9,8 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const { VAIDYARATNAM_PRODUCTS } = require('../lib/vaidyaratnamCatalog');
-const { classifyStoreProduct } = require('../lib/storeCategories');
+const { VAIDYARATNAM_PRODUCTS } = require('../src/modules/store/vaidyaratnamCatalog');
+const { classifyStoreProduct } = require('../src/modules/store/storeCategories');
 const {
   CATALOG_PATH,
   IMAGE_DIR,

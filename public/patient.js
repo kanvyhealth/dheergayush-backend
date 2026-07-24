@@ -457,7 +457,42 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <p><strong>Status:</strong> ${order.orderStatus || 'pending'}</p>
                 <p><strong>Source:</strong> ${order.source || 'website'}</p>
                 <p><strong>Date:</strong> ${order.orderDate ? new Date(order.orderDate).toLocaleDateString() : '—'}</p>
+                ${order.shipment && (order.shipment.trackingNumber || order.shipment.courier) ? `
+                <p><strong>Shipment:</strong> ${order.shipment.courier || 'Courier'}
+                  ${order.shipment.trackingNumber ? ` · ${order.shipment.trackingNumber}` : ''}
+                  ${order.shipment.trackingUrl ? ` · <a href="${order.shipment.trackingUrl}" target="_blank" rel="noopener">Track</a>` : ''}
+                </p>` : ''}
+                <div class="dg-record-actions" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
+                  <a class="dg-btn dg-btn-secondary" href="/store-invoice.html?orderId=${encodeURIComponent(order._id || order.id || '')}" target="_blank" rel="noopener">Download invoice</a>
+                  ${['pending', 'confirmed'].includes(String(order.orderStatus || order.status || '').toLowerCase())
+                    ? `<button type="button" class="dg-btn dg-btn-secondary" data-cancel-order="${order._id || order.id || ''}">Cancel order</button>`
+                    : ''}
+                </div>
             `;
+            const cancelBtn = card.querySelector('[data-cancel-order]');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', async () => {
+                    const oid = cancelBtn.getAttribute('data-cancel-order');
+                    if (!oid || !confirm('Cancel this order?')) return;
+                    try {
+                        const token = localStorage.getItem('firebaseIdToken') || localStorage.getItem('idToken') || '';
+                        const res = await fetch(`/api/orders/${encodeURIComponent(oid)}/cancel`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                ...(token ? { Authorization: `Bearer ${token}` } : {})
+                            },
+                            body: JSON.stringify({ reason: 'customer_cancelled' })
+                        });
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) throw new Error(data.message || 'Cancel failed');
+                        showMessage(data.message || 'Order cancelled', 'success', 'dashboard');
+                        openDashboard();
+                    } catch (err) {
+                        showMessage(err.message || 'Cancel failed', 'error', 'dashboard');
+                    }
+                });
+            }
             panel.appendChild(card);
         });
     }

@@ -6,6 +6,20 @@
   var stores = [];
   var products = [];
   var cart = [];
+  var CART_KEY = 'dgWebStoreCart';
+  try {
+    var savedCart = sessionStorage.getItem(CART_KEY);
+    if (savedCart) {
+      var parsedCart = JSON.parse(savedCart);
+      if (Array.isArray(parsedCart)) cart = parsedCart;
+    }
+  } catch (_) { /* ignore */ }
+
+  function persistCart() {
+    try {
+      sessionStorage.setItem(CART_KEY, JSON.stringify(cart));
+    } catch (_) { /* ignore */ }
+  }
   var currentStore = null;
   var currentCategory = 'all';
   var currentStoreFilter = 'all';
@@ -440,11 +454,13 @@
           '<div class="pack-single">' + weights[0].value + ' ' + weights[0].unit + ' — ₹' + weights[0].price + '</div>'
         : '');
     var storeLabel = displayStoreLabel(med);
+    var detailsHref = '/product-details.html?id=' + encodeURIComponent(med._id || med.id || '') +
+      (med.storeId ? '&store=' + encodeURIComponent(med.storeId) : '');
     return '<article class="product-card" data-idx="' + globalIdx + '">' +
-      '<div class="product-img-wrap">' + productImageHtml(med, globalIdx) + '</div>' +
+      '<div class="product-img-wrap"><a href="' + detailsHref + '" class="product-img-link" aria-label="View details">' + productImageHtml(med, globalIdx) + '</a></div>' +
       '<div class="product-body">' +
       (storeLabel ? '<span class="product-store">' + escapeHtml(storeLabel) + '</span>' : '') +
-      '<h3 class="product-title" title="' + escapeHtml(med.name) + '">' + escapeHtml(med.name) + '</h3>' +
+      '<h3 class="product-title" title="' + escapeHtml(med.name) + '"><a href="' + detailsHref + '" style="color:inherit;text-decoration:none;">' + escapeHtml(med.name) + '</a></h3>' +
       '<p class="product-desc">' + escapeHtml(med.description || 'Authentic Ayurvedic formulation') + '</p>' +
       '<div class="product-rating">' + renderStarsHtml(rating) +
       '<span class="rating-num">' + rating + '</span>' +
@@ -785,6 +801,7 @@
     updateCartBadge();
     flashCart();
     syncAllCardActions();
+    persistCart();
     var cartSection = document.getElementById('cartSection');
     if (cartSection && cartSection.classList.contains('active')) {
       renderCart();
@@ -1112,6 +1129,7 @@
       lastInvoicePayload = invoiceSnapshot;
 
       cart = [];
+      persistCart();
       updateCartBadge();
       showSection('shopSection');
       if (els.storeInvoiceSuccess) {

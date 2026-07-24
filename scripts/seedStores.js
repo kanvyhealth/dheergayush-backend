@@ -1,6 +1,6 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
-const Store = require('./models/Store');
+const Store = require('../legacy/models/Store');
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGOURI, {

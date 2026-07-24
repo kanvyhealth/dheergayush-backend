@@ -12,7 +12,7 @@ const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
 let currentItem = null;
 let currentAction = null;
 
-/* Admin auth via server token (see js/dg-api.js) */
+/* Admin auth via server token (see js/shared/dg-api.js) */
 
 const adminLoginContainer = document.getElementById('adminLoginContainer');
 const adminDashboardContainer = document.getElementById('adminDashboardContainer');
@@ -79,6 +79,11 @@ async function loadTabData(tabName) {
 
         if (tabName === 'settlements') {
             await loadSettlementsWithFiltering();
+            return;
+        }
+
+        if (tabName === 'medicines') {
+            await loadMedicinesTab();
             return;
         }
         
@@ -312,7 +317,10 @@ function updateTable(tabName, data) {
                         <button class="action-btn view-btn" onclick='viewOrderItems(${JSON.stringify(item.items || []).replace(/'/g, "&#39;")})' title="View Items"><i class="fas fa-box" aria-hidden="true"></i> (${Array.isArray(item.items) ? item.items.length : 0})</button>
                     </td>
                     <td>₹${item.totalAmount || 0}</td>
-                    <td><span class="status-badge ${(item.orderStatus || '').toLowerCase()}">${item.orderStatus || ''}</span></td>
+                    <td>
+                        <span class="status-badge ${(item.orderStatus || '').toLowerCase()}">${item.orderStatus || ''}</span>
+                        ${item.shipment && item.shipment.trackingNumber ? `<div class="text-muted" style="font-size:12px;margin-top:4px;">${item.shipment.courier || 'Track'}: ${item.shipment.trackingNumber}</div>` : ''}
+                    </td>
                     <td>
                         ${item.paymentProof ? 
                             `<button class="action-btn view-btn" onclick='viewPaymentProof(${JSON.stringify(item.paymentProof).replace(/'/g, "&#39;")})' title="View Payment Proof"><i class="fas fa-file-lines" aria-hidden="true"></i></button>` : 
@@ -322,12 +330,32 @@ function updateTable(tabName, data) {
                     <td>${item.orderDate ? new Date(item.orderDate).toLocaleDateString() : ''}</td>
                     <td class="cell-actions">
                         <div class="actions-group">
+                            <button type="button" class="action-btn view-btn" onclick='adminOrderInvoice("${item._id || item.id}")'>Invoice</button>
                             <button type="button" class="action-btn edit-btn" onclick='showEditModal("orders", ${JSON.stringify(safeItem).replace(/'/g, "&#39;")})'>Edit</button>
                             <button type="button" class="action-btn delete-btn" onclick='showDeleteModal("orders", "${item._id}")'>Delete</button>
                         </div>
                     </td>
                 `;
                 break;
+
+            case 'medicines': {
+                const visible = item.storeVisible !== false;
+                const variants = Array.isArray(item.weights) ? item.weights.length : 0;
+                tr.innerHTML = `
+                    <td>${item.name || ''}</td>
+                    <td>${item.brand || item.company || item.storeName || ''}</td>
+                    <td>${item.category || ''}</td>
+                    <td>${variants}</td>
+                    <td><span class="status-badge ${visible ? 'approved' : 'rejected'}">${visible ? 'Yes' : 'Hidden'}</span></td>
+                    <td class="cell-actions">
+                        <div class="actions-group">
+                            <button type="button" class="action-btn edit-btn" onclick='showEditModal("medicines", ${JSON.stringify(safeItem).replace(/'/g, "&#39;")})'>Edit</button>
+                            <button type="button" class="action-btn reject-btn" onclick='hideMedicine("${item._id || item.id}")'>Hide</button>
+                        </div>
+                    </td>
+                `;
+                break;
+            }
         }
         
         tbody.appendChild(tr);
@@ -504,7 +532,8 @@ function showEditModal(type, item) {
     currentItem = item;
     currentAction = type;
     const modalTitle = document.getElementById('modalTitle');
-    modalTitle.textContent = `Edit ${type.slice(0, -1)}`;
+    const isNewMedicine = type === 'medicines' && !(item.id || item._id);
+    modalTitle.textContent = isNewMedicine ? 'Add medicine' : `Edit ${type.slice(0, -1)}`;
     
     // Clear previous fields
     modalFields.innerHTML = '';
@@ -512,7 +541,7 @@ function showEditModal(type, item) {
     try {
         // Add hidden input for ID
         modalFields.innerHTML = `
-            <input type="hidden" id="itemId" value="${item.id || item._id}">
+            <input type="hidden" id="itemId" value="${item.id || item._id || ''}">
         `;
     
     // Create form fields based on type
@@ -635,6 +664,16 @@ function showEditModal(type, item) {
                             <option value="UPI" ${item.paymentMethod === 'UPI' ? 'selected' : ''}>UPI</option>
                             <option value="COD" ${item.paymentMethod === 'COD' ? 'selected' : ''}>COD</option>
                             <option value="Card" ${item.paymentMethod === 'Card' ? 'selected' : ''}>Card</option>
+                            <option value="razorpay" ${String(item.paymentMethod || '').toLowerCase() === 'razorpay' ? 'selected' : ''}>Razorpay</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentStatus">Payment Status</label>
+                        <select id="paymentStatus">
+                            <option value="pending" ${item.paymentStatus === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="paid" ${item.paymentStatus === 'paid' ? 'selected' : ''}>Paid</option>
+                            <option value="refunded" ${item.paymentStatus === 'refunded' ? 'selected' : ''}>Refunded</option>
+                            <option value="failed" ${item.paymentStatus === 'failed' ? 'selected' : ''}>Failed</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -649,6 +688,22 @@ function showEditModal(type, item) {
                         </select>
                     </div>
                     <div class="form-group">
+                        <label for="shipmentCourier">Courier</label>
+                        <input type="text" id="shipmentCourier" value="${(item.shipment && item.shipment.courier) || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label for="shipmentTrackingNumber">Tracking number / AWB</label>
+                        <input type="text" id="shipmentTrackingNumber" value="${(item.shipment && item.shipment.trackingNumber) || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label for="shipmentTrackingUrl">Tracking URL</label>
+                        <input type="url" id="shipmentTrackingUrl" value="${(item.shipment && item.shipment.trackingUrl) || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label for="shipmentNotes">Shipment notes</label>
+                        <textarea id="shipmentNotes">${(item.shipment && item.shipment.notes) || ''}</textarea>
+                    </div>
+                    <div class="form-group">
                         <label for="orderDate">Order Date</label>
                         <input type="datetime-local" id="orderDate" value="${item.orderDate ? new Date(item.orderDate).toISOString().slice(0,16) : ''}">
                     </div>
@@ -660,8 +715,53 @@ function showEditModal(type, item) {
                         <label for="notes">Notes</label>
                         <textarea id="notes">${item.notes || ''}</textarea>
                     </div>
+                    <div class="form-group" style="display:flex;flex-wrap:wrap;gap:8px;">
+                        <button type="button" class="action-btn view-btn" onclick="adminOrderInvoice('${item._id || item.id}')">Invoice</button>
+                        <button type="button" class="action-btn edit-btn" onclick="adminMarkOrderShipped('${item._id || item.id}')">Mark shipped</button>
+                        <button type="button" class="action-btn edit-btn" onclick="adminMarkOrderDelivered('${item._id || item.id}')">Mark delivered</button>
+                        <button type="button" class="action-btn reject-btn" onclick="adminCancelOrder('${item._id || item.id}')">Cancel</button>
+                        <button type="button" class="action-btn reject-btn" onclick="adminRefundOrder('${item._id || item.id}')">Refund</button>
+                    </div>
                 `;
                 break;
+
+            case 'medicines': {
+                const weightsJson = JSON.stringify(item.weights || [], null, 2);
+                modalFields.innerHTML += `
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" value="${(item.name || '').replace(/"/g, '&quot;')}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="brand">Brand</label>
+                        <input type="text" id="brand" value="${(item.brand || item.company || item.storeName || '').replace(/"/g, '&quot;')}">
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <input type="text" id="category" value="${(item.category || '').replace(/"/g, '&quot;')}">
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description">${item.description || ''}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="imageFile">Image file / URL</label>
+                        <input type="text" id="imageFile" value="${(item.imageFile || item.imageUrl || '').replace(/"/g, '&quot;')}">
+                    </div>
+                    <div class="form-group">
+                        <label for="storeVisible">Visible in store</label>
+                        <select id="storeVisible">
+                            <option value="true" ${item.storeVisible !== false ? 'selected' : ''}>Yes</option>
+                            <option value="false" ${item.storeVisible === false ? 'selected' : ''}>No</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="weightsJson">Variants JSON (weights)</label>
+                        <textarea id="weightsJson" rows="8">${weightsJson.replace(/</g, '&lt;')}</textarea>
+                    </div>
+                `;
+                break;
+            }
     }
     
     editModal.style.display = 'block';
@@ -800,7 +900,48 @@ editForm.addEventListener('submit', async (e) => {
         const formData = {};
         const inputs = modalFields.querySelectorAll('input, select, textarea');
         const itemId = document.getElementById('itemId')?.value;
-        if (!itemId || !currentAction) {
+        if (!currentAction) {
+            throw new Error('Missing item data');
+        }
+        if (currentAction === 'medicines') {
+            inputs.forEach((input) => {
+                if (input.id === 'itemId') return;
+                formData[input.id] = input.value;
+            });
+            let weights = [];
+            try {
+                weights = JSON.parse(formData.weightsJson || '[]');
+            } catch (_) {
+                throw new Error('Variants JSON is invalid');
+            }
+            const payload = {
+                _id: itemId || undefined,
+                name: formData.name,
+                brand: formData.brand,
+                company: formData.brand,
+                category: formData.category,
+                description: formData.description,
+                imageFile: formData.imageFile,
+                storeVisible: formData.storeVisible !== 'false',
+                weights
+            };
+            const url = itemId ? `/api/admin/medicines/${encodeURIComponent(itemId)}` : '/api/admin/medicines';
+            const method = itemId ? 'PUT' : 'POST';
+            const response = await DgApi.apiFetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            }
+            showNotification(itemId ? 'Medicine updated' : 'Medicine created', 'success');
+            editModal.style.display = 'none';
+            loadMedicinesTab();
+            return;
+        }
+        if (!itemId) {
             throw new Error('Missing item data');
         }
         if (currentAction === 'orders') {
@@ -814,7 +955,7 @@ editForm.addEventListener('submit', async (e) => {
                     formData[input.id] = input.value;
                 }
             });
-            const response = await DgApi.apiFetch(`/api/admin/orders/${itemId}/status`, {
+            const statusResponse = await DgApi.apiFetch(`/api/admin/orders/${itemId}/status`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -824,11 +965,26 @@ editForm.addEventListener('submit', async (e) => {
                     paymentStatus: formData.paymentStatus
                 })
             });
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            if (!statusResponse.ok) {
+                const errorData = await statusResponse.json().catch(() => ({}));
+                throw new Error(errorData.message || `HTTP error! status: ${statusResponse.status}`);
             }
-            const data = await response.json();
+            const shipmentResponse = await DgApi.apiFetch(`/api/admin/orders/${itemId}/shipment`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    courier: formData.shipmentCourier || '',
+                    trackingNumber: formData.shipmentTrackingNumber || '',
+                    trackingUrl: formData.shipmentTrackingUrl || '',
+                    notes: formData.shipmentNotes || '',
+                    markShipped: formData.orderStatus === 'shipped',
+                    forceStatus: formData.orderStatus === 'delivered' ? 'delivered' : undefined
+                })
+            });
+            if (!shipmentResponse.ok) {
+                const errorData = await shipmentResponse.json().catch(() => ({}));
+                throw new Error(errorData.message || `Shipment update failed (${shipmentResponse.status})`);
+            }
             showNotification('Updated successfully', 'success');
             editModal.style.display = 'none';
             loadTabData(currentAction);
@@ -913,7 +1069,7 @@ function updatePaymentsTable(payments) {
             <td>${item.selectedDoctorName || ''}</td>
             <td>₹${item.selectedDoctorFee || item.amount || ''}</td>
             <td>${item.upiId || ''}</td>
-            <td>${item.roomName || ''}</td>
+            <td>${item.roomName || item.videoRoomId || ''}</td>
             <td>
                 ${item.paymentProofPath ? 
                     `<button class="action-btn view-btn" onclick='viewPaymentProof(${JSON.stringify(item.paymentProofPath)})' title="View Payment Proof"><i class="fas fa-file-lines" aria-hidden="true"></i></button>` : 
@@ -923,6 +1079,9 @@ function updatePaymentsTable(payments) {
             <td>${item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''}</td>
             <td class="cell-actions">
                 <div class="actions-group">
+                    <button type="button" class="action-btn view-btn" onclick='adminPaymentInvoice(${JSON.stringify(safeItem).replace(/'/g, "&#39;")})'>Invoice</button>
+                    <button type="button" class="action-btn reject-btn" onclick='adminCancelConsultationPayment(${JSON.stringify(safeItem).replace(/'/g, "&#39;")})'>Cancel</button>
+                    <button type="button" class="action-btn reject-btn" onclick='adminRefundConsultationPayment(${JSON.stringify(safeItem).replace(/'/g, "&#39;")})'>Refund</button>
                     <button type="button" class="action-btn delete-btn" onclick='showDeleteModal("payments", "${item._id}")'>Delete</button>
                 </div>
             </td>
@@ -1094,6 +1253,217 @@ function openDocument(filename) {
     window.open(documentUrl, '_blank');
 }
 
+async function loadMedicinesTab() {
+    try {
+        const q = encodeURIComponent((document.getElementById('medicineSearch')?.value || '').trim());
+        const brand = encodeURIComponent((document.getElementById('medicineBrandFilter')?.value || '').trim());
+        const category = encodeURIComponent((document.getElementById('medicineCategoryFilter')?.value || '').trim());
+        const params = new URLSearchParams();
+        if (q) params.set('q', q);
+        if (brand) params.set('brand', brand);
+        if (category) params.set('category', category);
+        params.set('limit', '200');
+        const response = await DgApi.apiFetch(`/api/admin/medicines?${params.toString()}`, {
+            headers: { Authorization: `Bearer ${authToken}` }
+        });
+        if (!response.ok) throw new Error('Failed to load medicines');
+        const data = await response.json();
+        currentData.medicines = Array.isArray(data.medicines)
+            ? data.medicines
+            : (Array.isArray(data.items) ? data.items : []);
+        updateTable('medicines');
+    } catch (error) {
+        console.error('loadMedicinesTab failed:', error);
+        showNotification(error.message || 'Failed to load medicines', 'error');
+    }
+}
+
+async function exportMedicinesCatalog() {
+    try {
+        const response = await DgApi.apiFetch('/api/admin/medicines/export-json', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${authToken}` }
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'Export failed');
+        showNotification(`Exported ${data.medicineCount || 0} medicines to catalog JSON`, 'success');
+    } catch (error) {
+        showNotification(error.message || 'Export failed', 'error');
+    }
+}
+
+async function hideMedicine(id) {
+    if (!id || !confirm('Hide this medicine from the store catalog?')) return;
+    try {
+        const response = await DgApi.apiFetch(`/api/admin/medicines/${encodeURIComponent(id)}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${authToken}` }
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'Hide failed');
+        showNotification('Medicine hidden from store', 'success');
+        await loadMedicinesTab();
+    } catch (error) {
+        showNotification(error.message || 'Hide failed', 'error');
+    }
+}
+
+window.loadMedicinesTab = loadMedicinesTab;
+window.exportMedicinesCatalog = exportMedicinesCatalog;
+window.hideMedicine = hideMedicine;
+
+function adminOrderInvoice(orderId) {
+    if (!orderId) return;
+    window.open(`/store-invoice.html?orderId=${encodeURIComponent(orderId)}`, '_blank');
+}
+
+async function adminMarkOrderShipped(orderId) {
+    if (!orderId) return;
+    const courier = document.getElementById('shipmentCourier')?.value || '';
+    const trackingNumber = document.getElementById('shipmentTrackingNumber')?.value || '';
+    const trackingUrl = document.getElementById('shipmentTrackingUrl')?.value || '';
+    const notes = document.getElementById('shipmentNotes')?.value || '';
+    try {
+        const response = await DgApi.apiFetch(`/api/admin/orders/${encodeURIComponent(orderId)}/shipment`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+            body: JSON.stringify({ courier, trackingNumber, trackingUrl, notes, markShipped: true, forceStatus: 'shipped' })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || 'Failed to mark shipped');
+        showNotification('Order marked shipped', 'success');
+        editModal.style.display = 'none';
+        loadTabData('orders');
+    } catch (error) {
+        showNotification(error.message || 'Failed to mark shipped', 'error');
+    }
+}
+
+async function adminMarkOrderDelivered(orderId) {
+    if (!orderId) return;
+    try {
+        const response = await DgApi.apiFetch(`/api/admin/orders/${encodeURIComponent(orderId)}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+            body: JSON.stringify({ orderStatus: 'delivered' })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || 'Failed to mark delivered');
+        showNotification('Order marked delivered', 'success');
+        editModal.style.display = 'none';
+        loadTabData('orders');
+    } catch (error) {
+        showNotification(error.message || 'Failed to mark delivered', 'error');
+    }
+}
+
+async function adminCancelOrder(orderId) {
+    if (!orderId || !confirm('Cancel this order? Paid Razorpay orders will be refunded when possible.')) return;
+    const reason = prompt('Cancel reason (optional):') || '';
+    try {
+        const response = await DgApi.apiFetch(`/api/admin/orders/${encodeURIComponent(orderId)}/cancel`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+            body: JSON.stringify({ reason, refund: true })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || 'Cancel failed');
+        showNotification(data.message || 'Order cancelled', 'success');
+        editModal.style.display = 'none';
+        loadTabData('orders');
+    } catch (error) {
+        showNotification(error.message || 'Cancel failed', 'error');
+    }
+}
+
+async function adminRefundOrder(orderId) {
+    if (!orderId || !confirm('Refund this order via Razorpay (or mark refunded if no payment id)?')) return;
+    try {
+        const response = await DgApi.apiFetch(`/api/admin/orders/${encodeURIComponent(orderId)}/refund`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+            body: JSON.stringify({ reason: 'admin_refund', force: true })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || 'Refund failed');
+        showNotification(data.message || 'Refund processed', 'success');
+        editModal.style.display = 'none';
+        loadTabData('orders');
+    } catch (error) {
+        showNotification(error.message || 'Refund failed', 'error');
+    }
+}
+
+window.adminOrderInvoice = adminOrderInvoice;
+window.adminMarkOrderShipped = adminMarkOrderShipped;
+window.adminMarkOrderDelivered = adminMarkOrderDelivered;
+window.adminCancelOrder = adminCancelOrder;
+window.adminRefundOrder = adminRefundOrder;
+
+function adminPaymentInvoice(item) {
+    if (!item) return;
+    const params = new URLSearchParams({
+        transactionId: item.razorpayPaymentId || item.transactionId || item.id || item._id || '',
+        doctorName: item.selectedDoctorName || item.doctorName || '',
+        doctorFee: String(item.selectedDoctorFee || item.amount || ''),
+        patientName: item.name || item.patientName || '',
+        patientPhone: item.phone || '',
+        patientAddress: item.address || '',
+        totalPaid: String(item.amount || item.selectedDoctorFee || '')
+    });
+    window.open(`/invoice.html?${params.toString()}`, '_blank');
+}
+
+async function adminCancelConsultationPayment(item) {
+    if (!item) return;
+    const consultationId = item.consultationId || item.appointmentId || item.consultationRequestId;
+    if (!consultationId) {
+        showNotification('No consultation id on this payment', 'error');
+        return;
+    }
+    if (!confirm('Cancel this consultation and attempt refund?')) return;
+    try {
+        const response = await DgApi.apiFetch(`/api/consultations/${encodeURIComponent(consultationId)}/cancel`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+            body: JSON.stringify({ reason: 'admin_cancelled' })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || 'Cancel failed');
+        showNotification(data.message || 'Consultation cancelled', 'success');
+        loadPaymentsWithFiltering();
+    } catch (error) {
+        showNotification(error.message || 'Cancel failed', 'error');
+    }
+}
+
+async function adminRefundConsultationPayment(item) {
+    if (!item) return;
+    const roomId = item.roomName || item.videoRoomId || item.roomId;
+    if (!roomId) {
+        showNotification('No video room on this payment', 'error');
+        return;
+    }
+    if (!confirm('Refund this consultation payment via Razorpay?')) return;
+    try {
+        const response = await DgApi.apiFetch(`/api/video-room/${encodeURIComponent(roomId)}/refund`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+            body: JSON.stringify({ reason: 'admin_refund' })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || 'Refund failed');
+        showNotification(data.message || 'Refund processed', 'success');
+        loadPaymentsWithFiltering();
+    } catch (error) {
+        showNotification(error.message || 'Refund failed', 'error');
+    }
+}
+
+window.adminPaymentInvoice = adminPaymentInvoice;
+window.adminCancelConsultationPayment = adminCancelConsultationPayment;
+window.adminRefundConsultationPayment = adminRefundConsultationPayment;
+
 // View Prescription Items
 function viewPrescriptionItems(items) {
     if (!items || items.length === 0) {
@@ -1220,7 +1590,10 @@ function updateOrdersTable(orders) {
                 <button class="action-btn view-btn" onclick='viewOrderItems(${JSON.stringify(item.items || []).replace(/'/g, "&#39;")})' title="View Items"><i class="fas fa-box" aria-hidden="true"></i> (${Array.isArray(item.items) ? item.items.length : 0})</button>
             </td>
             <td>₹${item.totalAmount || 0}</td>
-            <td><span class="status-badge ${(item.orderStatus || '').toLowerCase()}">${item.orderStatus || ''}</span></td>
+            <td>
+                <span class="status-badge ${(item.orderStatus || '').toLowerCase()}">${item.orderStatus || ''}</span>
+                ${item.shipment && item.shipment.trackingNumber ? `<div class="text-muted" style="font-size:12px;margin-top:4px;">${item.shipment.courier || 'Track'}: ${item.shipment.trackingNumber}</div>` : ''}
+            </td>
             <td>
                 ${item.paymentProof ? 
                     `<button class="action-btn view-btn" onclick='viewPaymentProof(${JSON.stringify(item.paymentProof).replace(/'/g, "&#39;")})' title="View Payment Proof"><i class="fas fa-file-lines" aria-hidden="true"></i></button>` : 
@@ -1230,6 +1603,7 @@ function updateOrdersTable(orders) {
             <td>${item.orderDate ? new Date(item.orderDate).toLocaleDateString() : ''}</td>
             <td class="cell-actions">
                 <div class="actions-group">
+                    <button type="button" class="action-btn view-btn" onclick='adminOrderInvoice("${item._id || item.id}")'>Invoice</button>
                     <button type="button" class="action-btn edit-btn" onclick='showEditModal("orders", ${JSON.stringify(safeItem).replace(/'/g, "&#39;")})'>Edit</button>
                     <button type="button" class="action-btn delete-btn" onclick='showDeleteModal("orders", "${item._id}")'>Delete</button>
                 </div>
@@ -1558,10 +1932,14 @@ function showAdminOtpStep(data) {
     if (adminLoginForm) adminLoginForm.style.display = 'none';
     if (adminOtpForm) adminOtpForm.style.display = 'block';
     if (adminOtpHint) {
-        adminOtpHint.textContent = `OTP sent to ${data.maskedPhone || 'admin mobile'} and ${data.maskedEmail || 'admin email'}.`;
+        if (data.devOtp) {
+            adminOtpHint.textContent = `Dev OTP (no email/SMS provider): ${data.devOtp}`;
+        } else {
+            adminOtpHint.textContent = `OTP sent to ${data.maskedPhone || 'admin mobile'} and ${data.maskedEmail || 'admin email'}.`;
+        }
     }
     if (adminOtpInput) {
-        adminOtpInput.value = '';
+        adminOtpInput.value = data.devOtp ? String(data.devOtp) : '';
         setTimeout(() => adminOtpInput.focus(), 50);
     }
     setAdminOtpError('');

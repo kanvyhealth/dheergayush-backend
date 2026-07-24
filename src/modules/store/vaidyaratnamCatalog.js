@@ -1,0 +1,47 @@
+/**
+ * Curated Vaidyaratnam (Vidhyaratnam) Ayurvedic medicines for the store catalog.
+ */
+const VAIDYARATNAM_PRODUCTS = [
+  { name: 'Chyavanaprasam 500 GM', category: 'Organic Foods', pack: '500 g', price: 350 },
+  { name: 'Aswagandha Tablet 60 Nos', category: 'Ayurvedic Medicines', pack: '60 tablets', price: 150 },
+  { name: 'Brahmi Tablet 60 Nos', category: 'Ayurvedic Medicines', pack: '60 tablets', price: 140 },
+  { name: 'Triphala Tablet 60 Nos', category: 'Ayurvedic Medicines', pack: '60 tablets', price: 130 },
+  { name: 'Cardocalm Tablets 100 Nos', category: 'Ayurvedic Medicines', pack: '100 tablets', price: 280 },
+  { name: 'Mehanil Tablets 100 Nos', category: 'Ayurvedic Medicines', pack: '100 tablets', price: 320 },
+  { name: 'Rheumacalm Tablets 100 Nos', category: 'Ayurvedic Medicines', pack: '100 tablets', price: 290 },
+  { name: 'Gasnope Tablet 60 Nos', category: 'Ayurvedic Medicines', pack: '60 tablets', price: 180 },
+  { name: 'Vigolvolt Tablet 60 Nos', category: 'Ayurvedic Medicines', pack: '60 tablets', price: 220 },
+  { name: 'Brahmi Thailam 200 ML', category: 'Ayurvedic Medicines', pack: '200 ml', price: 165 },
+  { name: 'Kunkumadi Thailam 10 ML', category: 'Personal and Beauty Care', pack: '10 ml', price: 195 },
+  { name: 'Recopain Balm 20 GM', category: 'Ayurvedic Medicines', pack: '20 g', price: 85 },
+  { name: 'Recopain Spray 60 ML', category: 'Ayurvedic Medicines', pack: '60 ml', price: 175 },
+  { name: 'Swasamritham 100 ML', category: 'Ayurvedic Medicines', pack: '100 ml', price: 95 },
+  { name: 'Fitfem Granules 250 GMS', category: 'Ayurvedic Medicines', pack: '250 g', price: 245 },
+  { name: 'Glycicept Tablet 120 Nos', category: 'Ayurvedic Medicines', pack: '120 tablets', price: 450 },
+  { name: 'Bliss Balance 200 ML', category: 'Ayurvedic Medicines', pack: '200 ml', price: 210 },
+  { name: 'Clearvos 200 GM', category: 'Ayurvedic Medicines', pack: '200 g', price: 380 },
+  { name: 'Mehanil Plus Tablets 100 Nos', category: 'Ayurvedic Medicines', pack: '100 tablets', price: 350 },
+  { name: 'Kesaranjini Kera Thailam 100 ML', category: 'Personal and Beauty Care', pack: '100 ml', price: 140 },
+  { name: 'Brihath Danthapala Thailam 200 ML', category: 'Ayurvedic Medicines', pack: '200 ml', price: 155 },
+  { name: 'Murivenna Ointment 20 GM', category: 'Ayurvedic Medicines', pack: '20 g', price: 75 },
+  { name: 'Ashtachoornam 50 GM', category: 'Ayurvedic Medicines', pack: '50 g', price: 65 },
+  { name: 'Aswagandha Choornam 100 GM', category: 'Ayurvedic Medicines', pack: '100 g', price: 95 },
+  { name: 'Bruhath Triphala Choornam 100 GM', category: 'Ayurvedic Medicines', pack: '100 g', price: 110 },
+  { name: 'Dasamoolarishtam 450 ML', category: 'Ayurvedic Medicines', pack: '450 ml', price: 185 },
+  { name: 'Amrutharishtam 450 ML', category: 'Ayurvedic Medicines', pack: '450 ml', price: 175 },
+  { name: 'Ashokarishtam 450 ML', category: 'Ayurvedic Medicines', pack: '450 ml', price: 190 },
+  { name: 'Dhanwantharam Thailam 200 ML', category: 'Ayurvedic Medicines', pack: '200 ml', price: 170 },
+  { name: 'Sahacharadi Thailam 200 ML', category: 'Ayurvedic Medicines', pack: '200 ml', price: 160 },
+  { name: 'Thriphala Choornam 100 GM', category: 'Ayurvedic Medicines', pack: '100 g', price: 85 },
+  { name: 'Avipathi Choornam 50 GM', category: 'Ayurvedic Medicines', pack: '50 g', price: 70 },
+  { name: 'Mahishasuramardini Ras 10 GM', category: 'Ayurvedic Medicines', pack: '10 g', price: 220 },
+  { name: 'Amukkara Choornam 100 GM', category: 'Ayurvedic Medicines', pack: '100 g', price: 90 },
+  { name: 'Vyoshadi Vatakam 50 GM', category: 'Ayurvedic Medicines', pack: '50 g', price: 95 },
+  { name: 'Thalisapathradi Choornam 50 GM', category: 'Ayurvedic Medicines', pack: '50 g', price: 80 },
+  { name: 'Narasimha Rasayanam 500 GM', category: 'Ayurvedic Medicines', pack: '500 g', price: 420 },
+  { name: 'Panchajeeraka Gudam 500 GM', category: 'Ayurvedic Medicines', pack: '500 g', price: 260 },
+  { name: 'Thyrocalm Tablets 100 Nos', category: 'Ayurvedic Medicines', pack: '100 tablets', price: 310 },
+  { name: 'Digestol Tablets 100 Nos', category: 'Ayurvedic Medicines', pack: '100 tablets', price: 240 }
+];
+
+module.exports = { VAIDYARATNAM_PRODUCTS };

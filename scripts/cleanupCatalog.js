@@ -7,10 +7,10 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { CATALOG_PATH } = require('../lib/medicineCatalogJson');
-const { filterExcludedStores, isExcludedMedicine } = require('../lib/excludedBrands');
-const { isValidAyurvedicProduct } = require('../lib/excludedProducts');
-const { classifyStoreProduct } = require('../lib/storeCategories');
+const { CATALOG_PATH } = require('../src/modules/store/medicineCatalogJson');
+const { filterExcludedStores, isExcludedMedicine } = require('../src/modules/store/excludedBrands');
+const { isValidAyurvedicProduct } = require('../src/modules/store/excludedProducts');
+const { classifyStoreProduct } = require('../src/modules/store/storeCategories');
 
 const DRY_RUN = process.argv.includes('--dry-run');
 const IMAGE_DIR = path.join(__dirname, '..', 'medicine', 'medicine');

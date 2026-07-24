@@ -3,7 +3,7 @@
  * Usage: node scripts/verify-razorpay-checkout.js
  */
 require('dotenv').config();
-const { createOrder, verifyPaymentSignature, verifySignature, getRazorpayConfig } = require('../lib/razorpay');
+const { createOrder, verifyPaymentSignature, verifySignature, getRazorpayConfig } = require('../src/modules/payments/razorpay');
 const crypto = require('crypto');
 
 async function main() {

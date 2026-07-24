@@ -10,8 +10,8 @@
   <link rel="stylesheet" href="css/dheergayush-forms.css">
   <link rel="stylesheet" href="css/dg-responsive.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script src="js/dg-doctor-status.js?v=2"></script>
-  <script src="js/dg-doctor-end-calls.js"></script>
+  <script src="js/doctor/dg-doctor-status.js?v=2"></script>
+  <script src="js/doctor/dg-doctor-end-calls.js"></script>
   <style>
     .dg-profile-modal {
       position: fixed;
@@ -339,12 +339,12 @@
     </div>
   </div>
 
-  <script src="js/dg-auth.js"></script>
-  <script src="js/dg-api.js"></script>
-  <script src="js/dg-doctor-profile.js"></script>
-  <script src="js/dg-doctor-dashboard.js"></script>
+  <script src="js/shared/dg-auth.js"></script>
+  <script src="js/shared/dg-api.js"></script>
+  <script src="js/doctor/dg-doctor-profile.js"></script>
+  <script src="js/doctor/dg-doctor-dashboard.js"></script>
   <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
-  <script src="js/dg-realtime.js"></script>
+  <script src="js/shared/dg-realtime.js"></script>
   <script>
     function doctorAuthHeaders(extra) {
       const token = localStorage.getItem('firebaseIdToken');
@@ -713,6 +713,6 @@
       window.location.href = 'stores.html';
     }
   </script>
-  <script src="js/dg-responsive-nav.js"></script>
+  <script src="js/shared/dg-responsive-nav.js"></script>
 </body>
 </html>

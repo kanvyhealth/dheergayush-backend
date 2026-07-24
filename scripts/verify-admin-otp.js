@@ -13,7 +13,7 @@ const {
   sendAdminOtp,
   maskEmail,
   maskPhone
-} = require('../lib/adminOtp');
+} = require('../src/modules/admin/adminOtp');
 
 (async () => {
   assert.strictEqual(maskEmail('kanvyhealthcare@gmail.com'), 'ka***@gmail.com');

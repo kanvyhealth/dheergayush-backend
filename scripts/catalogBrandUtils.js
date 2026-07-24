@@ -43,7 +43,7 @@ function parseWeight(pack) {
   };
 }
 
-const { classifyStoreProduct } = require('../lib/storeCategories');
+const { classifyStoreProduct } = require('../src/modules/store/storeCategories');
 
 function normalizeCategory(raw, med) {
   if (med && typeof med === 'object') {

@@ -181,5 +181,78 @@
       <p>Support: +91 7842736777 · support@dheergayush.net</p>
     </div>
   </div>
+  <p id="invLoadError" style="display:none;text-align:center;color:#b00020;margin:16px;"></p>
+  <div style="text-align:center;margin:16px;">
+    <button type="button" onclick="window.print()" style="padding:10px 20px;background:#F26727;color:#fff;border:none;border-radius:8px;cursor:pointer;">Print / Save PDF</button>
+  </div>
+  <script>
+    (function () {
+      function money(n) {
+        var v = Number(n);
+        if (!isFinite(v)) v = 0;
+        return '₹' + v.toFixed(2);
+      }
+      function set(id, value) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = value == null || value === '' ? '—' : String(value);
+      }
+      function fill(order) {
+        var items = Array.isArray(order.items) ? order.items : [];
+        set('invOrderId', order._id || order.id || order.orderId);
+        set('invDate', order.orderDate ? new Date(order.orderDate).toLocaleString('en-IN') : new Date().toLocaleString('en-IN'));
+        set('invPaymentId', order.razorpayPaymentId || order.paymentProof || order.transactionId || '');
+        set('invRazorpayOrderId', order.razorpayOrderId || '');
+        set('invCustomerName', order.customerName || order.userName || '');
+        set('invCustomerPhone', order.customerPhone || order.phone || '');
+        set('invCustomerEmail', order.customerEmail || order.userEmail || '');
+        set('invDeliveryAddress', order.deliveryAddress || '');
+        set('invSubtotal', money(order.subtotal != null ? order.subtotal : order.totalAmount));
+        set('invDiscount', money(order.discount || 0));
+        set('invDelivery', money(order.deliveryFee || order.deliveryCharge || 0));
+        set('invTotal', money(order.totalAmount || order.total_amount || 0));
+        var body = document.getElementById('invItemsBody');
+        if (!body) return;
+        if (!items.length) {
+          body.innerHTML = '<tr><td colspan="4">No items</td></tr>';
+          return;
+        }
+        body.innerHTML = items.map(function (item) {
+          var name = item.name || item.productName || 'Item';
+          var qty = Number(item.quantity || 1) || 1;
+          var rate = Number(item.pricePerUnit != null ? item.pricePerUnit : item.price) || 0;
+          var line = Number(item.totalPrice != null ? item.totalPrice : rate * qty);
+          return '<tr><td>' + name + '</td><td class="num">' + qty + '</td><td class="num">' + money(rate) + '</td><td class="num">' + money(line) + '</td></tr>';
+        }).join('');
+      }
+      async function boot() {
+        var params = new URLSearchParams(window.location.search);
+        var orderId = params.get('orderId') || params.get('id');
+        if (!orderId) {
+          var err = document.getElementById('invLoadError');
+          if (err) {
+            err.style.display = 'block';
+            err.textContent = 'Missing orderId. Open this page with ?orderId=<id>.';
+          }
+          return;
+        }
+        try {
+          var headers = {};
+          var adminToken = localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken') || '';
+          if (adminToken) headers.Authorization = 'Bearer ' + adminToken;
+          var res = await fetch('/api/orders/' + encodeURIComponent(orderId), { headers: headers });
+          if (!res.ok) throw new Error('Order not found');
+          var order = await res.json();
+          fill(order);
+        } catch (e) {
+          var errEl = document.getElementById('invLoadError');
+          if (errEl) {
+            errEl.style.display = 'block';
+            errEl.textContent = e.message || 'Failed to load invoice';
+          }
+        }
+      }
+      boot();
+    })();
+  </script>
 </body>
 </html>

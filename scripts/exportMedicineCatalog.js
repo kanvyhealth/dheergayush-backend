@@ -5,7 +5,7 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { buildStoreFromMedicineImages } = require('../lib/medicineCatalog');
+const { buildStoreFromMedicineImages } = require('../src/modules/store/medicineCatalog');
 
 const outDir = path.join(__dirname, '..', 'public', 'data');
 const outFile = path.join(outDir, 'medicine-catalog.json');
