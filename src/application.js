@@ -28,7 +28,12 @@ const {
   syncStoreCatalogFromImages,
   getStoresFromDatabase
 } = require('./modules/store/storeCatalog');
-const { getEffectiveStatus, normalizeDbStatus, getScheduleStatus } = require('./modules/doctors/doctorAvailability');
+const {
+  getEffectiveStatus,
+  normalizeDbStatus,
+  getScheduleStatus,
+  getDoctorPresenceStatus
+} = require('./modules/doctors/doctorAvailability');
 const {
   updateDoctorPresence,
   syncDoctorRecordsUpdate,
@@ -1918,7 +1923,7 @@ app.use(express.static(path.join(ROOT_DIR, 'public')));
     Doctor, Payment, Prescription, Store, Order, MedicineOrder, AccountDeletionRequest,
     ConsultationRequest, PrescribedCart, WrittenPresc, Document, User,
     requireDb, isConnected, getProvider,
-    getEffectiveStatus, normalizeDbStatus, getScheduleStatus,
+    getEffectiveStatus, normalizeDbStatus, getScheduleStatus, getDoctorPresenceStatus,
     updateDoctorPresence, syncDoctorRecordsUpdate, deleteAllDoctorRecords, findDoctorByName,
     buildPresenceUpdate, buildApprovalUpdate, isDoctorBusy, isDoctorAvailable, isDoctorApproved,
     verifyIdToken, syncUserFromToken, getUserProfile, requireFirebaseAuth,
