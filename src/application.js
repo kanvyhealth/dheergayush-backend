@@ -267,8 +267,24 @@ BRAND_ASSET_ROUTES.forEach(([route, file, contentType]) => {
 // Middleware
 app.get('/.well-known/assetlinks.json', (req, res) => {
   res.type('application/json');
+  res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'assetlinks.json'));
 });
+
+function serveReferralInvitePage(req, res) {
+  const filePath = path.join(PUBLIC_DIR, 'invite.html');
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send('Invite page not found');
+  }
+  res.setHeader('Cache-Control', 'no-cache');
+  res.type('html');
+  return res.sendFile(filePath);
+}
+
+app.get('/invite', serveReferralInvitePage);
+app.get('/invite/', serveReferralInvitePage);
+app.get('/invite/:code', serveReferralInvitePage);
+app.get('/r/:code', serveReferralInvitePage);
 
 applySecurityMiddleware(app);
 app.use(cors(getCorsOptions()));
