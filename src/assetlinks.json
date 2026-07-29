@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.dheergayush.app",
+      "sha256_cert_fingerprints": [
+        "26:70:FF:38:CF:AA:E6:C6:D9:7E:4F:7C:90:7A:9D:36:31:93:14:98:EA:16:15:87:EE:1B:1A:6E:54:C6:62:FB",
+        "96:9F:9E:1E:0E:E9:A6:69:46:C3:32:F3:F8:6F:86:C3:5F:37:33:FC:46:F4:5A:E7:4D:2D:BF:98:93:68:83:9B"
+      ]
+    }
+  }
+]

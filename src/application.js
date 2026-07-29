@@ -264,6 +264,11 @@ BRAND_ASSET_ROUTES.forEach(([route, file, contentType]) => {
 });
 
 // Middleware
+app.get('/.well-known/assetlinks.json', (req, res) => {
+  res.type('application/json');
+  res.sendFile(path.join(__dirname, 'assetlinks.json'));
+});
+
 applySecurityMiddleware(app);
 app.use(cors(getCorsOptions()));
 app.use(bodyParser.json({ limit: '2mb' }));
