@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Join Dheergayush</title>
+  <meta name="description" content="Accept a Dheergayush referral invite and claim a free doctor consultation." />
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #fff7f2;
+      --card: #ffffff;
+      --text: #1f1f1f;
+      --muted: #6b6b6b;
+      --primary: #e86a3a;
+      --primary-ink: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1411;
+        --card: #261d18;
+        --text: #f7efe9;
+        --muted: #c2b4ab;
+        --primary: #ff9b6e;
+        --primary-ink: #1a1411;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: radial-gradient(circle at top, #ffe3d4, var(--bg));
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .card {
+      width: min(440px, 100%);
+      background: var(--card);
+      border-radius: 20px;
+      padding: 28px 24px;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.12);
+    }
+    h1 { margin: 0 0 8px; font-size: 1.6rem; }
+    p { margin: 0 0 12px; color: var(--muted); line-height: 1.5; }
+    .code {
+      display: inline-block;
+      margin: 8px 0 18px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(232, 106, 58, 0.12);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      font-size: 1.15rem;
+    }
+    .actions { display: grid; gap: 10px; }
+    a.button, button {
+      appearance: none;
+      border: 0;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      text-align: center;
+      cursor: pointer;
+    }
+    .primary {
+      background: var(--primary);
+      color: var(--primary-ink);
+    }
+    .secondary {
+      background: transparent;
+      color: var(--primary);
+      border: 1.5px solid var(--primary);
+    }
+    .hint { margin-top: 16px; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>You're invited to Dheergayush</h1>
+    <p>
+      Open the app to claim your free consultation reward with your friend's
+      referral code.
+    </p>
+    <div id="codeBox" class="code" hidden></div>
+    <div class="actions">
+      <a id="openApp" class="button primary" href="#">Open in app</a>
+      <a id="playStore" class="button secondary" href="#">Get it on Google Play</a>
+    </div>
+    <p class="hint" id="status">
+      Opening the app if it's installed…
+    </p>
+  </main>
+  <script>
+    (function () {
+      var PACKAGE_ID = 'com.dheergayush.app';
+      var params = new URLSearchParams(window.location.search);
+      var code = (params.get('referral_code') || params.get('referralCode') || params.get('ref') || '').trim().toUpperCase();
+
+      if (!code) {
+        var parts = window.location.pathname.split('/').filter(Boolean);
+        if (parts.length >= 2 && (parts[0] === 'r' || parts[0] === 'invite')) {
+          code = parts[1].trim().toUpperCase();
+        }
+      }
+
+      var codeBox = document.getElementById('codeBox');
+      var openApp = document.getElementById('openApp');
+      var playStore = document.getElementById('playStore');
+      var status = document.getElementById('status');
+
+      var inviteQuery = code ? ('?referral_code=' + encodeURIComponent(code)) : '';
+      var deepLink = 'dheergayush://invite' + inviteQuery;
+      var httpsLink = window.location.origin + '/invite' + inviteQuery;
+      var referrer = encodeURIComponent(
+        'utm_source=referral&utm_medium=share' + (code ? ('&referral_code=' + code) : '')
+      );
+      var playUrl =
+        'https://play.google.com/store/apps/details?id=' + PACKAGE_ID + '&referrer=' + referrer;
+
+      if (code) {
+        codeBox.hidden = false;
+        codeBox.textContent = code;
+      }
+
+      openApp.href = deepLink;
+      playStore.href = playUrl;
+
+      function tryOpenApp() {
+        var start = Date.now();
+        var iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = deepLink;
+        document.body.appendChild(iframe);
+
+        // Also attempt top-level navigation for browsers that block iframes.
+        window.location.href = deepLink;
+
+        setTimeout(function () {
+          var elapsed = Date.now() - start;
+          // If still visible, app likely not installed.
+          if (!document.hidden && elapsed >= 1200) {
+            status.textContent = 'App not found. Taking you to Google Play…';
+            window.location.href = playUrl;
+          }
+        }, 1400);
+      }
+
+      openApp.addEventListener('click', function (event) {
+        event.preventDefault();
+        tryOpenApp();
+      });
+
+      // Auto-attempt once on load.
+      setTimeout(tryOpenApp, 250);
+
+      // Keep httpsLink available for debugging / share previews.
+      window.__dheergayushInvite = { code: code, deepLink: deepLink, httpsLink: httpsLink, playUrl: playUrl };
+    })();
+  </script>
+</body>
+</html>
