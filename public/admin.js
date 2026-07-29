@@ -1263,9 +1263,7 @@ async function loadMedicinesTab() {
         if (brand) params.set('brand', brand);
         if (category) params.set('category', category);
         params.set('limit', '200');
-        const response = await DgApi.apiFetch(`/api/admin/medicines?${params.toString()}`, {
-            headers: { Authorization: `Bearer ${authToken}` }
-        });
+        const response = await DgApi.apiFetch(`/api/admin/medicines?${params.toString()}`);
         if (!response.ok) throw new Error('Failed to load medicines');
         const data = await response.json();
         currentData.medicines = Array.isArray(data.medicines)
@@ -1281,8 +1279,7 @@ async function loadMedicinesTab() {
 async function exportMedicinesCatalog() {
     try {
         const response = await DgApi.apiFetch('/api/admin/medicines/export-json', {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${authToken}` }
+            method: 'POST'
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.error || 'Export failed');
@@ -1296,8 +1293,7 @@ async function hideMedicine(id) {
     if (!id || !confirm('Hide this medicine from the store catalog?')) return;
     try {
         const response = await DgApi.apiFetch(`/api/admin/medicines/${encodeURIComponent(id)}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${authToken}` }
+            method: 'DELETE'
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.error || 'Hide failed');
@@ -1326,7 +1322,7 @@ async function adminMarkOrderShipped(orderId) {
     try {
         const response = await DgApi.apiFetch(`/api/admin/orders/${encodeURIComponent(orderId)}/shipment`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ courier, trackingNumber, trackingUrl, notes, markShipped: true, forceStatus: 'shipped' })
         });
         const data = await response.json().catch(() => ({}));
@@ -1344,7 +1340,7 @@ async function adminMarkOrderDelivered(orderId) {
     try {
         const response = await DgApi.apiFetch(`/api/admin/orders/${encodeURIComponent(orderId)}/status`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ orderStatus: 'delivered' })
         });
         const data = await response.json().catch(() => ({}));
@@ -1363,7 +1359,7 @@ async function adminCancelOrder(orderId) {
     try {
         const response = await DgApi.apiFetch(`/api/admin/orders/${encodeURIComponent(orderId)}/cancel`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ reason, refund: true })
         });
         const data = await response.json().catch(() => ({}));
@@ -1381,7 +1377,7 @@ async function adminRefundOrder(orderId) {
     try {
         const response = await DgApi.apiFetch(`/api/admin/orders/${encodeURIComponent(orderId)}/refund`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ reason: 'admin_refund', force: true })
         });
         const data = await response.json().catch(() => ({}));
@@ -1425,7 +1421,7 @@ async function adminCancelConsultationPayment(item) {
     try {
         const response = await DgApi.apiFetch(`/api/consultations/${encodeURIComponent(consultationId)}/cancel`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ reason: 'admin_cancelled' })
         });
         const data = await response.json().catch(() => ({}));
@@ -1448,7 +1444,7 @@ async function adminRefundConsultationPayment(item) {
     try {
         const response = await DgApi.apiFetch(`/api/video-room/${encodeURIComponent(roomId)}/refund`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ reason: 'admin_refund' })
         });
         const data = await response.json().catch(() => ({}));

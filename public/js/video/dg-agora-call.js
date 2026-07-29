@@ -133,6 +133,40 @@
     }
   }
 
+  function getCallRole() {
+    try {
+      return String(new URLSearchParams(window.location.search).get('role') || '').toLowerCase();
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function applyVideoOrientationCorrection(containerEl, videoEl, opts) {
+    if (!containerEl || !videoEl) return;
+    const options = opts || {};
+    const run = () => {
+      const w = videoEl.videoWidth || 0;
+      const h = videoEl.videoHeight || 0;
+      if (!w || !h) return;
+      const streamLandscape = w > h * 1.05;
+      const box = containerEl.getBoundingClientRect();
+      const boxPortrait = box.height >= box.width * 0.95;
+      let shouldRotate = false;
+      if (streamLandscape && boxPortrait) {
+        shouldRotate = true;
+      } else if (options.assumeMobilePeer && streamLandscape) {
+        // Doctor on website viewing a phone patient: landscape buffers are often sideways.
+        shouldRotate = true;
+      }
+      containerEl.classList.toggle('dg-agora-rotated-90', shouldRotate);
+    };
+    if (videoEl.readyState >= 1) run();
+    videoEl.addEventListener('loadedmetadata', run, { once: true });
+    videoEl.addEventListener('resize', run);
+    setTimeout(run, 400);
+    setTimeout(run, 1200);
+  }
+
   async function playRemoteMedia(user, mediaType, remoteEl) {
     if (!client || !user) return;
     try {
@@ -143,6 +177,9 @@
         if (vid) {
           vid.setAttribute('playsinline', 'true');
           vid.setAttribute('webkit-playsinline', 'true');
+          applyVideoOrientationCorrection(remoteEl, vid, {
+            assumeMobilePeer: getCallRole() === 'doctor'
+          });
         }
       }
       if (mediaType === 'audio' && user.audioTrack) {
@@ -296,6 +333,9 @@
         localVid.setAttribute('playsinline', 'true');
         localVid.setAttribute('webkit-playsinline', 'true');
         localVid.setAttribute('muted', 'true');
+        applyVideoOrientationCorrection(uiRefs.local, localVid, {
+          assumeMobilePeer: false
+        });
       }
     }
     if (localTracks.length) await client.publish(localTracks);

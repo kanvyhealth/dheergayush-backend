@@ -186,22 +186,48 @@ module.exports = function register(app, deps) {
           console.log('🔍 Fetching reports for room:', roomId);
     
           const payment = await Payment.findOne({ roomName: roomId }).sort({ createdAt: -1 });
-          let consultation = null;
-          if (!payment) {
+          let consultation = await findConsultationByAppointmentRoom(roomId);
+          if (!payment && !consultation) {
             consultation = await ConsultationRequest.findOne({
               $or: [{ roomId }, { videoRoomId: roomId }]
             }).sort({ createdAt: -1 });
-            if (!consultation) {
-              return res.status(404).json({ message: 'No consultation found for this room' });
-            }
+          }
+          if (!payment && !consultation) {
+            return res.status(404).json({ message: 'No consultation found for this room' });
+          }
+
+          const appointmentId = parseAppointmentIdFromRoom(roomId)
+            || payment?.appointmentId
+            || payment?.consultationId
+            || consultation?._id
+            || consultation?.id
+            || '';
+          let appointment = consultation;
+          if (!appointment && appointmentId) {
+            appointment = await ConsultationRequest.findById(appointmentId);
           }
     
-          const patientPhone = payment?.phone || consultation?.patientPhone || '';
-          const patientName = payment?.name || consultation?.patientName || '';
+          const patientPhone =
+            payment?.phone
+            || payment?.patientPhone
+            || consultation?.patientPhone
+            || consultation?.phone
+            || appointment?.patientPhone
+            || appointment?.phone
+            || '';
+          const patientName =
+            payment?.name
+            || payment?.patientName
+            || consultation?.patientName
+            || consultation?.userName
+            || appointment?.patientName
+            || appointment?.userName
+            || appointment?.name
+            || '';
           const rawConsultationReports = Array.isArray(payment?.reports) ? payment.reports : [];
           const consultationReports = await resolveReportEntries(
             rawConsultationReports,
-            payment?.createdAt || consultation?.createdAt
+            payment?.createdAt || consultation?.createdAt || appointment?.createdAt
           );
     
           let previousReports = [];
@@ -234,15 +260,15 @@ module.exports = function register(app, deps) {
             patientInfo: {
               name: patientName,
               phone: patientPhone,
-              address: payment?.address || '',
-              doctor: payment?.selectedDoctorName || consultation?.doctorName || '',
+              address: payment?.address || appointment?.address || '',
+              doctor: payment?.selectedDoctorName || consultation?.doctorName || appointment?.doctorName || '',
               doctorFee: payment?.selectedDoctorFee,
               amountPaid: payment?.amount,
-              registrationDate: payment?.createdAt || consultation?.createdAt
+              registrationDate: payment?.createdAt || consultation?.createdAt || appointment?.createdAt
             },
             paymentInfo: payment ? {
-              name: payment.name,
-              phone: payment.phone,
+              name: payment.name || payment.patientName || patientName,
+              phone: payment.phone || payment.patientPhone || patientPhone,
               address: payment.address,
               total: payment.amount,
               createdAt: payment.createdAt

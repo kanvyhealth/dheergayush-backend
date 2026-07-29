@@ -41,24 +41,25 @@ const paymentOpts = {
 };
 
 const { sanitizeDoctorFeeUpdate } = require('../../modules/doctors/doctorFeeApproval');
-const BaseDoctor = createModel('doctors', doctorOpts);
+const Doctor = createModel('doctors', doctorOpts);
+const baseFindByIdAndUpdate = Doctor.findByIdAndUpdate.bind(Doctor);
+const baseFindOneAndUpdate = Doctor.findOneAndUpdate.bind(Doctor);
 
-const Doctor = Object.assign({}, BaseDoctor, {
-  async findByIdAndUpdate(id, update, options = {}) {
-    const current = await BaseDoctor.findById(id);
-    if (!current) return null;
-    const sanitized = sanitizeDoctorFeeUpdate(current, update);
-    return BaseDoctor.findByIdAndUpdate(id, sanitized, options);
-  },
-  async findOneAndUpdate(filter, update, options = {}) {
-    const current = await BaseDoctor.findOne(filter);
-    if (!current) {
-      return BaseDoctor.findOneAndUpdate(filter, update, options);
-    }
-    const sanitized = sanitizeDoctorFeeUpdate(current, update);
-    return BaseDoctor.findByIdAndUpdate(current._id, sanitized, options);
+Doctor.findByIdAndUpdate = async function findByIdAndUpdate(id, update, options = {}) {
+  const current = await Doctor.findById(id);
+  if (!current) return null;
+  const sanitized = sanitizeDoctorFeeUpdate(current, update);
+  return baseFindByIdAndUpdate(id, sanitized, options);
+};
+
+Doctor.findOneAndUpdate = async function findOneAndUpdate(filter, update, options = {}) {
+  const current = await Doctor.findOne(filter);
+  if (!current) {
+    return baseFindOneAndUpdate(filter, update, options);
   }
-});
+  const sanitized = sanitizeDoctorFeeUpdate(current, update);
+  return baseFindByIdAndUpdate(current._id, sanitized, options);
+};
 
 module.exports = {
   User: createModel('users', userOpts),

@@ -74,6 +74,17 @@ module.exports = function register(app, deps) {
           const d = raw instanceof Date ? raw : new Date(raw);
           return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
         })();
+
+        try {
+          await mirrorPrescribedCartToAppPrescription({
+            roomId: normalizedRoomId,
+            cartItems: enrichedItems,
+            prescribedAt,
+            doctorName: req.doctor?.name || req.doctor?.displayName || ''
+          });
+        } catch (mirrorErr) {
+          console.error('Failed to mirror prescribed cart to app prescriptions:', mirrorErr);
+        }
     
         res.status(200).json({
           message: 'Prescription saved successfully!',

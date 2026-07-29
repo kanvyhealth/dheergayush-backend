@@ -206,6 +206,7 @@ const {
 } = require('./modules/doctors/doctorSchedule');
 const { mirrorDoctorToAuthUid, syncAllDoctorMirrors } = require('./modules/doctors/doctorMirror');
 const { ensureDoctorPublicId } = require('./modules/doctors/doctorPublicId');
+const { mirrorPrescribedCartToAppPrescription } = require('./modules/prescriptions/mirrorToAppPrescription');
 const { linkAppointmentsToAuthUid } = require('./modules/patients/patientLinking');
 const {
   buildSharedOrderId,
@@ -1983,6 +1984,7 @@ app.use(express.static(path.join(ROOT_DIR, 'public')));
     enrichDoctorRows, enrichDoctorRowsWithAppSync, assertDoctorBearerToken,
     normalizeVideoRoomId, parseAppointmentIdFromRoom, findConsultationByAppointmentRoom,
     findPrescriptionForRoom, prescriptionVideoRoomExists, enrichPrescribedCartItems,
+    mirrorPrescribedCartToAppPrescription,
     handleSubmitPrescription, completeWebsiteConsultationCheckout,
     adminDbErrorResponse, normalizeVideoRole, consultationStatusOf,
     findLatestPaymentForRoom, findLatestConsultationForRoom, loadRoomContext,
