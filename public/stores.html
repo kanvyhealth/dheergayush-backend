@@ -12,6 +12,10 @@
     <link rel="stylesheet" href="/css/dg-responsive.css">
     <link rel="stylesheet" href="/css/dg-store-responsive.css">
     <style>
+        /* position: sticky resolves against the viewport, but the global
+           body { overflow-y: auto } makes body a scrollport with no travel. */
+        body.dg-page { overflow: visible; }
+
         .store-section { display: none; }
         .store-section.active { display: block; }
 
@@ -147,6 +151,8 @@
                 display: block;
                 margin-bottom: 12px;
                 position: static;
+                max-height: none;
+                overflow: visible;
             }
             .mobile-filter-toggle { display: inline-flex !important; }
         }
@@ -158,6 +164,15 @@
             border: 1px solid var(--dg-border);
             position: sticky;
             top: 88px;
+            max-height: calc(100vh - 104px);
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            scrollbar-width: thin;
+        }
+        .filters-sidebar::-webkit-scrollbar { width: 6px; }
+        .filters-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(60, 60, 60, 0.25);
+            border-radius: 999px;
         }
         .filters-sidebar h3 {
             font-size: 1rem;
