@@ -20,7 +20,89 @@ const DEPARTMENT_KEYS = {
   'ayurvedic wellness': 'Organic Foods',
   'beauty care': 'Personal and Beauty Care',
   'organic food': 'Organic Foods',
-  'personal care': 'Personal and Beauty Care'
+  'personal care': 'Personal and Beauty Care',
+  'cooking essentials': 'Organic Foods',
+  'organic groceries': 'Organic Foods',
+  'eatables': 'Organic Foods',
+  'healthy food': 'Organic Foods',
+  'healthy foods': 'Organic Foods',
+  'seeds and nuts': 'Organic Foods',
+  'millets': 'Organic Foods',
+  'dals pulses': 'Organic Foods',
+  'dals and pulses': 'Organic Foods',
+  'nuts dry fruits': 'Organic Foods',
+  'nuts and dry fruits': 'Organic Foods',
+  'flours': 'Organic Foods',
+  'flours and ravva': 'Organic Foods'
+};
+
+const ORGANIC_FOOD_SUBCATEGORIES = [
+  'Honey',
+  'Ghees and Oils',
+  'Rice',
+  'Pulses',
+  'Millets',
+  'Pickles (Veg)',
+  'Pickles (Non-Veg)',
+  'Spices and Masalas',
+  'Salts and Sugars',
+  'Flours and Ravva',
+  'Nuts and Dry Fruits',
+  'Packaged Foods',
+  'Beverages and Drinks',
+  'Sweets'
+];
+
+const STORE_SUBCATEGORIES = {
+  'Organic Foods': ORGANIC_FOOD_SUBCATEGORIES
+};
+
+const SUBCATEGORY_ALIASES = {
+  honey: 'Honey',
+  'ghees and oils': 'Ghees and Oils',
+  'ghee and oils': 'Ghees and Oils',
+  ghee: 'Ghees and Oils',
+  oils: 'Ghees and Oils',
+  rice: 'Rice',
+  poha: 'Rice',
+  pulses: 'Pulses',
+  'dals pulses': 'Pulses',
+  'dals and pulses': 'Pulses',
+  dal: 'Pulses',
+  millets: 'Millets',
+  millet: 'Millets',
+  'pickles veg': 'Pickles (Veg)',
+  'pickle veg': 'Pickles (Veg)',
+  'pickles non veg': 'Pickles (Non-Veg)',
+  'pickle non veg': 'Pickles (Non-Veg)',
+  pickles: 'Pickles (Veg)',
+  pickle: 'Pickles (Veg)',
+  'spices and masalas': 'Spices and Masalas',
+  spices: 'Spices and Masalas',
+  masalas: 'Spices and Masalas',
+  'cooking essentials': 'Spices and Masalas',
+  'salts and sugars': 'Salts and Sugars',
+  salt: 'Salts and Sugars',
+  sugar: 'Salts and Sugars',
+  jaggery: 'Salts and Sugars',
+  'flours and ravva': 'Flours and Ravva',
+  flours: 'Flours and Ravva',
+  flour: 'Flours and Ravva',
+  ravva: 'Flours and Ravva',
+  rava: 'Flours and Ravva',
+  'nuts and dry fruits': 'Nuts and Dry Fruits',
+  'nuts dry fruits': 'Nuts and Dry Fruits',
+  nuts: 'Nuts and Dry Fruits',
+  'dry fruits': 'Nuts and Dry Fruits',
+  seeds: 'Nuts and Dry Fruits',
+  'seeds and nuts': 'Nuts and Dry Fruits',
+  'packaged foods': 'Packaged Foods',
+  'packaged food': 'Packaged Foods',
+  'beverages and drinks': 'Beverages and Drinks',
+  beverages: 'Beverages and Drinks',
+  drinks: 'Beverages and Drinks',
+  sweets: 'Sweets',
+  sweet: 'Sweets'
 };
 
 const CLASSICAL_MEDICINE_CATEGORIES = [
@@ -223,7 +305,35 @@ const ORGANIC_FOOD_KEYWORDS = [
   'ghee',
   'jaggery',
   'organic spice',
-  'spice mix'
+  'spice mix',
+  'cooking essentials',
+  'eatables',
+  'seeds',
+  'seed mix',
+  'beans',
+  'quinoa',
+  'barley',
+  'rice',
+  'poha',
+  'dal',
+  'pulse',
+  'pulses',
+  'millet',
+  'millets',
+  'salt',
+  'flour',
+  'flours',
+  'ravva',
+  'rava',
+  'almond',
+  'cashew',
+  'raisin',
+  'coriander',
+  'dhaniya',
+  'chilli powder',
+  'turmeric',
+  'mustard',
+  'basmati'
 ];
 
 const MEDICINE_SIGNAL_KEYWORDS = [
@@ -339,19 +449,148 @@ function classifyStoreProduct(med) {
   const hasFoodSignal = containsKeyword(combined, ORGANIC_FOOD_KEYWORDS)
     || catNorm.includes('wellness')
     || catNorm.includes('organic food')
-    || catNorm.includes('health food');
+    || catNorm.includes('health food')
+    || catNorm.includes('cooking essentials');
 
   if (hasBeautySignal && !hasMedicineSignal) return 'Personal and Beauty Care';
   if (hasFoodSignal && !hasMedicineSignal && !hasBeautySignal) return 'Organic Foods';
   if (hasBeautySignal) return 'Personal and Beauty Care';
-  if (hasFoodSignal && containsKeyword(combined, ['tea', 'juice', 'honey', 'chyawanprash', 'snack', 'food'])) {
+  if (hasFoodSignal && containsKeyword(combined, ['tea', 'juice', 'honey', 'chyawanprash', 'snack', 'food', 'rice', 'dal', 'millet', 'poha', 'salt', 'flour'])) {
     return 'Organic Foods';
   }
 
   if (catNorm.includes('beauty') || catNorm.includes('cosmetic')) return 'Personal and Beauty Care';
-  if (catNorm.includes('wellness') || catNorm.includes('organic food')) return 'Organic Foods';
+  if (catNorm.includes('wellness') || catNorm.includes('organic food') || catNorm.includes('cooking essentials')) {
+    return 'Organic Foods';
+  }
 
   return 'Ayurvedic Medicines';
+}
+
+function toStoreSlug(label) {
+  return String(label || '')
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function departmentFromSlug(slug) {
+  const key = toStoreSlug(slug);
+  if (!key) return null;
+  for (let i = 0; i < STORE_DEPARTMENTS.length; i++) {
+    if (toStoreSlug(STORE_DEPARTMENTS[i]) === key) return STORE_DEPARTMENTS[i];
+  }
+  return null;
+}
+
+function normalizeSubcategoryLabel(raw) {
+  const key = normalizeText(raw);
+  if (!key) return null;
+  if (SUBCATEGORY_ALIASES[key]) return SUBCATEGORY_ALIASES[key];
+  for (let i = 0; i < ORGANIC_FOOD_SUBCATEGORIES.length; i++) {
+    if (normalizeText(ORGANIC_FOOD_SUBCATEGORIES[i]) === key) return ORGANIC_FOOD_SUBCATEGORIES[i];
+  }
+  for (const [alias, label] of Object.entries(SUBCATEGORY_ALIASES)) {
+    if (key.includes(alias)) return label;
+  }
+  return null;
+}
+
+function subcategoryFromSlug(slug, department) {
+  const key = toStoreSlug(slug);
+  if (!key) return null;
+  const dept = department || 'Organic Foods';
+  const list = STORE_SUBCATEGORIES[dept] || ORGANIC_FOOD_SUBCATEGORIES;
+  for (let i = 0; i < list.length; i++) {
+    if (toStoreSlug(list[i]) === key) return list[i];
+  }
+  return normalizeSubcategoryLabel(String(slug || '').replace(/-/g, ' '));
+}
+
+function normalizeSubcategoryKey(raw) {
+  const label = normalizeSubcategoryLabel(raw) || String(raw || '').trim();
+  return normalizeText(label);
+}
+
+function classifyStoreSubcategory(med) {
+  const explicit = normalizeSubcategoryLabel(med?.subCategory || med?.subcategory || '');
+  if (explicit) return explicit;
+
+  const category = String(med?.category || '').trim();
+  const fromCategory = normalizeSubcategoryLabel(category);
+  if (fromCategory && category !== 'Organic Foods' && category !== 'Cooking Essentials') {
+    return fromCategory;
+  }
+
+  const name = String(med?.name || '').trim();
+  const description = String(med?.description || '').trim();
+  const nameCat = `${category} ${name}`;
+  const combined = `${category} ${name} ${description}`;
+
+  // Prefer product name/category signals so ingredient mentions (e.g. "add honey")
+  // do not steal the subcategory.
+  if (containsKeyword(nameCat, ['honey'])) return 'Honey';
+  if (containsKeyword(nameCat, ['ghee', 'cooking oil', 'mustard oil', 'coconut oil', 'sesame oil', 'groundnut oil'])) {
+    return 'Ghees and Oils';
+  }
+  if (containsKeyword(nameCat, ['pickle', 'pickles', 'achaar', 'achar'])) {
+    if (/\b(chicken|mutton|prawn|fish|non[\s-]?veg|meat)\b/i.test(combined)) {
+      return 'Pickles (Non-Veg)';
+    }
+    return 'Pickles (Veg)';
+  }
+  if (containsKeyword(nameCat, ['millet', 'millets', 'foxtail', 'kodo', 'barnyard', 'proso', 'sorghum', 'bajra', 'ragi', 'jowar', 'brown top'])) {
+    return 'Millets';
+  }
+  if (containsKeyword(nameCat, ['dal', 'dals', 'pulse', 'pulses', 'gram', 'toor', 'moong', 'chana dal', 'green gram', 'red gram', 'bean', 'beans', 'rajma'])) {
+    return 'Pulses';
+  }
+  if (containsKeyword(nameCat, ['poha', 'rice', 'basmati', 'sona masoori'])) return 'Rice';
+  if (containsKeyword(nameCat, [
+    'almond', 'cashew', 'raisin', 'raisins', 'dry fruit', 'dry fruits', 'walnut', 'pista', 'pistachio', 'nuts',
+    'seed', 'seeds', 'flax', 'chia', 'pumpkin', 'sunflower', 'sesame', 'melon'
+  ])) {
+    return 'Nuts and Dry Fruits';
+  }
+  if (containsKeyword(nameCat, ['atta', 'flour', 'flours', 'ravva', 'rava', 'sooji', 'semolina', 'broken wheat'])) {
+    return 'Flours and Ravva';
+  }
+  if (containsKeyword(nameCat, ['salt', 'sugar', 'jaggery', 'brown sugar'])) return 'Salts and Sugars';
+  if (containsKeyword(nameCat, [
+    'masala', 'spice', 'spices', 'dhaniya', 'coriander', 'chilli', 'chili', 'turmeric',
+    'haldi', 'jeera', 'cumin', 'mustard', 'amchur', 'pepper', 'chintakupodi', 'kitchen king',
+    'garam masala', 'chat masala', 'chana masala'
+  ])) {
+    return 'Spices and Masalas';
+  }
+  if (containsKeyword(nameCat, [
+    'tea', 'juice', 'drink', 'beverage', 'squash', 'sharbat', 'sherbet', 'chai', 'health drink', 'malt'
+  ])) {
+    return 'Beverages and Drinks';
+  }
+  if (containsKeyword(nameCat, [
+    'sweet', 'sweets', 'candy', 'candies', 'halwa', 'laddu', 'ladoo', 'mithai', 'chocolate', 'jaggery cube'
+  ])) {
+    return 'Sweets';
+  }
+  if (containsKeyword(nameCat, ['chyawanprash', 'chyawanprasha', 'snack', 'cookies', 'biscuit', 'muesli', 'granola', 'vinegar', 'jam', 'protein bar'])) {
+    return 'Packaged Foods';
+  }
+
+  // Description-only fallback (still avoid bare "honey" in ingredients)
+  if (containsKeyword(combined, ['pickle', 'pickles'])) {
+    if (/\b(chicken|mutton|prawn|fish|non[\s-]?veg|meat)\b/i.test(combined)) return 'Pickles (Non-Veg)';
+    return 'Pickles (Veg)';
+  }
+  if (containsKeyword(combined, ['millet', 'millets'])) return 'Millets';
+  if (containsKeyword(combined, ['dal', 'pulse', 'pulses'])) return 'Pulses';
+  if (containsKeyword(combined, ['tea', 'juice', 'beverage', 'drink', 'squash'])) return 'Beverages and Drinks';
+  if (containsKeyword(combined, ['chyawanprash', 'chyawanprasha', 'snack', 'cookies', 'biscuit', 'muesli', 'granola', 'vinegar'])) {
+    return 'Packaged Foods';
+  }
+  if (normalizeText(category) === 'cooking essentials') return 'Spices and Masalas';
+  return 'Packaged Foods';
 }
 
 function productMatchesDepartment(med, department) {
@@ -359,20 +598,34 @@ function productMatchesDepartment(med, department) {
   return normalizeStoreCategoryKey(classifyStoreProduct(med)) === normalizeStoreCategoryKey(department);
 }
 
+function productMatchesSubcategory(med, subcategory) {
+  if (!subcategory || subcategory === 'all') return true;
+  const want = normalizeSubcategoryKey(subcategory);
+  if (!want) return true;
+  return normalizeSubcategoryKey(classifyStoreSubcategory(med)) === want;
+}
+
 function isAllowedStoreDepartment(category) {
   const key = normalizeStoreCategoryKey(category);
-  return STORE_DEPARTMENTS.some((dept) => normalizeText(dept) === key)
-    || isClassicalMedicineCategory(category)
-    || containsKeyword(category, [
-      ...BEAUTY_CARE_KEYWORDS.slice(0, 12),
-      ...ORGANIC_FOOD_KEYWORDS.slice(0, 10),
-      ...YOGA_ACCESSORY_KEYWORDS.slice(0, 8),
-      ...MEDICAL_DEVICE_KEYWORDS.slice(0, 8),
-      'ayurved',
-      'medicine',
-      'wellness',
-      'consumer'
-    ]);
+  const catNorm = normalizeText(category);
+  if (STORE_DEPARTMENTS.some((dept) => normalizeText(dept) === key)) return true;
+  if (isClassicalMedicineCategory(category)) return true;
+  if (normalizeSubcategoryLabel(category)) return true;
+  if (catNorm.includes('cooking essentials') || catNorm.includes('millets')
+    || catNorm.includes('pulses') || catNorm.includes('flours')
+    || catNorm.includes('nuts') || catNorm.includes('dry fruits')) {
+    return true;
+  }
+  return containsKeyword(category, [
+    ...BEAUTY_CARE_KEYWORDS.slice(0, 12),
+    ...ORGANIC_FOOD_KEYWORDS.slice(0, 10),
+    ...YOGA_ACCESSORY_KEYWORDS.slice(0, 8),
+    ...MEDICAL_DEVICE_KEYWORDS.slice(0, 8),
+    'ayurved',
+    'medicine',
+    'wellness',
+    'consumer'
+  ]);
 }
 
 function departmentIconClass(category) {
@@ -384,12 +637,31 @@ function departmentIconClass(category) {
   return 'fa-mortar-pestle';
 }
 
+function storePathFor(department, subcategory) {
+  if (!department || department === 'all') return '/store';
+  const deptSlug = toStoreSlug(department);
+  if (!deptSlug) return '/store';
+  if (!subcategory || subcategory === 'all') return `/store/${deptSlug}`;
+  const subSlug = toStoreSlug(subcategory);
+  return subSlug ? `/store/${deptSlug}/${subSlug}` : `/store/${deptSlug}`;
+}
+
 module.exports = {
   STORE_DEPARTMENTS,
+  ORGANIC_FOOD_SUBCATEGORIES,
+  STORE_SUBCATEGORIES,
   normalizeStoreCategory,
   normalizeStoreCategoryKey,
   classifyStoreProduct,
+  classifyStoreSubcategory,
+  normalizeSubcategoryLabel,
+  normalizeSubcategoryKey,
   productMatchesDepartment,
+  productMatchesSubcategory,
   isAllowedStoreDepartment,
-  departmentIconClass
+  departmentIconClass,
+  toStoreSlug,
+  departmentFromSlug,
+  subcategoryFromSlug,
+  storePathFor
 };

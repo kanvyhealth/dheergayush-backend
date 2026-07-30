@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const { filterExcludedStores, isExcludedMedicine } = require('./excludedBrands');
 const { isValidAyurvedicProduct } = require('./excludedProducts');
-const { classifyStoreProduct } = require('./storeCategories');
+const { classifyStoreProduct, classifyStoreSubcategory } = require('./storeCategories');
 
 const CATALOG_PATH = path.join(__dirname, '..', '..', '..', 'public', 'data', 'medicine-catalog.json');
 
@@ -17,18 +17,21 @@ function loadMedicineCatalogJson() {
     if (!Array.isArray(stores)) return [];
     const medicines = [];
     stores.forEach((store) => {
+      if (!Array.isArray(store.medicines)) return;
       const storeBrand = String(store.name || '').trim();
       (store.medicines || []).forEach((med) => {
         if (isExcludedMedicine({ ...med, storeName: storeBrand })) return;
         if (!isValidAyurvedicProduct(med)) return;
         const brand = String(med.brand || med.company || storeBrand || '').trim();
+        const classified = { ...med, storeName: storeBrand };
         medicines.push({
           ...med,
           company: brand,
           brand,
           storeName: storeBrand,
           storeId: store._id,
-          category: classifyStoreProduct({ ...med, storeName: storeBrand })
+          category: classifyStoreProduct(classified),
+          subCategory: classifyStoreSubcategory(classified)
         });
       });
     });

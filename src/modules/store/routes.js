@@ -28,13 +28,13 @@ module.exports = function register(app, deps) {
     
     app.get('/api/medicines', async (req, res) => {
       try {
-        const { page, limit, company, category, q, all } = req.query;
+        const { page, limit, company, category, subcategory, q, all } = req.query;
         res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
         if (String(all || '') === '1') {
           const medicines = await getMedicinesFromFirebase();
           return res.json(medicines);
         }
-        const result = await getMedicinesPaginated({ page, limit, company, category, q });
+        const result = await getMedicinesPaginated({ page, limit, company, category, subcategory, q });
         return res.json(result);
       } catch (err) {
         res.status(500).json({ message: 'Failed to load medicines', error: err.message });
@@ -48,6 +48,16 @@ module.exports = function register(app, deps) {
         res.json(summary);
       } catch (error) {
         res.status(500).json({ message: 'Error fetching store summary', error: error.message });
+      }
+    });
+
+    app.get('/api/store/taxonomy', async (req, res) => {
+      try {
+        res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+        const taxonomy = await getStoreTaxonomy();
+        res.json(taxonomy);
+      } catch (err) {
+        res.status(500).json({ message: 'Failed to load store taxonomy', error: err.message });
       }
     });
     

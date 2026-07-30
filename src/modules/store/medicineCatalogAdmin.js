@@ -117,6 +117,9 @@ function normalizeMedicinePayload(body = {}, existing = {}) {
     name,
     description: body.description != null ? String(body.description) : (existing.description || ''),
     category: body.category != null ? String(body.category) : (existing.category || ''),
+    subCategory: body.subCategory != null
+      ? String(body.subCategory)
+      : (body.subcategory != null ? String(body.subcategory) : (existing.subCategory || '')),
     brand: body.brand != null ? String(body.brand) : (existing.brand || existing.company || ''),
     company: body.company != null ? String(body.company) : (body.brand || existing.company || existing.brand || ''),
     imageFile: body.imageFile != null ? String(body.imageFile) : (existing.imageFile || ''),

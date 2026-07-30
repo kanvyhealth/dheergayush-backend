@@ -78,6 +78,7 @@ const {
 const {
   getStoresFromFirebase,
   getStoresSummaryFromFirebase,
+  getStoreTaxonomy,
   getMedicinesFromFirebase,
   getMedicinesPaginated,
   getMedicinesByIds,
@@ -86,6 +87,11 @@ const {
   getProductCategoriesFromFirebase,
   warmCatalogCache
 } = require('./core/firebase/catalog');
+const {
+  departmentFromSlug,
+  subcategoryFromSlug,
+  STORE_SUBCATEGORIES
+} = require('./modules/store/storeCategories');
 const { MOBILE_COLLECTIONS } = require('./core/mobileSchema');
 const { getFirestore } = require('./core/firebase');
 const {
@@ -285,6 +291,46 @@ app.get('/invite', serveReferralInvitePage);
 app.get('/invite/', serveReferralInvitePage);
 app.get('/invite/:code', serveReferralInvitePage);
 app.get('/r/:code', serveReferralInvitePage);
+
+function serveStorePage(req, res) {
+  const filePath = path.join(PUBLIC_DIR, 'stores.html');
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send('Store page not found');
+  }
+  res.setHeader('Cache-Control', 'no-cache');
+  res.type('html');
+  return res.sendFile(filePath);
+}
+
+function validateStorePath(req, res, next) {
+  const categorySlug = String(req.params.category || '').trim();
+  const subcategorySlug = String(req.params.subcategory || '').trim();
+  if (!categorySlug) return next();
+  const department = departmentFromSlug(categorySlug);
+  if (!department) {
+    return res.redirect(302, '/store');
+  }
+  if (subcategorySlug) {
+    const allowed = STORE_SUBCATEGORIES[department];
+    if (!allowed || !allowed.length) {
+      return res.redirect(302, `/store/${categorySlug}`);
+    }
+    const sub = subcategoryFromSlug(subcategorySlug, department);
+    if (!sub) {
+      return res.redirect(302, `/store/${categorySlug}`);
+    }
+  }
+  return next();
+}
+
+app.get('/store', serveStorePage);
+app.get('/store/', serveStorePage);
+app.get('/store/:category', validateStorePath, serveStorePage);
+app.get('/store/:category/:subcategory', validateStorePath, serveStorePage);
+app.get('/stores.html', (req, res) => {
+  const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+  res.redirect(301, '/store' + qs);
+});
 
 applySecurityMiddleware(app);
 app.use(cors(getCorsOptions()));
@@ -1956,7 +2002,7 @@ app.use(express.static(path.join(ROOT_DIR, 'public')));
     sendPasswordResetEmail, createAuthUser, getAuthUserByEmail, getAuthUserByUid, updateAuthUserPassword,
     initFirebase, getAdmin, getFirestore,
     authLimiter, writeLimiter, clientIp,
-    getStoresFromFirebase, getStoresSummaryFromFirebase, getMedicinesFromFirebase,
+    getStoresFromFirebase, getStoresSummaryFromFirebase, getStoreTaxonomy, getMedicinesFromFirebase,
     getMedicinesPaginated, getMedicinesByIds, validateOrderItemsAgainstCatalog,
     getBannersFromFirebase, getProductCategoriesFromFirebase, warmCatalogCache,
     MOBILE_COLLECTIONS,

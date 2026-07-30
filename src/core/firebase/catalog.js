@@ -18,9 +18,15 @@ const { filterExcludedMedicines } = require('../../modules/store/excludedBrands'
 const { isValidAyurvedicProduct } = require('../../modules/store/excludedProducts');
 const {
   STORE_DEPARTMENTS,
+  STORE_SUBCATEGORIES,
+  ORGANIC_FOOD_SUBCATEGORIES,
   normalizeStoreCategoryKey,
   classifyStoreProduct,
-  productMatchesDepartment
+  classifyStoreSubcategory,
+  productMatchesDepartment,
+  productMatchesSubcategory,
+  toStoreSlug,
+  storePathFor
 } = require('../../modules/store/storeCategories');
 const { sortStoresWithFeatured, getStoreMenuLabel } = require('../../modules/store/featuredStoreBrands');
 
@@ -263,6 +269,7 @@ function formatMedicineForStore(med, imageMap) {
     name: doc.name,
     description: doc.description || `${company} — ${doc.name}`.trim(),
     category: classifyStoreProduct(doc),
+    subCategory: classifyStoreSubcategory(doc),
     company,
     brand: doc.brand || company,
     imageFile,
@@ -398,7 +405,7 @@ async function warmCatalogCache() {
   }
 }
 
-function filterMedicines(medicines, { company, category, q } = {}) {
+function filterMedicines(medicines, { company, category, subcategory, q } = {}) {
   let list = medicines.filter(isStoreProduct);
   if (company && company !== 'all') {
     const brand = normalizeBrand(company);
@@ -406,6 +413,9 @@ function filterMedicines(medicines, { company, category, q } = {}) {
   }
   if (category && category !== 'all') {
     list = list.filter((m) => productMatchesDepartment(m, category));
+  }
+  if (subcategory && subcategory !== 'all') {
+    list = list.filter((m) => productMatchesSubcategory(m, subcategory));
   }
   if (q) {
     const { searchMedicines } = require('../../modules/store/catalogSearch');
@@ -633,6 +643,38 @@ async function getStoresSummaryFromFirebase() {
   return cache.summary;
 }
 
+async function getStoreTaxonomy() {
+  const medicines = await getCatalogMedicinesWithOverrides();
+  const list = medicines.filter(isStoreProduct);
+  const departments = STORE_DEPARTMENTS.map((name) => {
+    const count = list.filter((m) => productMatchesDepartment(m, name)).length;
+    const slug = toStoreSlug(name);
+    const subs = (STORE_SUBCATEGORIES[name] || []).map((subName) => {
+      const subCount = list.filter(
+        (m) => productMatchesDepartment(m, name) && productMatchesSubcategory(m, subName)
+      ).length;
+      return {
+        name: subName,
+        slug: toStoreSlug(subName),
+        count: subCount,
+        href: storePathFor(name, subName)
+      };
+    }).filter((s) => s.count > 0);
+    return {
+      name,
+      slug,
+      count,
+      href: storePathFor(name),
+      subcategories: subs
+    };
+  });
+  return {
+    departments,
+    organicFoodSubcategories: ORGANIC_FOOD_SUBCATEGORIES,
+    total: list.length
+  };
+}
+
 async function getStoresFromFirebase() {
   const cache = await loadCatalogCache();
   return cache.stores;
@@ -681,6 +723,7 @@ module.exports = {
   validateOrderItemsAgainstCatalog,
   getStoresFromFirebase,
   getStoresSummaryFromFirebase,
+  getStoreTaxonomy,
   getProductCategoriesFromFirebase,
   getBannersFromFirebase,
   buildMedicineImageMap,
