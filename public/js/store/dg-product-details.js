@@ -1,10 +1,18 @@
 /**
- * Product details page — variants, cart handoff, recommendations.
+ * Product details page — gallery, variants, cart handoff, recommendations.
  */
 (function () {
   'use strict';
 
   var CART_KEY = 'dgWebStoreCart';
+  var MAX_QTY = 99;
+
+  var state = {
+    med: null,
+    weights: [],
+    weightIndex: 0,
+    qty: 1
+  };
 
   function escapeHtml(s) {
     var d = document.createElement('div');
@@ -33,15 +41,47 @@
   function writeCart(cart) {
     try {
       sessionStorage.setItem(CART_KEY, JSON.stringify(cart || []));
-    } catch (_) { /* ignore */ }
+    } catch (_) { /* storage can be unavailable or full */ }
+  }
+
+  function updateCartBadge() {
+    var badge = document.getElementById('cartBadge');
+    if (!badge) return;
+    var count = readCart().reduce(function (sum, line) {
+      return sum + (Number(line.quantity) || 0);
+    }, 0);
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
   }
 
   function imageUrl(med) {
     if (med.imageUrl) return med.imageUrl;
     if (med.imageFile) return '/medicine-assets/' + encodeURIComponent(med.imageFile);
-    if (window.DgMedicineImages && typeof DgMedicineImages.resolve === 'function') {
-      return DgMedicineImages.resolve(med) || '';
-    }
+    if (typeof getMedicineImageUrl === 'function') return getMedicineImageUrl(med) || '';
+    return '';
+  }
+
+  function categoryIcon(category) {
+    var key = String(category || '').toLowerCase();
+    if (key.indexOf('organic') >= 0) return 'fa-leaf';
+    if (key.indexOf('beauty') >= 0 || key.indexOf('personal') >= 0) return 'fa-spa';
+    if (key.indexOf('yoga') >= 0) return 'fa-om';
+    if (key.indexOf('device') >= 0) return 'fa-stethoscope';
+    return 'fa-mortar-pestle';
+  }
+
+  function ratingFor(med) {
+    if (typeof getStaticRating === 'function') return getStaticRating(med.name);
+    return '4.5';
+  }
+
+  function reviewsFor(med) {
+    if (typeof getReviewCount === 'function') return getReviewCount(med.name);
+    return 0;
+  }
+
+  function starsFor(rating) {
+    if (typeof renderStarsHtml === 'function') return renderStarsHtml(rating);
     return '';
   }
 
@@ -65,11 +105,24 @@
     });
   }
 
+  function packLabel(weight) {
+    return String(weight.value) + ' ' + (weight.unit || 'unit');
+  }
+
+  function formatPrice(amount) {
+    return '₹' + Number(amount || 0).toLocaleString('en-IN');
+  }
+
+  function storeLink(department, subcategory) {
+    if (!window.DgStoreCategories || !department) return '';
+    return DgStoreCategories.storePathFor(department, subcategory);
+  }
+
   function showToast(msg) {
     var el = document.getElementById('cartAddedToast');
     if (!el) return;
     el.hidden = false;
-    el.textContent = msg;
+    el.innerHTML = '<i class="fas fa-check-circle"></i><span>' + escapeHtml(msg) + '</span>';
     el.classList.add('show');
     setTimeout(function () {
       el.classList.remove('show');
@@ -77,19 +130,18 @@
     }, 2200);
   }
 
-  function addToCart(med, weight) {
+  function addToCart(med, weight, quantity) {
     var cart = readCart();
     var medicineId = weight.medicineId || med._id || med.id;
     var storeId = med.storeId || qs('store') || '';
-    var value = weight.value;
-    var unit = weight.unit;
     var price = Number(weight.price) || 0;
+    var qty = Math.max(1, Math.min(MAX_QTY, Number(quantity) || 1));
     var idx = cart.findIndex(function (c) {
       return c.medicineId === medicineId && c.storeId === storeId &&
-        String(c.selectedWeight.value) === String(value) && c.selectedWeight.unit === unit;
+        String(c.selectedWeight.value) === String(weight.value) && c.selectedWeight.unit === weight.unit;
     });
     if (idx >= 0) {
-      cart[idx].quantity = Math.min(99, Number(cart[idx].quantity || 0) + 1);
+      cart[idx].quantity = Math.min(MAX_QTY, Number(cart[idx].quantity || 0) + qty);
       cart[idx].pricePerUnit = price;
       cart[idx].totalPrice = price * cart[idx].quantity;
     } else {
@@ -99,29 +151,33 @@
         storeName: med.storeName || med.company || med.brand || '',
         name: med.name,
         imageUrl: imageUrl(med),
-        selectedWeight: { value: Number(value), unit: unit },
+        selectedWeight: { value: Number(weight.value), unit: weight.unit },
         pricePerUnit: price,
-        quantity: 1,
-        totalPrice: price
+        quantity: qty,
+        totalPrice: price * qty
       });
     }
     writeCart(cart);
-    showToast('Added to cart');
+    updateCartBadge();
+    showToast(qty > 1 ? qty + ' items added to cart' : 'Added to cart');
   }
 
   function recommend(all, current, limit) {
     var id = String(current._id || current.id || '');
     var brand = String(current.brand || current.company || current.storeName || '').toLowerCase();
     var category = String(current.category || '').toLowerCase();
+    var subCategory = String(current.subCategory || '').toLowerCase();
     var scored = (all || [])
       .map(function (m) {
         var mid = String(m._id || m.id || '');
         if (!mid || mid === id) return null;
         var b = String(m.brand || m.company || m.storeName || '').toLowerCase();
         var c = String(m.category || '').toLowerCase();
+        var s = String(m.subCategory || '').toLowerCase();
         var score = 0;
         if (brand && b === brand) score += 2;
         if (category && c === category) score += 1;
+        if (subCategory && s === subCategory) score += 2;
         if (!score) return null;
         return { med: m, score: score };
       })
@@ -144,71 +200,232 @@
       var href = '/product-details.html?id=' + encodeURIComponent(mid) +
         (storeId ? '&store=' + encodeURIComponent(storeId) : '');
       var img = imageUrl(m);
+      var brand = m.brand || m.company || m.storeName || '';
       return (
         '<a class="pd-rec-card" href="' + href + '">' +
-        (img ? '<img src="' + escapeHtml(img) + '" alt="">' : '<div style="aspect-ratio:1;background:#f3f3f3;"></div>') +
-        '<div class="body"><h3>' + escapeHtml(m.name || '') + '</h3>' +
-        '<div class="price">₹' + minPrice(m) + '</div></div></a>'
+        '<div class="pd-rec-thumb">' +
+        (img
+          ? '<img src="' + escapeHtml(img) + '" alt="" loading="lazy">'
+          : '<i class="fas ' + categoryIcon(m.category) + '"></i>') +
+        '</div>' +
+        '<div class="body">' +
+        (brand ? '<span class="brand">' + escapeHtml(brand) + '</span>' : '') +
+        '<h3>' + escapeHtml(m.name || '') + '</h3>' +
+        '<span class="price">' + formatPrice(minPrice(m)) + '</span>' +
+        '</div></a>'
       );
     }).join('');
   }
 
+  function selectedWeight() {
+    return state.weights[state.weightIndex] || state.weights[0] || null;
+  }
+
+  function syncPrice() {
+    var weight = selectedWeight();
+    var unitPrice = weight ? Number(weight.price) || 0 : minPrice(state.med);
+    var priceEl = document.getElementById('pdPrice');
+    var unitEl = document.getElementById('pdPriceUnit');
+    var stickyEl = document.getElementById('pdStickyPrice');
+    var qtyVal = document.getElementById('pdQtyVal');
+    var minusBtn = document.getElementById('pdQtyMinus');
+    var plusBtn = document.getElementById('pdQtyPlus');
+
+    if (priceEl) priceEl.textContent = formatPrice(unitPrice);
+    if (unitEl) unitEl.textContent = weight ? 'per ' + packLabel(weight) + ' pack' : '';
+    if (stickyEl) stickyEl.textContent = formatPrice(unitPrice * state.qty);
+    if (qtyVal) qtyVal.textContent = state.qty;
+    if (minusBtn) minusBtn.disabled = state.qty <= 1;
+    if (plusBtn) plusBtn.disabled = state.qty >= MAX_QTY;
+  }
+
+  function packsHtml() {
+    if (state.weights.length < 2) {
+      var single = state.weights[0];
+      if (!single) return '';
+      return '<span class="pd-field-label">Pack size</span>' +
+        '<div class="pd-packs"><button type="button" class="pd-pack" data-idx="0" aria-pressed="true">' +
+        escapeHtml(packLabel(single)) + '<span>' + formatPrice(single.price) + '</span></button></div>';
+    }
+    return '<span class="pd-field-label">Pack size · ' + state.weights.length + ' options</span>' +
+      '<div class="pd-packs" id="pdPacks" role="group" aria-label="Pack size">' +
+      state.weights.map(function (w, i) {
+        return '<button type="button" class="pd-pack" data-idx="' + i + '" aria-pressed="' +
+          (i === state.weightIndex ? 'true' : 'false') + '">' +
+          escapeHtml(packLabel(w)) + '<span>' + formatPrice(w.price) + '</span></button>';
+      }).join('') +
+      '</div>';
+  }
+
+  function specsHtml(med) {
+    var rows = [];
+    var brand = med.brand || med.company || med.storeName || '';
+    if (brand) rows.push(['Brand', brand]);
+    if (med.category) rows.push(['Category', med.category]);
+    if (med.subCategory) rows.push(['Subcategory', med.subCategory]);
+    if (state.weights.length) {
+      rows.push(['Available packs', state.weights.map(packLabel).join(', ')]);
+    }
+    if (med._id || med.id) rows.push(['Product code', String(med._id || med.id)]);
+    if (!rows.length) return '';
+    return '<section class="pd-panel"><h2>Product details</h2><dl class="pd-specs">' +
+      rows.map(function (row) {
+        return '<div class="pd-spec"><dt>' + escapeHtml(row[0]) + '</dt><dd>' +
+          escapeHtml(row[1]) + '</dd></div>';
+      }).join('') +
+      '</dl></section>';
+  }
+
+  function updateBreadcrumb(med) {
+    var crumb = document.getElementById('pdCrumb');
+    var name = med.name || 'Product';
+    if (!crumb) return;
+    var parts = ['<a href="/">Home</a>', '<span class="sep">›</span>', '<a href="/store">Store</a>'];
+    var catHref = storeLink(med.category);
+    if (med.category && catHref) {
+      parts.push('<span class="sep">›</span>',
+        '<a href="' + escapeHtml(catHref) + '">' + escapeHtml(med.category) + '</a>');
+    }
+    var subHref = storeLink(med.category, med.subCategory);
+    if (med.subCategory && subHref && subHref !== catHref) {
+      parts.push('<span class="sep">›</span>',
+        '<a href="' + escapeHtml(subHref) + '">' + escapeHtml(med.subCategory) + '</a>');
+    }
+    parts.push('<span class="sep">›</span>', '<strong>' + escapeHtml(name) + '</strong>');
+    crumb.innerHTML = parts.join(' ');
+  }
+
   function renderProduct(med) {
     med = ensureWeights(med);
-    var root = document.getElementById('pdRoot');
-    var crumb = document.getElementById('pdCrumbName');
-    if (crumb) crumb.textContent = med.name || 'Product';
-    document.title = (med.name || 'Product') + ' — DHEERGAYUSH';
+    state.med = med;
+    state.weights = med.weights || [];
+    state.weightIndex = 0;
+    state.qty = 1;
 
-    var weights = med.weights || [];
+    var root = document.getElementById('pdRoot');
+    var name = med.name || 'Product';
+    document.title = name + ' — DHEERGAYUSH';
+    updateBreadcrumb(med);
+
     var img = imageUrl(med);
     var brand = med.brand || med.company || med.storeName || '';
-    var options = weights.map(function (w, i) {
-      return '<option value="' + i + '"' + (i === 0 ? ' selected' : '') + '>' +
-        escapeHtml(String(w.value) + ' ' + w.unit + ' — ₹' + w.price) + '</option>';
-    }).join('');
+    var rating = ratingFor(med);
+    var reviews = reviewsFor(med);
 
     root.innerHTML =
-      '<div class="pd-main">' +
-      '<div class="pd-media">' +
-      (img ? '<img src="' + escapeHtml(img) + '" alt="' + escapeHtml(med.name || '') + '">' : '<span>No image</span>') +
+      '<div class="pd-shell">' +
+      '<div class="pd-gallery">' +
+      '<div class="pd-stage">' +
+      (med.category ? '<span class="pd-stage-tag">' + escapeHtml(med.category) + '</span>' : '') +
+      (img
+        ? '<img src="' + escapeHtml(img) + '" alt="' + escapeHtml(name) + '">'
+        : '<div class="pd-stage-fallback"><i class="fas ' + categoryIcon(med.category) +
+          '"></i><span>Image coming soon</span></div>') +
       '</div>' +
-      '<div class="pd-info">' +
-      (brand ? '<span class="pd-brand">' + escapeHtml(brand) + '</span>' : '') +
-      '<h1 class="pd-title">' + escapeHtml(med.name || '') + '</h1>' +
-      '<p class="pd-desc">' + escapeHtml(med.description || 'Authentic Ayurvedic formulation') + '</p>' +
-      '<div class="pd-meta">' +
-      (med.category ? '<div><strong>Category:</strong> ' + escapeHtml(med.category) + '</div>' : '') +
-      '</div>' +
-      '<div class="pd-price" id="pdPrice">₹' + (weights[0] ? weights[0].price : minPrice(med)) + '</div>' +
-      (weights.length
-        ? '<label class="pack-label" for="pdVariant">Pack size</label>' +
-          '<select id="pdVariant" class="dg-select" style="max-width:280px;">' + options + '</select>'
-        : '') +
-      '<div class="pd-actions">' +
-      '<button type="button" class="dg-btn-primary" id="pdAddCart"><i class="fas fa-cart-plus"></i> Add to cart</button>' +
-      '<a class="dg-btn-outline" href="/store">View cart</a>' +
-      '</div></div></div>';
+      '<div class="pd-assure">' +
+      '<div><i class="fas fa-certificate"></i>Authentic brands</div>' +
+      '<div><i class="fas fa-truck"></i>Free delivery above ₹1,000</div>' +
+      '<div><i class="fas fa-lock"></i>Secure payment</div>' +
+      '</div></div>' +
 
-    var select = document.getElementById('pdVariant');
-    var priceEl = document.getElementById('pdPrice');
-    if (select && priceEl) {
-      select.addEventListener('change', function () {
-        var w = weights[Number(select.value)] || weights[0];
-        if (w) priceEl.textContent = '₹' + w.price;
+      '<div class="pd-buybox">' +
+      (brand ? '<span class="pd-brand"><i class="fas fa-shield-halved"></i>' + escapeHtml(brand) + '</span>' : '') +
+      '<h1 class="pd-title">' + escapeHtml(name) + '</h1>' +
+      '<div class="pd-rating">' +
+      '<span class="stars">' + starsFor(rating) + '</span>' +
+      '<span class="score">' + escapeHtml(String(rating)) + '</span>' +
+      '<span>(' + reviews.toLocaleString('en-IN') + ' ratings)</span>' +
+      '<span class="dot">•</span>' +
+      '<span class="in-stock"><i class="fas fa-circle-check"></i> In stock</span>' +
+      '</div>' +
+      '<div class="pd-price-row">' +
+      '<span class="pd-price" id="pdPrice">—</span>' +
+      '<span class="pd-price-unit" id="pdPriceUnit"></span>' +
+      '</div>' +
+      '<p class="pd-tax-note">Inclusive of all taxes</p>' +
+      packsHtml() +
+      '<span class="pd-field-label">Quantity</span>' +
+      '<div class="pd-buy-row">' +
+      '<div class="pd-qty">' +
+      '<button type="button" id="pdQtyMinus" aria-label="Decrease quantity">−</button>' +
+      '<span class="val" id="pdQtyVal">1</span>' +
+      '<button type="button" id="pdQtyPlus" aria-label="Increase quantity">+</button>' +
+      '</div>' +
+      '<button type="button" class="dg-btn-primary" id="pdAddCart">' +
+      '<i class="fas fa-cart-plus"></i> Add to cart</button>' +
+      '<a class="dg-btn-outline" href="/store"><i class="fas fa-store"></i> Continue shopping</a>' +
+      '</div>' +
+      '<ul class="pd-trust">' +
+      '<li><i class="fas fa-truck-fast"></i><span>Dispatched by DHEERGAYUSH from verified brand inventory</span></li>' +
+      '<li><i class="fas fa-mortar-pestle"></i><span>Sourced from physician-trusted Ayurvedic manufacturers</span></li>' +
+      '<li><i class="fas fa-headset"></i><span>Order support available through your consultation team</span></li>' +
+      '</ul>' +
+      '</div></div>' +
+
+      '<section class="pd-panel"><h2>About this product</h2><p>' +
+      escapeHtml(med.description || 'Authentic Ayurvedic formulation sourced from ' + (brand || 'a verified brand') + '.') +
+      '</p></section>' +
+      specsHtml(med);
+
+    var packs = document.getElementById('pdPacks');
+    if (packs) {
+      packs.addEventListener('click', function (e) {
+        var btn = e.target.closest('.pd-pack');
+        if (!btn) return;
+        state.weightIndex = Number(btn.dataset.idx) || 0;
+        packs.querySelectorAll('.pd-pack').forEach(function (el) {
+          el.setAttribute('aria-pressed', el === btn ? 'true' : 'false');
+        });
+        syncPrice();
       });
     }
+
+    var minusBtn = document.getElementById('pdQtyMinus');
+    var plusBtn = document.getElementById('pdQtyPlus');
+    if (minusBtn) {
+      minusBtn.addEventListener('click', function () {
+        state.qty = Math.max(1, state.qty - 1);
+        syncPrice();
+      });
+    }
+    if (plusBtn) {
+      plusBtn.addEventListener('click', function () {
+        state.qty = Math.min(MAX_QTY, state.qty + 1);
+        syncPrice();
+      });
+    }
+
+    function handleAdd() {
+      var weight = selectedWeight();
+      if (!weight) {
+        showToast('No pack size available');
+        return;
+      }
+      addToCart(state.med, weight, state.qty);
+      var cartBtn = document.getElementById('cartBtn');
+      if (cartBtn) {
+        cartBtn.classList.add('pulse');
+        setTimeout(function () { cartBtn.classList.remove('pulse'); }, 400);
+      }
+    }
+
     var addBtn = document.getElementById('pdAddCart');
-    if (addBtn) {
-      addBtn.addEventListener('click', function () {
-        var w = weights[select ? Number(select.value) : 0] || weights[0];
-        if (!w) {
-          showToast('No pack size available');
-          return;
-        }
-        addToCart(med, w);
-      });
-    }
+    if (addBtn) addBtn.addEventListener('click', handleAdd);
+
+    var sticky = document.getElementById('pdSticky');
+    var stickyAdd = document.getElementById('pdStickyAdd');
+    if (sticky) sticky.hidden = false;
+    if (stickyAdd) stickyAdd.addEventListener('click', handleAdd);
+    document.body.classList.add('pd-has-product');
+
+    syncPrice();
+  }
+
+  function renderError(message) {
+    var root = document.getElementById('pdRoot');
+    if (!root) return;
+    root.innerHTML = '<div class="pd-error"><i class="fas fa-circle-exclamation"></i>' +
+      escapeHtml(message) + ' <a href="/store">Return to store</a>.</div>';
   }
 
   async function loadMedicine(id) {
@@ -242,8 +459,9 @@
       var fallback = await fetch('/data/medicine-catalog.json');
       if (!fallback.ok) return [];
       var catalog = await fallback.json();
+      var stores = Array.isArray(catalog) ? catalog : (catalog.stores || []);
       var out = [];
-      (catalog.stores || []).forEach(function (s) {
+      stores.forEach(function (s) {
         (s.medicines || []).forEach(function (m) {
           out.push(Object.assign({}, m, {
             storeId: m.storeId || s.id || s._id,
@@ -259,11 +477,11 @@
   }
 
   async function boot() {
+    updateCartBadge();
     var id = qs('id');
     var store = qs('store');
-    var root = document.getElementById('pdRoot');
     if (!id) {
-      root.innerHTML = '<div class="pd-error">Missing product id. Go back to the <a href="/store">store</a>.</div>';
+      renderError('Missing product id.');
       return;
     }
     try {
@@ -273,7 +491,7 @@
         med = catalog.find(function (m) { return String(m._id || m.id) === String(id); }) || null;
       }
       if (!med) {
-        root.innerHTML = '<div class="pd-error">Product not found. <a href="/store">Return to store</a>.</div>';
+        renderError('Product not found.');
         return;
       }
       if (store && !med.storeId) med.storeId = store;
@@ -281,7 +499,7 @@
       var all = await loadCatalog();
       renderRecs(recommend(all, med, 8), store || med.storeId || '');
     } catch (err) {
-      root.innerHTML = '<div class="pd-error">Could not load product. <a href="/store">Return to store</a>.</div>';
+      renderError('Could not load product.');
       console.error(err);
     }
   }

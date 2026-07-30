@@ -5,7 +5,7 @@
  * script the way a browser would, so nested /store/:category/:subcategory URLs
  * cannot silently lose their CSS or JS.
  *
- * Usage: node scripts/verifyStorePageAssets.js [baseUrl]
+ * Usage: node scripts/verifyStorePageAssets.js [baseUrl] [pagePath...]
  */
 
 const http = require('http');
@@ -14,13 +14,16 @@ const { URL } = require('url');
 
 const BASE = process.argv[2] || 'http://127.0.0.1:3013';
 
-const PAGE_PATHS = [
+const DEFAULT_PAGE_PATHS = [
   '/store',
   '/store/organic-foods',
   '/store/organic-foods/honey',
   '/store/organic-foods/nuts-and-dry-fruits',
-  '/store/ayurvedic-medicines'
+  '/store/ayurvedic-medicines',
+  '/product-details.html?id=sn-0001'
 ];
+
+const PAGE_PATHS = process.argv.length > 3 ? process.argv.slice(3) : DEFAULT_PAGE_PATHS;
 
 function request(url) {
   const client = url.startsWith('https:') ? https : http;
