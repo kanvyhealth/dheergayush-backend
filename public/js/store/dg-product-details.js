@@ -187,7 +187,7 @@
         : '') +
       '<div class="pd-actions">' +
       '<button type="button" class="dg-btn-primary" id="pdAddCart"><i class="fas fa-cart-plus"></i> Add to cart</button>' +
-      '<a class="dg-btn-outline" href="/stores.html#cartSection">View cart</a>' +
+      '<a class="dg-btn-outline" href="/store">View cart</a>' +
       '</div></div></div>';
 
     var select = document.getElementById('pdVariant');
@@ -263,7 +263,7 @@
     var store = qs('store');
     var root = document.getElementById('pdRoot');
     if (!id) {
-      root.innerHTML = '<div class="pd-error">Missing product id. Go back to the <a href="/stores.html">store</a>.</div>';
+      root.innerHTML = '<div class="pd-error">Missing product id. Go back to the <a href="/store">store</a>.</div>';
       return;
     }
     try {
@@ -273,7 +273,7 @@
         med = catalog.find(function (m) { return String(m._id || m.id) === String(id); }) || null;
       }
       if (!med) {
-        root.innerHTML = '<div class="pd-error">Product not found. <a href="/stores.html">Return to store</a>.</div>';
+        root.innerHTML = '<div class="pd-error">Product not found. <a href="/store">Return to store</a>.</div>';
         return;
       }
       if (store && !med.storeId) med.storeId = store;
@@ -281,7 +281,7 @@
       var all = await loadCatalog();
       renderRecs(recommend(all, med, 8), store || med.storeId || '');
     } catch (err) {
-      root.innerHTML = '<div class="pd-error">Could not load product. <a href="/stores.html">Return to store</a>.</div>';
+      root.innerHTML = '<div class="pd-error">Could not load product. <a href="/store">Return to store</a>.</div>';
       console.error(err);
     }
   }

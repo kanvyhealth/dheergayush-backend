@@ -741,6 +741,10 @@ function showEditModal(type, item) {
                         <input type="text" id="category" value="${(item.category || '').replace(/"/g, '&quot;')}">
                     </div>
                     <div class="form-group">
+                        <label for="subCategory">Subcategory</label>
+                        <input type="text" id="subCategory" value="${(item.subCategory || item.subcategory || '').replace(/"/g, '&quot;')}" placeholder="e.g. Honey, Millets, Spices and Masalas">
+                    </div>
+                    <div class="form-group">
                         <label for="description">Description</label>
                         <textarea id="description">${item.description || ''}</textarea>
                     </div>
@@ -920,6 +924,7 @@ editForm.addEventListener('submit', async (e) => {
                 brand: formData.brand,
                 company: formData.brand,
                 category: formData.category,
+                subCategory: formData.subCategory,
                 description: formData.description,
                 imageFile: formData.imageFile,
                 storeVisible: formData.storeVisible !== 'false',

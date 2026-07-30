@@ -1,12 +1,13 @@
 /* DHEERGAYUSH Stores — paginated catalog with lazy images */
 (function () {
   var PAGE_SIZE = 36;
-  var STORE_CACHE_PREFIX = 'dg-store-page-v2:';
+  var STORE_CACHE_PREFIX = 'dg-store-page-v3:';
   var STORE_CACHE_TTL_MS = 5 * 60 * 1000;
   var stores = [];
   var products = [];
   var cart = [];
   var CART_KEY = 'dgWebStoreCart';
+  var taxonomy = null;
   try {
     var savedCart = sessionStorage.getItem(CART_KEY);
     if (savedCart) {
@@ -22,6 +23,7 @@
   }
   var currentStore = null;
   var currentCategory = 'all';
+  var currentSubcategory = 'all';
   var currentStoreFilter = 'all';
   var currentPage = 0;
   var totalProducts = 0;
@@ -80,6 +82,9 @@
     appUserUid: document.getElementById('appUserUid'),
     mobileFilterToggle: document.getElementById('mobileFilterToggle'),
     filtersSidebar: document.getElementById('filtersSidebar'),
+    departmentFilters: document.getElementById('departmentFilters'),
+    subcategoryStripWrap: document.getElementById('subcategoryStripWrap'),
+    subcategoryStrip: document.getElementById('subcategoryStrip'),
     storeInvoiceSuccess: document.getElementById('storeInvoiceSuccess'),
     downloadInvoiceBtn: document.getElementById('downloadInvoiceBtn'),
     invoiceContinueShopping: document.getElementById('invoiceContinueShopping'),
@@ -204,6 +209,7 @@
     params.set('limit', String(PAGE_SIZE));
     if (currentStoreFilter !== 'all') params.set('company', currentStoreFilter);
     if (currentCategory !== 'all') params.set('category', currentCategory);
+    if (currentSubcategory !== 'all') params.set('subcategory', currentSubcategory);
     var q = (els.searchInput && els.searchInput.value.trim()) || '';
     if (q) params.set('q', q);
     return params.toString();
@@ -214,6 +220,7 @@
     return STORE_CACHE_PREFIX + [
       currentStoreFilter || 'all',
       currentCategory || 'all',
+      currentSubcategory || 'all',
       q,
       els.sortSelect ? els.sortSelect.value : 'featured',
       PAGE_SIZE
@@ -239,6 +246,7 @@
         stores: stores,
         currentStoreFilter: currentStoreFilter,
         currentCategory: currentCategory,
+        currentSubcategory: currentSubcategory,
         pageData: pageData
       }));
     } catch (_) { /* storage can be unavailable or full */ }
@@ -367,14 +375,151 @@
     });
   }
 
+  function storePathFor(department, subcategory) {
+    if (window.DgStoreCategories && DgStoreCategories.storePathFor) {
+      return DgStoreCategories.storePathFor(department, subcategory);
+    }
+    if (!department || department === 'all') return '/store';
+    return '/store';
+  }
+
+  function syncStoreUrl(replace) {
+    var path = storePathFor(currentCategory, currentSubcategory);
+    var search = window.location.search || '';
+    var next = path + search;
+    var current = window.location.pathname + (window.location.search || '');
+    if (current === next) return;
+    if (replace) {
+      history.replaceState({ category: currentCategory, subcategory: currentSubcategory }, '', next);
+    } else {
+      history.pushState({ category: currentCategory, subcategory: currentSubcategory }, '', next);
+    }
+  }
+
+  function applyPathFilters(opts) {
+    opts = opts || {};
+    var parsed = window.DgStoreCategories && DgStoreCategories.parseStorePath
+      ? DgStoreCategories.parseStorePath(window.location.pathname)
+      : { category: 'all', subcategory: 'all' };
+    try {
+      var params = new URLSearchParams(window.location.search || '');
+      if (parsed.category === 'all' && params.get('category')) {
+        parsed.category = params.get('category');
+      }
+      if (parsed.subcategory === 'all' && params.get('subcategory')) {
+        parsed.subcategory = params.get('subcategory');
+      }
+    } catch (_) { /* ignore */ }
+    currentCategory = parsed.category || 'all';
+    currentSubcategory = parsed.subcategory || 'all';
+    if (currentCategory !== 'Organic Foods') currentSubcategory = 'all';
+    if (!opts.skipRender) {
+      renderDepartmentFilters();
+      renderSubcategoryStrip();
+      updateBreadcrumb();
+    }
+  }
+
+  function setCategoryFilter(category, subcategory, opts) {
+    opts = opts || {};
+    currentCategory = category || 'all';
+    currentSubcategory = (currentCategory === 'Organic Foods' && subcategory) ? subcategory : 'all';
+    if (!opts.skipUrl) syncStoreUrl(!!opts.replaceUrl);
+    renderDepartmentFilters();
+    renderSubcategoryStrip();
+    updateBreadcrumb();
+    if (!opts.skipLoad) resetAndLoadProducts();
+  }
+
+  function renderDepartmentFilters() {
+    if (!els.departmentFilters) return;
+    var depts = (taxonomy && taxonomy.departments) || (
+      window.DgStoreCategories ? DgStoreCategories.STORE_DEPARTMENTS.map(function (name) {
+        return { name: name, count: 0, href: storePathFor(name), subcategories: [] };
+      }) : []
+    );
+    var html = '<a href="/store" class="filter-link' + (currentCategory === 'all' ? ' active' : '') +
+      '" data-category="all">All products</a>';
+    depts.forEach(function (dept) {
+      var isOrganic = dept.name === 'Organic Foods';
+      var isActive = currentCategory === dept.name;
+      var countHtml = dept.count ? ' <span class="filter-count">(' + dept.count + ')</span>' : '';
+      if (isOrganic) {
+        var open = isActive ? ' is-open' : '';
+        html += '<div class="filter-group' + open + '" data-department="' + escapeHtml(dept.name) + '">';
+        html += '<button type="button" class="filter-group-toggle' + (isActive && currentSubcategory === 'all' ? ' active' : '') +
+          '" data-category="' + escapeHtml(dept.name) + '" aria-expanded="' + (isActive ? 'true' : 'false') + '">' +
+          '<span>' + escapeHtml(dept.name) + countHtml + '</span>' +
+          '<i class="fas fa-chevron-down chevron" aria-hidden="true"></i></button>';
+        html += '<div class="filter-sublist">';
+        html += '<a href="' + escapeHtml(dept.href || storePathFor(dept.name)) +
+          '" class="filter-sublink' + (isActive && currentSubcategory === 'all' ? ' active' : '') +
+          '" data-category="' + escapeHtml(dept.name) + '" data-subcategory="all">All Organic Foods</a>';
+        (dept.subcategories || []).forEach(function (sub) {
+          html += '<a href="' + escapeHtml(sub.href || storePathFor(dept.name, sub.name)) +
+            '" class="filter-sublink' + (currentSubcategory === sub.name ? ' active' : '') +
+            '" data-category="' + escapeHtml(dept.name) + '" data-subcategory="' + escapeHtml(sub.name) + '">' +
+            escapeHtml(sub.name) +
+            (sub.count ? ' <span class="filter-count">(' + sub.count + ')</span>' : '') +
+            '</a>';
+        });
+        html += '</div></div>';
+      } else {
+        html += '<a href="' + escapeHtml(dept.href || storePathFor(dept.name)) +
+          '" class="filter-link' + (isActive ? ' active' : '') +
+          '" data-category="' + escapeHtml(dept.name) + '">' +
+          escapeHtml(dept.name) + countHtml + '</a>';
+      }
+    });
+    els.departmentFilters.innerHTML = html;
+  }
+
+  function renderSubcategoryStrip() {
+    if (!els.subcategoryStripWrap || !els.subcategoryStrip) return;
+    var show = currentCategory === 'Organic Foods';
+    els.subcategoryStripWrap.classList.toggle('is-visible', show);
+    if (!show) {
+      els.subcategoryStrip.innerHTML = '';
+      return;
+    }
+    var organic = (taxonomy && taxonomy.departments || []).find(function (d) {
+      return d.name === 'Organic Foods';
+    });
+    var subs = (organic && organic.subcategories) || (
+      window.DgStoreCategories ? DgStoreCategories.ORGANIC_FOOD_SUBCATEGORIES.map(function (name) {
+        return { name: name, count: 0, href: storePathFor('Organic Foods', name) };
+      }) : []
+    );
+    var html = '<button type="button" class="store-chip' + (currentSubcategory === 'all' ? ' active' : '') +
+      '" data-category="Organic Foods" data-subcategory="all">All</button>';
+    subs.forEach(function (sub) {
+      html += '<button type="button" class="store-chip' + (currentSubcategory === sub.name ? ' active' : '') +
+        '" data-category="Organic Foods" data-subcategory="' + escapeHtml(sub.name) + '">' +
+        escapeHtml(sub.name) +
+        (sub.count ? ' <span class="chip-count">(' + sub.count + ')</span>' : '') +
+        '</button>';
+    });
+    els.subcategoryStrip.innerHTML = html;
+  }
+
   function updateBreadcrumb() {
     if (!els.breadcrumb) return;
-    if (currentStoreFilter === 'all') {
-      els.breadcrumb.innerHTML = '<a href="/">Home</a> <span>›</span> <strong>Ayurvedic Store</strong>';
-    } else if (currentStore) {
-      els.breadcrumb.innerHTML = '<a href="/">Home</a> <span>›</span> <a href="stores.html">Store</a> <span>›</span> <strong>' +
-        escapeHtml(getStoreMenuLabel(currentStore)) + '</strong>';
+    var parts = ['<a href="/">Home</a>', '<span>›</span>', '<a href="/store">Store</a>'];
+    if (currentStoreFilter !== 'all' && currentStore) {
+      parts.push('<span>›</span>', '<strong>' + escapeHtml(getStoreMenuLabel(currentStore)) + '</strong>');
+    } else if (currentCategory !== 'all') {
+      parts.push('<span>›</span>');
+      if (currentSubcategory !== 'all') {
+        parts.push('<a href="' + escapeHtml(storePathFor(currentCategory)) + '">' +
+          escapeHtml(currentCategory) + '</a>');
+        parts.push('<span>›</span>', '<strong>' + escapeHtml(currentSubcategory) + '</strong>');
+      } else {
+        parts.push('<strong>' + escapeHtml(currentCategory) + '</strong>');
+      }
+    } else {
+      parts[parts.length - 1] = '<strong>Ayurvedic Store</strong>';
     }
+    els.breadcrumb.innerHTML = parts.join(' ');
   }
 
   function getCardWeightParts(card) {
@@ -668,7 +813,12 @@
   }
 
   function mapStoreSummary(list) {
-    return sortStoresForMenu(dedupeStores((list || []).map(function (s) {
+    return sortStoresForMenu(dedupeStores((list || []).filter(function (s) {
+      return s && (Array.isArray(s.medicines) || s.medicineCount != null || s.name);
+    }).filter(function (s) {
+      // Skip stray product-shaped rows mistaken for stores
+      return Array.isArray(s.medicines) || (s.medicineCount != null && !s.weights);
+    }).map(function (s) {
       var key = storeBrandKey(s.name || s._id);
       return {
         _id: key || s._id,
@@ -676,7 +826,9 @@
         menuLabel: s.menuLabel || getStoreMenuLabel(s),
         medicineCount: s.medicineCount || (s.medicines || []).length
       };
-    })));
+    })).filter(function (s) {
+      return (s.medicineCount || 0) > 0 || Array.isArray(s.medicines);
+    }));
   }
 
   function filterLegacyProducts(list) {
@@ -691,6 +843,13 @@
         return window.DgStoreCategories
           ? DgStoreCategories.productMatchesDepartment(m, currentCategory)
           : String(m.category || '').toLowerCase() === String(currentCategory || '').toLowerCase();
+      });
+    }
+    if (currentSubcategory !== 'all') {
+      out = out.filter(function (m) {
+        return window.DgStoreCategories
+          ? DgStoreCategories.productMatchesSubcategory(m, currentSubcategory)
+          : String(m.subCategory || '').toLowerCase() === String(currentSubcategory || '').toLowerCase();
       });
     }
     var q = (els.searchInput && els.searchInput.value.trim()) || '';
@@ -712,7 +871,7 @@
       var fallback = await fetch('/data/medicine-catalog.json');
       if (!fallback.ok) throw new Error('empty');
       var legacyStores = (await fallback.json()).filter(function (s) {
-        return !isExcludedStoreName(s.name);
+        return s && Array.isArray(s.medicines) && !isExcludedStoreName(s.name);
       });
       stores = mapStoreSummary(legacyStores);
       products = [];
@@ -727,6 +886,12 @@
             storeId: brandKey,
             storeName: s.name,
             company: m.company || m.brand || s.name,
+            category: m.category || (window.DgStoreCategories
+              ? DgStoreCategories.normalizeDepartment(m.category)
+              : m.category),
+            subCategory: m.subCategory || (window.DgStoreCategories
+              ? DgStoreCategories.classifyStoreSubcategory(m)
+              : ''),
             imageUrl: imageUrl
           }));
         });
@@ -744,6 +909,18 @@
     } catch (err) {
       els.productGrid.innerHTML = '<p class="empty-grid">Could not load store. Please ensure the server is running.</p>';
     }
+  }
+
+  async function loadTaxonomy() {
+    try {
+      var res = await fetch('/api/store/taxonomy', { cache: 'force-cache' });
+      if (!res.ok) throw new Error('taxonomy fail');
+      taxonomy = await res.json();
+    } catch (_) {
+      taxonomy = null;
+    }
+    renderDepartmentFilters();
+    renderSubcategoryStrip();
   }
 
   function resetAndLoadProducts() {
@@ -980,14 +1157,43 @@
     }
   }
 
-  document.querySelectorAll('.filter-link').forEach(function (link) {
-    link.addEventListener('click', function (e) {
-      e.preventDefault();
-      document.querySelectorAll('.filter-link').forEach(function (l) { l.classList.remove('active'); });
-      link.classList.add('active');
-      currentCategory = link.dataset.category;
-      resetAndLoadProducts();
+  if (els.departmentFilters) {
+    els.departmentFilters.addEventListener('click', function (e) {
+      var toggle = e.target.closest('.filter-group-toggle');
+      var link = e.target.closest('[data-category]');
+      if (toggle && !e.target.closest('.filter-sublink')) {
+        e.preventDefault();
+        var group = toggle.closest('.filter-group');
+        var cat = toggle.dataset.category;
+        if (currentCategory === cat && group) {
+          group.classList.toggle('is-open');
+          toggle.setAttribute('aria-expanded', group.classList.contains('is-open') ? 'true' : 'false');
+          if (currentSubcategory !== 'all') {
+            setCategoryFilter(cat, 'all');
+          }
+          return;
+        }
+        setCategoryFilter(cat, 'all');
+        return;
+      }
+      if (link) {
+        e.preventDefault();
+        setCategoryFilter(link.dataset.category, link.dataset.subcategory || 'all');
+      }
     });
+  }
+
+  if (els.subcategoryStrip) {
+    els.subcategoryStrip.addEventListener('click', function (e) {
+      var chip = e.target.closest('[data-subcategory]');
+      if (!chip) return;
+      setCategoryFilter(chip.dataset.category || 'Organic Foods', chip.dataset.subcategory || 'all');
+    });
+  }
+
+  window.addEventListener('popstate', function () {
+    applyPathFilters();
+    resetAndLoadProducts();
   });
 
   if (els.searchInput) {
@@ -1292,6 +1498,12 @@
   updateBreadcrumb();
   setupInfiniteScroll();
   setupProductGridEvents();
+  applyPathFilters({ skipRender: false });
+  syncStoreUrl(true);
+  loadTaxonomy().then(function () {
+    renderDepartmentFilters();
+    renderSubcategoryStrip();
+  });
   loadStores();
   consumeSavedPrescriptionCart();
   updateCartBadge();
