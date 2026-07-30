@@ -101,7 +101,7 @@
       totalAmount: orderData.totalAmount
     };
 
-    var res = await fetch('store-invoice.html', { cache: 'no-cache' });
+    var res = await fetch('/store-invoice.html', { cache: 'no-cache' });
     if (!res.ok) throw new Error('Could not load invoice template');
     var template = await res.text();
     var element = fillTemplate(template, data);

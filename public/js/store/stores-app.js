@@ -439,28 +439,29 @@
       }) : []
     );
     var html = '<a href="/store" class="filter-link' + (currentCategory === 'all' ? ' active' : '') +
-      '" data-category="all">All products</a>';
+      '" data-category="all"><span class="filter-label">All products</span></a>';
     depts.forEach(function (dept) {
       var isOrganic = dept.name === 'Organic Foods';
       var isActive = currentCategory === dept.name;
-      var countHtml = dept.count ? ' <span class="filter-count">(' + dept.count + ')</span>' : '';
+      var countHtml = dept.count ? '<span class="filter-count">(' + dept.count + ')</span>' : '';
       if (isOrganic) {
         var open = isActive ? ' is-open' : '';
         html += '<div class="filter-group' + open + '" data-department="' + escapeHtml(dept.name) + '">';
-        html += '<button type="button" class="filter-group-toggle' + (isActive && currentSubcategory === 'all' ? ' active' : '') +
+        html += '<button type="button" class="filter-group-toggle' + (isActive ? ' active' : '') +
           '" data-category="' + escapeHtml(dept.name) + '" aria-expanded="' + (isActive ? 'true' : 'false') + '">' +
-          '<span>' + escapeHtml(dept.name) + countHtml + '</span>' +
+          '<span class="filter-label">' + escapeHtml(dept.name) + '</span>' + countHtml +
           '<i class="fas fa-chevron-down chevron" aria-hidden="true"></i></button>';
         html += '<div class="filter-sublist">';
         html += '<a href="' + escapeHtml(dept.href || storePathFor(dept.name)) +
           '" class="filter-sublink' + (isActive && currentSubcategory === 'all' ? ' active' : '') +
-          '" data-category="' + escapeHtml(dept.name) + '" data-subcategory="all">All Organic Foods</a>';
+          '" data-category="' + escapeHtml(dept.name) + '" data-subcategory="all">' +
+          '<span class="filter-label">All Organic Foods</span></a>';
         (dept.subcategories || []).forEach(function (sub) {
           html += '<a href="' + escapeHtml(sub.href || storePathFor(dept.name, sub.name)) +
             '" class="filter-sublink' + (currentSubcategory === sub.name ? ' active' : '') +
             '" data-category="' + escapeHtml(dept.name) + '" data-subcategory="' + escapeHtml(sub.name) + '">' +
-            escapeHtml(sub.name) +
-            (sub.count ? ' <span class="filter-count">(' + sub.count + ')</span>' : '') +
+            '<span class="filter-label">' + escapeHtml(sub.name) + '</span>' +
+            (sub.count ? '<span class="filter-count">(' + sub.count + ')</span>' : '') +
             '</a>';
         });
         html += '</div></div>';
@@ -468,7 +469,7 @@
         html += '<a href="' + escapeHtml(dept.href || storePathFor(dept.name)) +
           '" class="filter-link' + (isActive ? ' active' : '') +
           '" data-category="' + escapeHtml(dept.name) + '">' +
-          escapeHtml(dept.name) + countHtml + '</a>';
+          '<span class="filter-label">' + escapeHtml(dept.name) + '</span>' + countHtml + '</a>';
       }
     });
     els.departmentFilters.innerHTML = html;
