@@ -1,7 +1,7 @@
 /* DHEERGAYUSH Stores — paginated catalog with lazy images */
 (function () {
   var PAGE_SIZE = 36;
-  var STORE_CACHE_PREFIX = 'dg-store-page-v3:';
+  var STORE_CACHE_PREFIX = 'dg-store-page-v4:';
   var STORE_CACHE_TTL_MS = 5 * 60 * 1000;
   var stores = [];
   var products = [];
@@ -764,7 +764,7 @@
         appendLegacyPage();
         return;
       }
-      var res = await fetch('/api/medicines?' + apiQuery(), { cache: 'force-cache' });
+      var res = await fetch('/api/medicines?' + apiQuery());
       if (!res.ok) throw new Error('fail');
       var data = await res.json();
       applyProductsPage(data);
@@ -913,7 +913,7 @@
 
   async function loadTaxonomy() {
     try {
-      var res = await fetch('/api/store/taxonomy', { cache: 'force-cache' });
+      var res = await fetch('/api/store/taxonomy');
       if (!res.ok) throw new Error('taxonomy fail');
       taxonomy = await res.json();
     } catch (_) {
@@ -1133,7 +1133,9 @@
       var renderedCached = renderCachedStore(readStoreCache());
       if (!renderedCached && els.productGrid) els.productGrid.innerHTML = '';
 
-      var fetchOpts = { cache: 'force-cache' };
+      // Catalog responses carry max-age + ETag; force-cache would pin stale product
+      // counts in the browser cache long after the catalog changes.
+      var fetchOpts = {};
       var summaryPromise = fetch('/api/stores/summary', fetchOpts).catch(function () { return fetch('/api/stores', fetchOpts); });
       var productsPromise = fetch('/api/medicines?' + apiQuery(), fetchOpts);
 

@@ -212,7 +212,7 @@
   }
 
   async function loadMedicine(id) {
-    var res = await fetch('/api/medicines/batch?ids=' + encodeURIComponent(id), { cache: 'force-cache' });
+    var res = await fetch('/api/medicines/batch?ids=' + encodeURIComponent(id));
     if (res.ok) {
       var data = await res.json();
       var list = Array.isArray(data) ? data : (data.medicines || data.items || []);
@@ -221,7 +221,7 @@
       });
       if (found) return found;
     }
-    var allRes = await fetch('/api/medicines?all=1', { cache: 'force-cache' });
+    var allRes = await fetch('/api/medicines?all=1');
     if (allRes.ok) {
       var all = await allRes.json();
       var arr = Array.isArray(all) ? all : (all.medicines || []);
@@ -232,14 +232,14 @@
 
   async function loadCatalog() {
     try {
-      var res = await fetch('/api/medicines?all=1', { cache: 'force-cache' });
+      var res = await fetch('/api/medicines?all=1');
       if (res.ok) {
         var data = await res.json();
         return Array.isArray(data) ? data : (data.medicines || []);
       }
     } catch (_) { /* fall through */ }
     try {
-      var fallback = await fetch('/data/medicine-catalog.json', { cache: 'force-cache' });
+      var fallback = await fetch('/data/medicine-catalog.json');
       if (!fallback.ok) return [];
       var catalog = await fallback.json();
       var out = [];
