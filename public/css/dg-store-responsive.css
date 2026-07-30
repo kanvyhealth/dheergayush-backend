@@ -119,3 +119,34 @@ body {
   padding-left: max(12px, env(safe-area-inset-left));
   padding-right: max(12px, env(safe-area-inset-right));
 }
+
+/* Store-page slice of the sitewide device tiers (scale documented in
+   dg-responsive.css). These belong here because this file loads after it. */
+@media (min-width: 361px) and (max-width: 480px) {
+  .product-grid {
+    gap: 10px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .delivery-banner {
+    font-size: 0.74rem;
+    padding: 7px 10px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .cart-panel,
+  .checkout-grid {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .amazon-search button {
+    min-width: 64px;
+    min-height: 52px;
+    padding: 0 24px;
+  }
+}

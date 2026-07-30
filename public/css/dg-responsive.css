@@ -1237,3 +1237,390 @@ table.data-table {
   }
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   Device tiers — sitewide scale, ordered narrow → wide
+
+     small mobile     <= 360px          (Fold cover screen, iPhone SE 1)
+     medium mobile    361px – 480px     (iPhone SE 2/3, 12 mini)
+     large mobile     481px – 767px     (Pro Max, phablets)
+     tablet           768px – 1024px    (iPad portrait & landscape)
+     laptop           1025px – 1439px
+     desktop          1440px – 1919px
+     TV / large       >= 1920px, second step at >= 2560px (4K)
+     short landscape  viewport height <= 480px, any width
+
+   The store and product pages define their own rules in a page-level
+   <style> that loads after this file, so overrides for their
+   selectors need !important to apply.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── Phones: keep form controls at 16px so iOS does not zoom on focus ── */
+@media (max-width: 767px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea,
+  .dg-input,
+  .dg-select,
+  .dg-textarea,
+  .sort-select {
+    font-size: max(16px, 1rem);
+  }
+}
+
+/* ── Small mobile ── */
+@media (max-width: 360px) {
+  html {
+    font-size: 15px;
+  }
+
+  .dg-navbar {
+    padding: 10px 12px;
+  }
+
+  .store-hero,
+  .search-bar-row,
+  .stores-strip-wrap,
+  .subcategory-strip-wrap,
+  .shop-layout,
+  .cart-panel,
+  .checkout-grid,
+  .load-sentinel {
+    padding-left: max(10px, env(safe-area-inset-left)) !important;
+    padding-right: max(10px, env(safe-area-inset-right)) !important;
+  }
+
+  section,
+  .section,
+  .dg-legal-shell,
+  .dg-legal-wrap {
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-right: max(10px, env(safe-area-inset-right));
+  }
+
+  .store-chip {
+    padding: 7px 12px;
+    font-size: 0.75rem;
+  }
+
+  .pd-recs-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  table,
+  .data-table {
+    font-size: 0.8rem;
+  }
+
+  .tab-navigation .tab-btn,
+  .tab-btn {
+    flex: 1 1 100%;
+  }
+}
+
+/* ── Medium mobile ── */
+@media (min-width: 361px) and (max-width: 480px) {
+  .store-hero h1,
+  .page-hero h1 {
+    font-size: clamp(1.3rem, 6.4vw, 1.7rem);
+  }
+
+  .dg-legal-card {
+    padding: 20px 14px;
+  }
+}
+
+/* ── Large mobile ── */
+@media (min-width: 481px) and (max-width: 767px) {
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .pd-recs-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .dg-landing-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  #doctorsSection .doctors-grid,
+  .doctors-grid,
+  .doctor-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dg-legal-card {
+    padding: 24px 20px;
+  }
+}
+
+/* ── Tablet ── */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+  }
+
+  .pd-recs-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+  }
+
+  #doctorsSection .doctors-grid,
+  .doctors-grid,
+  .doctor-cards {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  }
+
+  .dg-legal-card {
+    padding: 28px 24px;
+  }
+
+  .tab-navigation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+/* ── Laptop ── */
+@media (min-width: 1025px) and (max-width: 1439px) {
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+    gap: 16px !important;
+  }
+
+  .dg-legal-card {
+    padding: 32px 28px;
+  }
+}
+
+/* ── Desktop ── */
+@media (min-width: 1440px) {
+  .dg-nav-inner,
+  .mobile-filter-toggle,
+  .store-hero,
+  .search-bar-row,
+  .stores-strip-wrap,
+  .subcategory-strip-wrap,
+  .shop-layout,
+  .load-sentinel {
+    max-width: 1560px !important;
+  }
+
+  .pd-wrap {
+    max-width: 1360px !important;
+  }
+
+  .dg-landing-nav-inner,
+  .dg-landing-shell,
+  .dg-landing-doctor-cta,
+  .dg-landing-footer-inner,
+  .patient-portal-shell,
+  .dg-doc-shell,
+  body.dg-appointment-page .container,
+  #doctorsSection,
+  #paymentSection,
+  #regdocsec,
+  .registration-section {
+    max-width: 1440px;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+    gap: 20px !important;
+  }
+}
+
+/* ── TV / very large displays ── */
+@media (min-width: 1920px) {
+  html {
+    font-size: 17px;
+  }
+
+  .dg-navbar {
+    padding: 16px 4%;
+  }
+
+  .dg-nav-inner,
+  .mobile-filter-toggle,
+  .store-hero,
+  .search-bar-row,
+  .stores-strip-wrap,
+  .subcategory-strip-wrap,
+  .shop-layout,
+  .load-sentinel {
+    max-width: 1760px !important;
+  }
+
+  .pd-wrap {
+    max-width: 1600px !important;
+  }
+
+  .dg-landing-nav-inner,
+  .dg-landing-shell,
+  .dg-landing-doctor-cta,
+  .dg-landing-footer-inner,
+  .patient-portal-shell,
+  .dg-doc-shell,
+  body.dg-appointment-page .container,
+  #doctorsSection,
+  #paymentSection,
+  #regdocsec,
+  .registration-section {
+    max-width: 1680px;
+  }
+
+  .shop-layout {
+    grid-template-columns: 300px minmax(0, 1fr) !important;
+  }
+
+  .filters-sidebar {
+    top: 104px !important;
+    max-height: calc(100vh - 128px) !important;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+    gap: 24px !important;
+  }
+
+  .pd-recs-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+  }
+
+  .form-container,
+  #paymentFormContainer,
+  #paymentSection .form-container {
+    max-width: min(680px, 100%) !important;
+  }
+
+  .thank-you-card,
+  .profile-card,
+  .auth-action-card,
+  #loginCard,
+  .login-card,
+  .card#loginCard {
+    max-width: min(620px, 100%);
+  }
+
+  .modal-card,
+  .dg-legal-modal,
+  .dg-doctor-modal-card,
+  .dg-ring-card {
+    max-width: min(760px, calc(100vw - 24px));
+  }
+
+  .delivery-banner {
+    font-size: 1rem;
+    padding: 14px 20px;
+  }
+
+  .dg-btn-primary,
+  .dg-btn-outline,
+  .btn-primary,
+  .btn-secondary,
+  .store-chip,
+  .btn-add-cart,
+  .get-started-btn,
+  .stores-btn {
+    min-height: 52px;
+  }
+
+  /* TVs are driven by a remote, so the focus ring has to read from across the room */
+  a:focus-visible,
+  button:focus-visible,
+  [tabindex]:focus-visible,
+  .store-chip:focus-visible,
+  .filter-link:focus-visible {
+    outline: 3px solid var(--dg-orange, #f26727);
+    outline-offset: 3px;
+  }
+}
+
+/* ── 4K TV / ultra-wide ── */
+@media (min-width: 2560px) {
+  html {
+    font-size: 19px;
+  }
+
+  .dg-nav-inner,
+  .mobile-filter-toggle,
+  .store-hero,
+  .search-bar-row,
+  .stores-strip-wrap,
+  .subcategory-strip-wrap,
+  .shop-layout,
+  .load-sentinel {
+    max-width: 2200px !important;
+  }
+
+  .pd-wrap {
+    max-width: 1900px !important;
+  }
+
+  .dg-landing-nav-inner,
+  .dg-landing-shell,
+  .dg-landing-doctor-cta,
+  .dg-landing-footer-inner,
+  .patient-portal-shell,
+  .dg-doc-shell,
+  body.dg-appointment-page .container,
+  #doctorsSection,
+  #paymentSection,
+  #regdocsec,
+  .registration-section {
+    max-width: 2080px;
+  }
+
+  .shop-layout {
+    grid-template-columns: 340px minmax(0, 1fr) !important;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)) !important;
+    gap: 28px !important;
+  }
+
+  .form-container,
+  #paymentFormContainer,
+  #paymentSection .form-container {
+    max-width: min(760px, 100%) !important;
+  }
+}
+
+/* ── Short viewports (phones/tablets held in landscape) ── */
+@media (max-height: 480px) and (orientation: landscape) {
+  .dg-navbar {
+    padding: 8px 16px;
+  }
+
+  .store-hero {
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+  }
+
+  .filters-sidebar {
+    top: 64px !important;
+    max-height: calc(100vh - 76px) !important;
+  }
+
+  .pd-gallery {
+    position: static !important;
+  }
+
+  #regdocsec .auth-form.active,
+  #regdocsec .auth-form[style*='block'] {
+    max-height: calc(100dvh - 96px);
+  }
+
+  .modal-card,
+  .dg-legal-modal,
+  .dg-doctor-modal-card,
+  .dg-ring-card,
+  .modal-content {
+    max-height: 92dvh;
+    overflow-y: auto;
+  }
+}
+
