@@ -257,21 +257,54 @@
       '</div>';
   }
 
+  function specValue(text, href) {
+    if (!href) return escapeHtml(text);
+    return '<a class="pd-spec-link" href="' + escapeHtml(href) + '">' + escapeHtml(text) + '</a>';
+  }
+
   function specsHtml(med) {
     var rows = [];
     var brand = med.brand || med.company || med.storeName || '';
-    if (brand) rows.push(['Brand', brand]);
-    if (med.category) rows.push(['Category', med.category]);
-    if (med.subCategory) rows.push(['Subcategory', med.subCategory]);
-    if (state.weights.length) {
-      rows.push(['Available packs', state.weights.map(packLabel).join(', ')]);
+    if (brand) rows.push({ label: 'Brand', icon: 'fa-certificate', value: escapeHtml(brand) });
+    if (med.category) {
+      rows.push({
+        label: 'Category',
+        icon: 'fa-layer-group',
+        value: specValue(med.category, storeLink(med.category))
+      });
     }
-    if (med._id || med.id) rows.push(['Product code', String(med._id || med.id)]);
+    if (med.subCategory) {
+      rows.push({
+        label: 'Subcategory',
+        icon: 'fa-tags',
+        value: specValue(med.subCategory, storeLink(med.category, med.subCategory))
+      });
+    }
+    if (state.weights.length) {
+      rows.push({
+        label: state.weights.length > 1 ? 'Available packs (' + state.weights.length + ')' : 'Pack',
+        icon: 'fa-box-open',
+        value: '<span class="pd-spec-chips">' + state.weights.map(function (w) {
+          return '<span class="pd-spec-chip">' + escapeHtml(packLabel(w)) + '</span>';
+        }).join('') + '</span>'
+      });
+    }
+    var code = med._id || med.id;
+    if (code) {
+      rows.push({
+        label: 'Product code',
+        icon: 'fa-barcode',
+        wide: true,
+        value: '<code class="pd-spec-code">' + escapeHtml(String(code)) + '</code>'
+      });
+    }
     if (!rows.length) return '';
     return '<section class="pd-panel"><h2>Product details</h2><dl class="pd-specs">' +
       rows.map(function (row) {
-        return '<div class="pd-spec"><dt>' + escapeHtml(row[0]) + '</dt><dd>' +
-          escapeHtml(row[1]) + '</dd></div>';
+        return '<div class="pd-spec' + (row.wide ? ' pd-spec-wide' : '') + '">' +
+          '<dt><i class="fas ' + row.icon + '" aria-hidden="true"></i>' +
+          escapeHtml(row.label) + '</dt>' +
+          '<dd>' + row.value + '</dd></div>';
       }).join('') +
       '</dl></section>';
   }
