@@ -132,9 +132,14 @@ function fetchUrl(url, redirects = 0) {
 
 const BRAND_IMAGE_CONFIG = {
   'Shree Dhootapapeshwar': {
-    searchBrands: ['Dhootapapeshwar', 'Shree Dhootapapeshwar'],
-    slugPrefixes: ['dhootapapeshwar', 'sdpl'],
-    manufacturers: ['DHOOTAPAPESHWAR', 'SHREE DHOOTAPAPESHWAR', 'SDL'],
+    searchBrands: ['Dhootapapeshwar', 'Shree Dhootapapeshwar', 'Doodhpateshwar'],
+    slugPrefixes: ['dhootapapeshwar', 'sdpl', 'doodhpateshwar'],
+    manufacturers: ['DHOOTAPAPESHWAR', 'SHREE DHOOTAPAPESHWAR', 'SDL', 'DOODHPATESHWAR'],
+  },
+  Doodhpateshwar: {
+    searchBrands: ['Dhootapapeshwar', 'Shree Dhootapapeshwar', 'Doodhpateshwar'],
+    slugPrefixes: ['dhootapapeshwar', 'sdpl', 'doodhpateshwar'],
+    manufacturers: ['DHOOTAPAPESHWAR', 'SHREE DHOOTAPAPESHWAR', 'SDL', 'DOODHPATESHWAR'],
   },
   Baidyanath: {
     searchBrands: ['Baidyanath', 'Shree Baidyanath'],
@@ -149,8 +154,13 @@ const BRAND_IMAGE_CONFIG = {
 };
 
 function getBrandImageConfig(brand) {
+  const label = String(brand || '');
+  // Typo / alternate spelling used in catalog store name
+  if (/doodhpateshwar|dhootapapeshwar|sdpl/i.test(label)) {
+    return BRAND_IMAGE_CONFIG.Doodhpateshwar;
+  }
   for (const [key, cfg] of Object.entries(BRAND_IMAGE_CONFIG)) {
-    if (new RegExp(key, 'i').test(brand || '')) return cfg;
+    if (new RegExp(key, 'i').test(label)) return cfg;
   }
   return {
     searchBrands: [brand],

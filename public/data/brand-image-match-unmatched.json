@@ -1,0 +1,111 @@
+{
+  "generatedAt": "2026-07-31T13:10:44.177Z",
+  "count": 15,
+  "products": [
+    {
+      "store": "Pernati Naturals",
+      "_id": "pn-chintakupodi",
+      "name": "Chintakupodi",
+      "currentImageFile": "pn-chintakupodi.jpg",
+      "reason": "no_safe_match"
+    },
+    {
+      "store": "Pernati Naturals",
+      "_id": "pn-himalayan-pink-crystal-salt",
+      "name": "Himalayan Pink Crystal Salt",
+      "currentImageFile": "",
+      "reason": "no_safe_match"
+    },
+    {
+      "store": "Pernati Naturals",
+      "_id": "pn-natural-sea-salt",
+      "name": "Natural Sea Salt",
+      "currentImageFile": "pn-natural-sea-salt.jpg",
+      "reason": "no_safe_match"
+    },
+    {
+      "store": "Pernati Naturals",
+      "_id": "pn-poha",
+      "name": "Poha",
+      "currentImageFile": "pn-poha.jpg",
+      "reason": "no_safe_match"
+    },
+    {
+      "store": "Pernati Naturals",
+      "_id": "pn-red-poha",
+      "name": "Red Poha",
+      "currentImageFile": "",
+      "reason": "no_safe_match"
+    },
+    {
+      "store": "Pernati Naturals",
+      "_id": "pn-kodo-millet",
+      "name": "Kodo Millet",
+      "currentImageFile": "",
+      "reason": "no_safe_match"
+    },
+    {
+      "store": "Pernati Naturals",
+      "_id": "pn-pearl-millet",
+      "name": "Pearl Millet",
+      "currentImageFile": "",
+      "reason": "no_safe_match"
+    },
+    {
+      "store": "Pernati Naturals",
+      "_id": "pn-barnyard-millet",
+      "name": "Barnyard Millet",
+      "currentImageFile": "pn-barnyard-millet.jpg",
+      "reason": "no_safe_match"
+    },
+    {
+      "store": "Pernati Naturals",
+      "_id": "pn-proso-millet",
+      "name": "Proso Millet",
+      "currentImageFile": "",
+      "reason": "no_safe_match"
+    },
+    {
+      "store": "Pernati Naturals",
+      "_id": "pn-sorghum-millet",
+      "name": "Sorghum Millet",
+      "currentImageFile": "pn-sorghum-millet.jpg",
+      "reason": "no_safe_match"
+    },
+    {
+      "store": "Pernati Naturals",
+      "_id": "pn-organic-red-gram",
+      "name": "Organic Red Gram",
+      "currentImageFile": "",
+      "reason": "no_safe_match"
+    },
+    {
+      "store": "Pernati Naturals",
+      "_id": "pn-organic-toor-dal",
+      "name": "Organic Toor Dal",
+      "currentImageFile": "",
+      "reason": "no_safe_match"
+    },
+    {
+      "store": "Pernati Naturals",
+      "_id": "pn-cashew-nuts",
+      "name": "Cashew Nuts",
+      "currentImageFile": "",
+      "reason": "no_safe_match"
+    },
+    {
+      "store": "Soorya Naturals",
+      "_id": "sn-0001",
+      "name": "Dasadinusulu",
+      "currentImageFile": "",
+      "reason": "no_safe_match"
+    },
+    {
+      "store": "Soorya Naturals",
+      "_id": "sn-0015",
+      "name": "Mahaabeera Seeds",
+      "currentImageFile": "",
+      "reason": "no_safe_match"
+    }
+  ]
+}

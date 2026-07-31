@@ -1,0 +1,2518 @@
+{
+  "generatedAt": "2026-07-31T11:03:55.469Z",
+  "count": 314,
+  "products": [
+    {
+      "store": "Doodhpateshwar",
+      "name": "Kaklarakshak Yog",
+      "brand": "Doodhpateshwar",
+      "_id": "7ac7704b3ca46e130df96c57",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Myrolax Forte",
+      "brand": "Doodhpateshwar",
+      "_id": "f14591c10464f72af2b23830",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Raktastambhak Tablets",
+      "brand": "Doodhpateshwar",
+      "_id": "1612285d224d659a70624477",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Sandhirujantak Tel",
+      "brand": "Doodhpateshwar",
+      "_id": "54874238025c1844d6f73a94",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Zasdamrut Tablets",
+      "brand": "Doodhpateshwar",
+      "_id": "5c21440526aae4a0445363b8",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Abha Guggul",
+      "brand": "Doodhpateshwar",
+      "_id": "68abc408d579d6ce5e533ca4",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Kaishor Guggul",
+      "brand": "Doodhpateshwar",
+      "_id": "c35eb3befff05bc48bb429ac",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Mahayogaraj Guggul",
+      "brand": "Doodhpateshwar",
+      "_id": "2ab982050ec7f657d2af3325",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Punarnavadi Guggul",
+      "brand": "Doodhpateshwar",
+      "_id": "2c3afb8e145c83b12a510b16",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Saptavinshatika Guggul",
+      "brand": "Doodhpateshwar",
+      "_id": "b969ba0a6a318d258aec2f99",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Swayambhuva Guggul",
+      "brand": "Doodhpateshwar",
+      "_id": "81243827f9f8d9be7fda82f5",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Vatari Guggul",
+      "brand": "Doodhpateshwar",
+      "_id": "4fed16c58e8324f51a7c2c91",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Yogaraj Guggul",
+      "brand": "Doodhpateshwar",
+      "_id": "362dade9fb5a2b43b7e2a2eb",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Bruhat Vata Chintamani Rasa",
+      "brand": "Doodhpateshwar",
+      "_id": "61516f5d52d608feb1deb586",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Kumarkalyan Rasa",
+      "brand": "Doodhpateshwar",
+      "_id": "13c53bddf3bfbbadd1757ca3",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Sarvatobhadraa Vati",
+      "brand": "Doodhpateshwar",
+      "_id": "32cb6d10fb90514fde2308d3",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Sootashekhar Rasa",
+      "brand": "Doodhpateshwar",
+      "_id": "ea1ff16b5c7e97ecd1a7027e",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Suvarna (Svarna) Parpati",
+      "brand": "Doodhpateshwar",
+      "_id": "05d879417f6e14f541ea72b8",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Hemagarbha Pottali",
+      "brand": "Doodhpateshwar",
+      "_id": "17a8561744288362c7c74f69",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Rasagarbha Pottali",
+      "brand": "Doodhpateshwar",
+      "_id": "4f629a98f65249b09eca5d79",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Abhraka Bhasma (Shataputi)",
+      "brand": "Doodhpateshwar",
+      "_id": "ae403f1c61226eff136dbc28",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Godanti Bhasma",
+      "brand": "Doodhpateshwar",
+      "_id": "20ec601272f4a189ea29d8bd",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Hajarul Yahood (Badarashma) Bhasma",
+      "brand": "Doodhpateshwar",
+      "_id": "e287d59186c593d2cbc9cd78",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Kantaloha Bhasma",
+      "brand": "Doodhpateshwar",
+      "_id": "80846393d294e2632fb2e433",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Kapardika (Varatika) Bhasma",
+      "brand": "Doodhpateshwar",
+      "_id": "a43041524072a76a08da385c",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Kaseesa Bhasma",
+      "brand": "Doodhpateshwar",
+      "_id": "b794e71d47846250d7e34bc0",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Loha Bhasma",
+      "brand": "Doodhpateshwar",
+      "_id": "032c1e361b504ca4518b9cb7",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Mandoora Bhasma",
+      "brand": "Doodhpateshwar",
+      "_id": "e05a9754338ee93ef6d8bfe7",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Mouktik (Mukta) Bhasma",
+      "brand": "Doodhpateshwar",
+      "_id": "2d729bca87165d0fab66fa33",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Naga Bhasma",
+      "brand": "Doodhpateshwar",
+      "_id": "f49c6fd044acb6c2ef65e322",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Pravala Bhasma",
+      "brand": "Doodhpateshwar",
+      "_id": "852b0bd78da2d046aa7b6f12",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Suvarnamakshik Bhasma",
+      "brand": "Doodhpateshwar",
+      "_id": "46646fa2147fed5bce6a8d7c",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Tamra Bhasma",
+      "brand": "Doodhpateshwar",
+      "_id": "7de37ab759219af746c5e044",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Trivanga Bhasma",
+      "brand": "Doodhpateshwar",
+      "_id": "458f6d58a9d1220e7032eedb",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Yashada Bhasma",
+      "brand": "Doodhpateshwar",
+      "_id": "4dd59c9b03cc41f4b35c5eab",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Bilvadi Gutika",
+      "brand": "Doodhpateshwar",
+      "_id": "a9dc32f21045cc905bed91e5",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Chandraprabha (With Loha-Shilajatu)",
+      "brand": "Doodhpateshwar",
+      "_id": "a474f7b545ad29951e69c766",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Eladi Gutika",
+      "brand": "Doodhpateshwar",
+      "_id": "db1564eff3e3a55ba198968e",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Gandhak Rasayan",
+      "brand": "Doodhpateshwar",
+      "_id": "248e6ad464ef640c41bfa31c",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Laghumalini Vasant",
+      "brand": "Doodhpateshwar",
+      "_id": "641a9878d5c6ce37bbeb70ab",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Sanshamani Vati",
+      "brand": "Doodhpateshwar",
+      "_id": "7698de91edf93bee90ca1933",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 308"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Mallasindoor",
+      "brand": "Doodhpateshwar",
+      "_id": "89dbeceb9a324d3bcf7e3ee7",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Rasasindoor",
+      "brand": "Doodhpateshwar",
+      "_id": "e5542b7422720e6edf209e2d",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Sameerapannag",
+      "brand": "Doodhpateshwar",
+      "_id": "be7b11daf075718899a3b199",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Shadgunabalijarita Rasasindoor",
+      "brand": "Doodhpateshwar",
+      "_id": "916bc882e0d8bd64b7450092",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Punarnava Mandoora",
+      "brand": "Doodhpateshwar",
+      "_id": "946bbeeeeabc9eb615b156a3",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Shilajatvadi Loha",
+      "brand": "Doodhpateshwar",
+      "_id": "5f9b040e29d53b89f1eb98d6",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Vidangadya Loha",
+      "brand": "Doodhpateshwar",
+      "_id": "d7a1cfdaf4d78c7e80d163c8",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Panchamrut Parpati",
+      "brand": "Doodhpateshwar",
+      "_id": "1eb48ee47e5065acf34f2bc2",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Rasa Parpati",
+      "brand": "Doodhpateshwar",
+      "_id": "ade7bd4ff8d6c3b7917cdccf",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Akeek Pishti",
+      "brand": "Doodhpateshwar",
+      "_id": "5f9b274f0a8a39e0340aa336",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Jaharamohara Pishti",
+      "brand": "Doodhpateshwar",
+      "_id": "732ecc0cd73d346518d17526",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Kaharava Pishti",
+      "brand": "Doodhpateshwar",
+      "_id": "098b9ac31b4bb29258f953ec",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Mouktik (Mukta) Pishti",
+      "brand": "Doodhpateshwar",
+      "_id": "ab15ecd6bf1d3894eece8dec",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Pravala Pishti",
+      "brand": "Doodhpateshwar",
+      "_id": "feb183e05a99958950730df0",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Anandabhairav Rasa",
+      "brand": "Doodhpateshwar",
+      "_id": "1208132b71caa9b41da346f3",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Gandmala Kandan Rasa",
+      "brand": "Doodhpateshwar",
+      "_id": "8318255672d4236a396a4e35",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Krumikuthar Rasa",
+      "brand": "Doodhpateshwar",
+      "_id": "d476f541f1206da1571ecb58",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Loknath Rasa",
+      "brand": "Doodhpateshwar",
+      "_id": "a9a1edaf01719ee3202cf9a9",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Madhumalini Vasant",
+      "brand": "Doodhpateshwar",
+      "_id": "95dc981d94585927db836fc1",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Mrityunjaya Rasa",
+      "brand": "Doodhpateshwar",
+      "_id": "494db31fba1d1d212e50258f",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Rasamanikya",
+      "brand": "Doodhpateshwar",
+      "_id": "cb2795a6fcb967486ad0842b",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Shirahshooladri Vajra Rasa",
+      "brand": "Doodhpateshwar",
+      "_id": "db08a0187917118c44fbe072",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Shoolavajrini Vatika",
+      "brand": "Doodhpateshwar",
+      "_id": "444136fa70d1bc87f9bbbc67",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Smrutisagar Rasa",
+      "brand": "Doodhpateshwar",
+      "_id": "03f050aea2e6f761326a2132",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Tribhuvankeerti Rasa",
+      "brand": "Doodhpateshwar",
+      "_id": "77c5eb0943967414133fe4a7",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Vatakulantak Rasa",
+      "brand": "Doodhpateshwar",
+      "_id": "51de3644da868a850822a9da",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Vatavidhwansa Rasa",
+      "brand": "Doodhpateshwar",
+      "_id": "fbf4aec3174beabf772d3b3d",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Vatavidhwansa (Maha) Rasa (With Jayapala)",
+      "brand": "Doodhpateshwar",
+      "_id": "f3205965c25df749508af77b",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Amla Plus Tablets",
+      "brand": "Doodhpateshwar",
+      "_id": "49714df80c505504f3d1c46b",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Amla Plus Tablets with Zinc",
+      "brand": "Doodhpateshwar",
+      "_id": "97f5f371eab9604f2a02aea7",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Pain Relief Oil",
+      "brand": "Doodhpateshwar",
+      "_id": "43210f8b66a3003a2f24ebb1",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Sheetasudha",
+      "brand": "Doodhpateshwar",
+      "_id": "21158b64163538248bd858f0",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Musali Pak",
+      "brand": "Doodhpateshwar",
+      "_id": "c296db6993d6a5c812ef3451",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Anu Taila",
+      "brand": "Doodhpateshwar",
+      "_id": "ff7770429cee951104710992",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Kanchan Hair Oil",
+      "brand": "Doodhpateshwar",
+      "_id": "3569809b8ae04f958804e0cc",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Bhaskar Lavana Choorna",
+      "brand": "Doodhpateshwar",
+      "_id": "3b4b804a88bf2506118c349f",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Chousashta Pippali",
+      "brand": "Doodhpateshwar",
+      "_id": "494a5115c5a06fc15d344947",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Dhatupoushtik Choorna",
+      "brand": "Doodhpateshwar",
+      "_id": "da276d9a47876b60f214ffdc",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Haridrakhanda Choorna",
+      "brand": "Doodhpateshwar",
+      "_id": "4e8e25c47887b01615789166",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Hingwashtak Choorna",
+      "brand": "Doodhpateshwar",
+      "_id": "6964754517076f3e504fa2aa",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Pushyanuga Choorna",
+      "brand": "Doodhpateshwar",
+      "_id": "ca9eeb3b6994129cd752a1f8",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Sitopaladi Choorna",
+      "brand": "Doodhpateshwar",
+      "_id": "18e575ef528a9dcccd1d12c7",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Taleesadi Choorna",
+      "brand": "Doodhpateshwar",
+      "_id": "6b318bdc10de70c96950c6a5",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Aravindasava",
+      "brand": "Doodhpateshwar",
+      "_id": "6d29eac85fc9ef928e592e13",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Kumari Asava No.1",
+      "brand": "Doodhpateshwar",
+      "_id": "422f128d595963fe0a2ca9c5",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Punarnavasava",
+      "brand": "Doodhpateshwar",
+      "_id": "1606496d1b2f8c11c4d65345",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Arjunarishta",
+      "brand": "Doodhpateshwar",
+      "_id": "e1a8cdfcffc7f6c6211f00ba",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Saraswatarishta",
+      "brand": "Doodhpateshwar",
+      "_id": "ee97e796f9555468bd12b86b",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Bhoonimbadi Kadha",
+      "brand": "Doodhpateshwar",
+      "_id": "a8e1f3fa4e07adc22f0da15b",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Bruhat Varunadi Kadha",
+      "brand": "Doodhpateshwar",
+      "_id": "2c50d12111c296f3eb1e4e77",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Gokharu Kadha",
+      "brand": "Doodhpateshwar",
+      "_id": "e88bd850dad72b43be037315",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Maharasnadi Kadha",
+      "brand": "Doodhpateshwar",
+      "_id": "10cefdbcbb8c2aa82fb121e4",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Mahasudarshan Kadha",
+      "brand": "Doodhpateshwar",
+      "_id": "f15908a0adc4a3c1133626c7",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Pathyadi Kadha",
+      "brand": "Doodhpateshwar",
+      "_id": "8b315a493000e507cbe874e1",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Arjuna",
+      "brand": "Doodhpateshwar",
+      "_id": "6acc0b2b30672d6699207047",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Ashvagandha",
+      "brand": "Doodhpateshwar",
+      "_id": "1ee4101d76ba65e4cfcc1ec4",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Nimba (Neem)",
+      "brand": "Doodhpateshwar",
+      "_id": "91ec631f532a35d63767532c",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Tulasi",
+      "brand": "Doodhpateshwar",
+      "_id": "faff11ccb1256883695b048a",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Pachojjay",
+      "brand": "Doodhpateshwar",
+      "_id": "27ec9cb3cc8464e8b49e9677",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Medojjay",
+      "brand": "Doodhpateshwar",
+      "_id": "eca1a45b531569ca4f8bfb00",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Raktojjay",
+      "brand": "Doodhpateshwar",
+      "_id": "f4a643d25712acdfac42a6cd",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Goutojjay",
+      "brand": "Doodhpateshwar",
+      "_id": "88e90aca2d5ade7a3fee8896",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Doodhpateshwar",
+      "name": "Neurojjay",
+      "brand": "Doodhpateshwar",
+      "_id": "55354c0ea2ecc3c72cd1380f",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Agasthya Rasayanam 500 GM",
+      "brand": "IMPCOPS",
+      "_id": "587986dbcd32024402b87993",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Amalaki Churnam 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "d0e8b1332d2b493d5743f3c4",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Amalaki Churnam 50 GM",
+      "brand": "IMPCOPS",
+      "_id": "ade2a36048f4a967c6efaffc",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Ananda Bhairava Rasa (tab.) 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "0a5bd6e18265c1470d62edd9",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Arimedadi Thailam 100 ML",
+      "brand": "IMPCOPS",
+      "_id": "120936f47d30a4f96f599596",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Arjuna Churnam 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "58d414af203d5a5de0cd9d10",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Arogyavardhanivati 50 NOS",
+      "brand": "IMPCOPS",
+      "_id": "e2687eda8e88e014cf5595c0",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Asokadivati 50 NOS",
+      "brand": "IMPCOPS",
+      "_id": "ea0a85190671271f7028aeeb",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Aswagandha Churnam Tablet 500 NOS",
+      "brand": "IMPCOPS",
+      "_id": "da0170bb230843ed99fa0d37",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Aswagandha Tablet 100 NOS",
+      "brand": "IMPCOPS",
+      "_id": "c420a91b1ba2a75d9b8f2b4b",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Aswagandhadi Lehyam 500 GM",
+      "brand": "IMPCOPS",
+      "_id": "a110196e2f7950e601a82b1f",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Aswagandharishta 450 ML",
+      "brand": "IMPCOPS",
+      "_id": "e3bc981826161dd8f027cd48",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Avalgujadi Lepam 50 GM",
+      "brand": "IMPCOPS",
+      "_id": "737a9895358dc023c9640100",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Avipathikara Churnam 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "e628af9edc6d3316a700265a",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Ayush Kwath Tablet 100 NOS",
+      "brand": "IMPCOPS",
+      "_id": "e1830c24eddbdd462cefc0d1",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Balagudoochyadi Thailam 100 ML",
+      "brand": "IMPCOPS",
+      "_id": "7561e8600cc6dba0566e1a1c",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Balaswagandhadi Thailam 500 ML",
+      "brand": "IMPCOPS",
+      "_id": "7bfad1f45952a8a0d8e3887f",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Bhallathakavati-pills 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "3aac249004b9bcf88da99e27",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Bhaskaralavana Churnam 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "8f33154d5e0790f7df6b8e17",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Bhringarajasava – 450 ML",
+      "brand": "IMPCOPS",
+      "_id": "3385ad7bd71b568a5a7dd8d4",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Brhatvata Chintamani (tab) 2 GM",
+      "brand": "IMPCOPS",
+      "_id": "f26fe781f000e21e49171d35",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Bringamalaka Thailam 100 ML",
+      "brand": "IMPCOPS",
+      "_id": "6816cb2cc3a854740b2d1169",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Bringamalaka Thailam 500 ML",
+      "brand": "IMPCOPS",
+      "_id": "2982baf29d7d710fffb2c50f",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Chandanadi Thailam 100 ML",
+      "brand": "IMPCOPS",
+      "_id": "916355be2ff0468aceee4a8d",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Chandanadi Vati (pills) 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "9ea01009ab48df4387a262dc",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 400"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Chandanadi Vati (pills) 50 GM",
+      "brand": "IMPCOPS",
+      "_id": "c01fbaa8afb7afcb00fada34",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 400"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Chandanasava 450 ML",
+      "brand": "IMPCOPS",
+      "_id": "bfbe4eb15833e0a1043d6498",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Chandrakala Lepam 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "06906ff64a13a3eed1a66cf3",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 408"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Chandraprabhavati 200 NOS",
+      "brand": "IMPCOPS",
+      "_id": "260e5c3617a6e65adb53706a",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Chandraprabhavati 50 NOS",
+      "brand": "IMPCOPS",
+      "_id": "2d3497b50adb56eba7c16180",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Chandrodayavarthi 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "27812b5fc795e947084e9e5d",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Chyavanaprasa Lehyam 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "dadcba5f38efacbd4e7d541b",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Chyavanaprasa Lehyam 500 GM",
+      "brand": "IMPCOPS",
+      "_id": "0ad062f516827d812a36f2f1",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Dadimashtaka Churnam Mathirai 100 NOS",
+      "brand": "IMPCOPS",
+      "_id": "67fb4cb33706720f45f92026",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Danta Dhavana Churnam 100gm",
+      "brand": "IMPCOPS",
+      "_id": "468ac8b6bb0f9d6b4cbc3cbc",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Dasamula Katutrayadi Kwatha Churnam 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "5097b7d6e4d2259825624907",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Dhanvantara Gutika 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "c64b702c71a0a3922c21ce01",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Dhanvantara Thailam 100 ML",
+      "brand": "IMPCOPS",
+      "_id": "a6239762e964320ff9ab81fe",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Dhatree Loha 200 NOS",
+      "brand": "IMPCOPS",
+      "_id": "23327d64368d90906b8a5cbc",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Dhatree Loham 50 NOS",
+      "brand": "IMPCOPS",
+      "_id": "324e159e7f421217c6d61a15",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Dineshvalyadi Thailam 100 ML",
+      "brand": "IMPCOPS",
+      "_id": "2e9339b44bc15ed39b7c0828",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Doorvadi Thailam 100 ML",
+      "brand": "IMPCOPS",
+      "_id": "099bd7fde5b87aa043117a26",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Doorvadi Thailam 500 ML",
+      "brand": "IMPCOPS",
+      "_id": "924e14b823cfc71f70b90af2",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Drakshadi Churnam Mathirai 100 NOS",
+      "brand": "IMPCOPS",
+      "_id": "e1084a749739c2b268be873b",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Drakshadi Churnam Tablet 500 NOS",
+      "brand": "IMPCOPS",
+      "_id": "867e31c8626aca2d46462be8",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Drakshadi Lehyam 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "4c50c567d1e999f24c245e4f",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Drakshadi Lehyam 250 GM",
+      "brand": "IMPCOPS",
+      "_id": "0a7f9113b361ca1257fbdad3",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Drakshadi Lehyam 500gm",
+      "brand": "IMPCOPS",
+      "_id": "9cb6c4c6a7e955c0cb5668fe",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Eladi Churnam Mathirai 100 NOS",
+      "brand": "IMPCOPS",
+      "_id": "f291ed56080f26bbf2929959",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Gandhaka Thailam 100ml",
+      "brand": "IMPCOPS",
+      "_id": "edbdb844be067928f7a6c443",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Haridra Churnam 50 GM",
+      "brand": "IMPCOPS",
+      "_id": "21dc8512f2f81b35f2fb1849",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Japapathryadi Thailam 500 ML",
+      "brand": "IMPCOPS",
+      "_id": "b6a7858ede77b36c053d419b",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Japapatryadi Thailam 100 ML",
+      "brand": "IMPCOPS",
+      "_id": "f0fc74752cbcf4994a92e628",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Jatheephaladi Churnam 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "bde6307d1b25eb0904feea66",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Jatheephaladi Churnam Tablet 100 NOS",
+      "brand": "IMPCOPS",
+      "_id": "1e45ab0947b5e4c12ca054b4",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Jathyadi Ghirtham 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "40868273e2f53d0406649887",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 400"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Jeeraka Bilwadi Lehyam 250 GM",
+      "brand": "IMPCOPS",
+      "_id": "595d0ceed09d4b548b46595e",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Jeerakadi Rasayanam 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "c04e445eab31124c067e9aa5",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Kamadugha Rasa 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "3362159118ae783ac1d995cb",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Karpasasthyadi Thailam 100 ML",
+      "brand": "IMPCOPS",
+      "_id": "f999799c55693fb386116ad1",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Karpura Silasathu Bhasma 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "52c4d5ee251142e5a4291d67",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Karpura Silasathu Bhasma 50 GM",
+      "brand": "IMPCOPS",
+      "_id": "42967b83e2cdf143ef05efe8",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Karpuradi Thailam 500 ML",
+      "brand": "IMPCOPS",
+      "_id": "d9f63f0ff099fefe693f339a",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 308"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Kaseesa Bhasma 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "5ae2489f9da69b03adae720e",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Kaseesa Bhasma 50 GM",
+      "brand": "IMPCOPS",
+      "_id": "6ad27eccd6b80638efad3eb7",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Khadirarishta 450 ML",
+      "brand": "IMPCOPS",
+      "_id": "9a6eb3e6cc25e682737d8291",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Kramavriddha Lakshmi Vilasa Rasa 2 GM",
+      "brand": "IMPCOPS",
+      "_id": "76f3c0973f9623715737510c",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Kravyada Rasa 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "57428bda793708fca76180b4",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Ksheerabala (101) Capsules 120 NOS",
+      "brand": "IMPCOPS",
+      "_id": "5fc5b548085cf45516587cd7",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Ksheerabala (101) Capsules 30 NOS",
+      "brand": "IMPCOPS",
+      "_id": "af16d593048d1135145c097a",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Ksheerabala Thailam (ordinary) 100 ML",
+      "brand": "IMPCOPS",
+      "_id": "dba5b033430235f1bb5f9aca",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Ksheerabala Thailam (ordinary) 500 ML",
+      "brand": "IMPCOPS",
+      "_id": "895a9b2758e58a669c04b728",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Kutajarishta 450 ML",
+      "brand": "IMPCOPS",
+      "_id": "2738428a22def61876198701",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Lakshmivilasa Rasa (powder) 2 GM",
+      "brand": "IMPCOPS",
+      "_id": "8bd6d48a214658a37c14130a",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Lasunadivati 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "3c16c3532dbd668447a94c98",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Lasunadivati 50 GM",
+      "brand": "IMPCOPS",
+      "_id": "bd48e555d1539ce5ef83b501",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Lohasava 450 ML",
+      "brand": "IMPCOPS",
+      "_id": "dd35cefe337fd36afc9d659d",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Lokanatha Rasa (tablets) 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "27d75ad80ec88a3d28a716c3",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Madhusnuhee Churnam 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "2846576dd85f768ed908fa36",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Maha Sundarsana Churnam Tablet 100 NOS",
+      "brand": "IMPCOPS",
+      "_id": "aa213c554dd095faf954ea8a",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Maha Yogaraja Guggulu 200 NOS",
+      "brand": "IMPCOPS",
+      "_id": "56aeaee644a65d164ed955d9",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Maha Yogaraja Guggulu 50 NOS",
+      "brand": "IMPCOPS",
+      "_id": "49b953a36e9cad1c3dd2a4ae",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Mahasudarsana Churnam Mathirai 500 NOS",
+      "brand": "IMPCOPS",
+      "_id": "356e3f783332d471a76b1188",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Mahatriphaladyam Ghirtham 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "a7956b3d434969fbf9cf4ca7",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Makaradhwaja Pills 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "e466bea435ed8683eeac4772",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Makaradhwaja Pills 2 GM",
+      "brand": "IMPCOPS",
+      "_id": "1a6ba3942c860a2a1af5e526",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Mandukaparani Churnam Mathirai 100 NOS",
+      "brand": "IMPCOPS",
+      "_id": "48369e5bfb6eb75c8e3d8a46",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Matulanga Rasayanam 450 ML",
+      "brand": "IMPCOPS",
+      "_id": "83bd9e9e1c515efe0bfed252",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Mesashringi Churnam 50 GM",
+      "brand": "IMPCOPS",
+      "_id": "6ded33482935e1066ffa8dbb",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Mesasringi Churnam 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "a947df78ba8d52041b81b696",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Mustharishta 450 ML",
+      "brand": "IMPCOPS",
+      "_id": "3f93d065f5c621aeb9f1ac63",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Nalpamaradi Thailam 100 ML",
+      "brand": "IMPCOPS",
+      "_id": "b777906ac237a514331ebf3e",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Nalpamaradi Thailam 500 ML",
+      "brand": "IMPCOPS",
+      "_id": "0b9e692ff0d46f8320e88118",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Narayana Thailam 500 ML",
+      "brand": "IMPCOPS",
+      "_id": "d5932fa1bba90eb990d874c4",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Narikelanjanam (elaner Kuzhambu) 30 GM",
+      "brand": "IMPCOPS",
+      "_id": "ce4a6ac85c2dea940fad049e",
+      "category": "Ayurvedic Medicines",
+      "reason": "not_found_online"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Navaka Guggulu 200 NOS",
+      "brand": "IMPCOPS",
+      "_id": "b7bc615e882501ceb1962ce5",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Navaka Guggulu 50 NOS",
+      "brand": "IMPCOPS",
+      "_id": "8a8c85468ed5a5b047bfd580",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Navayasa Churnam Mathirai 100 NOS",
+      "brand": "IMPCOPS",
+      "_id": "2b865df47524cdb8b9db7622",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Neelibhringadi (gingelli Oil) Thailam 100 ML",
+      "brand": "IMPCOPS",
+      "_id": "26c8c08a5d80529a25cef35f",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Nilavembu Carica Tablet 50 NOS",
+      "brand": "IMPCOPS",
+      "_id": "1c1105b15163923e2fd180c4",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Nimbadi Kwatha Churnam 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "ef90049ffc03ce86aaecc4e0",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Nisa Amalaki Churnam Tablet 100 NOS",
+      "brand": "IMPCOPS",
+      "_id": "f6244397390ecc142c116452",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Nisa Amalaki Churnam Tablet 500 NOS",
+      "brand": "IMPCOPS",
+      "_id": "59274a239a60190d62b5114e",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Panchabana Rasa (tablets) 2 GM",
+      "brand": "IMPCOPS",
+      "_id": "3bfa9d6a06310d5362f708c8",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Panchatikta Guggulu Ghirtham 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "341d813b1de35a87e284db44",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Pinda Thailam 100 ML",
+      "brand": "IMPCOPS",
+      "_id": "7b8461ae6f8880816792dfca",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Pippalyasava 450 ML",
+      "brand": "IMPCOPS",
+      "_id": "8a04d7e9c272a131d899efde",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Poorana Chandrodayam (gold) 2gm",
+      "brand": "IMPCOPS",
+      "_id": "57deedd953e11cc9ec33afcd",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Prabanjanavimardana Thailam 100 ML",
+      "brand": "IMPCOPS",
+      "_id": "1cbb7b8eca286f807029d545",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Pranada Gutika (mandoora Vataka) 200 NOS",
+      "brand": "IMPCOPS",
+      "_id": "cfdbb79b5389d85040922459",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Punarnavadi Mandura 50 NOS",
+      "brand": "IMPCOPS",
+      "_id": "91e13c2d892f8505a17c29f0",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Pushyanuga Churnam Mathirai 100 NOS",
+      "brand": "IMPCOPS",
+      "_id": "c41598e6ba53c9259ae5ed20",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Rajatha Bhasma 2 GM",
+      "brand": "IMPCOPS",
+      "_id": "e66e162901d832321cb1ccd1",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 400"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Rajathachandrodaya 2 GM",
+      "brand": "IMPCOPS",
+      "_id": "6251a3f2b3b9d5425f1d9f5f",
+      "category": "Ayurvedic Medicines",
+      "reason": "not_found_online"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Rajathaloha Rasayanam (tab.) 2 GM",
+      "brand": "IMPCOPS",
+      "_id": "1260224e6cc7f1e7e95058b8",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Rasa Karpura Lepam 50 GM",
+      "brand": "IMPCOPS",
+      "_id": "3f81ac9aa904c66842201f5d",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Sanjeevaneevati-pills 50 GM",
+      "brand": "IMPCOPS",
+      "_id": "6c34902a4262988e55f65893",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Sankha Bhasma 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "5f587a0741fa90cfd38e795e",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Sannipathabhairava Rasa-l.(tab.) 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "a8e50b91df614f986f103870",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Sannipathabhairava Rasa-m.(tab.) 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "fd36574b888e8a0d505449ba",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Saptharitha Loha 50 NOS",
+      "brand": "IMPCOPS",
+      "_id": "3e903935fded762421b83ef1",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Shadguna Sindura 2 GM",
+      "brand": "IMPCOPS",
+      "_id": "449df9a64d9697a0c6fa2581",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Sindura Bhooshana Rasa (tab.) 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "73e12404b66931faf429ecb4",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Sinduradi Lepam 50gm",
+      "brand": "IMPCOPS",
+      "_id": "980de669cf6b7128130a29ce",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Sithopaladi Churnam Mathirai 100 NOS",
+      "brand": "IMPCOPS",
+      "_id": "bfec857ca342b33c649450d4",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Soolakutara (tab.) 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "f89689f74f07dd4333607ff8",
+      "category": "Ayurvedic Medicines",
+      "reason": "not_found_online"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Sooryavarta Rasa-laghu (tab.) 50 GM",
+      "brand": "IMPCOPS",
+      "_id": "248ced0e1bf0c95f829f46b9",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Sooryavarti Rasa-laghu 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "31b996ae6ceea879de127e7f",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Sudarsana Churnam Mathirai 100 NOS",
+      "brand": "IMPCOPS",
+      "_id": "681ed554dc07c24caef16d79",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Sudarsana Churnam Tablet 500 NOS",
+      "brand": "IMPCOPS",
+      "_id": "2b0d31265c188e0dfe091944",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Sugandha Thailam 100 ML",
+      "brand": "IMPCOPS",
+      "_id": "cd354cbbcbb0f0ad8ad44947",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Sukthi Bhasma 50 GM",
+      "brand": "IMPCOPS",
+      "_id": "9f3ac41fe3a6fe2935c35908",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Sukumara Rasayanam 500 GM",
+      "brand": "IMPCOPS",
+      "_id": "6b036cc8a92c3ea9c660342e",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Swachanda Bhairava Rasa (pills) 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "1a6e551392e1eab75cc1dace",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Swarna Makshika Bhasma 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "e6b91d7c7f32755fa421ee1a",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Swarna Vatharakshasa (tab.) 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "758de4b1758a2c6123b9dc03",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Swarna Vatharakshasa (tab.) 2 GM",
+      "brand": "IMPCOPS",
+      "_id": "e9a7d3cdded4e20bd259ee3b",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Thalaka Bhasma 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "315474af0df96e5c4f43a18e",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Thaleesadi Churnam 500 GM",
+      "brand": "IMPCOPS",
+      "_id": "11f1278581bd3136f55f5f33",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Thaleesadi Churnam Mathirai (ay)100 NOS",
+      "brand": "IMPCOPS",
+      "_id": "228190ff3f60293326df067c",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Thaleesadi Churnam Mathirai 500 NOS",
+      "brand": "IMPCOPS",
+      "_id": "cba00ce8ec154258fe4a9df3",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Thrikatu Churnam 500 GM",
+      "brand": "IMPCOPS",
+      "_id": "e1312587f1698643456d35ea",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Thriphala Churnam 100 Grams",
+      "brand": "IMPCOPS",
+      "_id": "eef6b2eb1d7b6ab9e5dce3f1",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Thriphala Churnam Mathirai 100 NOS",
+      "brand": "IMPCOPS",
+      "_id": "b1a273fecaf4a98c7032071b",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Thriphala Churnam Mathirai 500 NOS",
+      "brand": "IMPCOPS",
+      "_id": "f2e57c172aca92c682d98b11",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Thriphaladi Thailam 100 Millilitres",
+      "brand": "IMPCOPS",
+      "_id": "33e106fb7072fe90422a8f62",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Trikatu Churnam (ay) 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "1991856b3ba3dbbac1df1a0f",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Trivruth Churnam 100 GM",
+      "brand": "IMPCOPS",
+      "_id": "3191122cded6f59e5f5a61cb",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Varatika Bhasma 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "b60f83360c958feb78a6bb29",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Varatika Bhasma 50 GM",
+      "brand": "IMPCOPS",
+      "_id": "5cce654bdfe9f6db001013f3",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Vasantakusumakara Rasa (tab.) 10 GM",
+      "brand": "IMPCOPS",
+      "_id": "13192ea300c646ae3e948d88",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Vasantakusumakara Rasa (tab.) 2 GM",
+      "brand": "IMPCOPS",
+      "_id": "ae1caae3a91104253285eca9",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Vata Gajankusa 50 GM",
+      "brand": "IMPCOPS",
+      "_id": "50aacd6742e7a3da1d121daf",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Vishamusti Thailam 100 ML",
+      "brand": "IMPCOPS",
+      "_id": "0c098cb724cc9a7169d37d50",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Yashti Churnam Tablet 500 NOS",
+      "brand": "IMPCOPS",
+      "_id": "6756c5004986230175e9ca3c",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "IMPCOPS",
+      "name": "Yogaraja Guggulu 50 NOS",
+      "brand": "IMPCOPS",
+      "_id": "3bc0850d447b7c01c8e9543d",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Amchur Powder",
+      "brand": "Pernati Naturals",
+      "_id": "pn-amchur-powder",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Brown Sugar Candy",
+      "brand": "Pernati Naturals",
+      "_id": "pn-brown-sugar-candy",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Chilli Powder",
+      "brand": "Pernati Naturals",
+      "_id": "pn-chilli-powder",
+      "category": "Organic Foods",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Black Salt",
+      "brand": "Pernati Naturals",
+      "_id": "pn-black-salt",
+      "category": "Organic Foods",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Himalayan Pink Powder",
+      "brand": "Pernati Naturals",
+      "_id": "pn-himalayan-pink-powder",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Himalayan Pink Crystal Salt",
+      "brand": "Pernati Naturals",
+      "_id": "pn-himalayan-pink-crystal-salt",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Jaggery",
+      "brand": "Pernati Naturals",
+      "_id": "pn-jaggery",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 403"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Jaggery Powder",
+      "brand": "Pernati Naturals",
+      "_id": "pn-jaggery-powder",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Mustard",
+      "brand": "Pernati Naturals",
+      "_id": "pn-mustard",
+      "category": "Organic Foods",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Red Poha",
+      "brand": "Pernati Naturals",
+      "_id": "pn-red-poha",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Foxtail Millet",
+      "brand": "Pernati Naturals",
+      "_id": "pn-foxtail-millet",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 403"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Kodo Millet",
+      "brand": "Pernati Naturals",
+      "_id": "pn-kodo-millet",
+      "category": "Organic Foods",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Little Millet",
+      "brand": "Pernati Naturals",
+      "_id": "pn-little-millet",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Pearl Millet",
+      "brand": "Pernati Naturals",
+      "_id": "pn-pearl-millet",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 403"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Proso Millet",
+      "brand": "Pernati Naturals",
+      "_id": "pn-proso-millet",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 403"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Organic Red Gram",
+      "brand": "Pernati Naturals",
+      "_id": "pn-organic-red-gram",
+      "category": "Organic Foods",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Organic Toor Dal",
+      "brand": "Pernati Naturals",
+      "_id": "pn-organic-toor-dal",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Almonds",
+      "brand": "Pernati Naturals",
+      "_id": "pn-almonds",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Cashew Nuts",
+      "brand": "Pernati Naturals",
+      "_id": "pn-cashew-nuts",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Black Raisins",
+      "brand": "Pernati Naturals",
+      "_id": "pn-black-raisins",
+      "category": "Organic Foods",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Pernati Naturals",
+      "name": "Broken Wheat Ravva",
+      "brand": "Pernati Naturals",
+      "_id": "pn-broken-wheat-ravva",
+      "category": "Organic Foods",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Soorya Naturals",
+      "name": "Dasadinusulu",
+      "brand": "Soorya Naturals",
+      "_id": "sn-0001",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Soorya Naturals",
+      "name": "Triple Seeds",
+      "brand": "Soorya Naturals",
+      "_id": "sn-0002",
+      "category": "Organic Foods",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Soorya Naturals",
+      "name": "5 Mix Seeds",
+      "brand": "Soorya Naturals",
+      "_id": "sn-0003",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 500"
+    },
+    {
+      "store": "Soorya Naturals",
+      "name": "Double Seeds",
+      "brand": "Soorya Naturals",
+      "_id": "sn-0004",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Soorya Naturals",
+      "name": "Flax Seeds",
+      "brand": "Soorya Naturals",
+      "_id": "sn-0005",
+      "category": "Organic Foods",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Soorya Naturals",
+      "name": "Pumpkin Seeds",
+      "brand": "Soorya Naturals",
+      "_id": "sn-0006",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Soorya Naturals",
+      "name": "Nutri Nuts",
+      "brand": "Soorya Naturals",
+      "_id": "sn-0008",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Soorya Naturals",
+      "name": "Millet Mixture (Puff)",
+      "brand": "Soorya Naturals",
+      "_id": "sn-0010",
+      "category": "Organic Foods",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Soorya Naturals",
+      "name": "Barley Seeds",
+      "brand": "Soorya Naturals",
+      "_id": "sn-0014",
+      "category": "Organic Foods",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Soorya Naturals",
+      "name": "Mahaabeera Seeds",
+      "brand": "Soorya Naturals",
+      "_id": "sn-0015",
+      "category": "Organic Foods",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Soorya Naturals",
+      "name": "Chia Seeds",
+      "brand": "Soorya Naturals",
+      "_id": "sn-0017",
+      "category": "Organic Foods",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Amrutharishtam 450 ML",
+      "brand": "Vaidyaratnam",
+      "_id": "dfc0823d46c282f4d9b622f8",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Avipathi Choornam 50 GM",
+      "brand": "Vaidyaratnam",
+      "_id": "bf1600f30c3616ea96d20b5e",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Bliss Balance 200 ML",
+      "brand": "Vaidyaratnam",
+      "_id": "4d73c7c6f29a9e030f5c1024",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Brahmi Tablet 60 NOS",
+      "brand": "Vaidyaratnam",
+      "_id": "d9592b42e3e4cf23e22d958a",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Brihath Danthapala Thailam ",
+      "brand": "Vaidyaratnam",
+      "_id": "3205220b8bf2c4b75884c660",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Bruhath Triphala Choornam",
+      "brand": "Vaidyaratnam",
+      "_id": "d85243da4ee2034188181140",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Cardocalm Tablets 100 NOS",
+      "brand": "Vaidyaratnam",
+      "_id": "625e1670bb439192e658cc9f",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Dasamoolarishtam 450 ML",
+      "brand": "Vaidyaratnam",
+      "_id": "1d484feddc21c5901632d7f4",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 400"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Dhanwantharam Thailam",
+      "brand": "Vaidyaratnam",
+      "_id": "5742f543deaa437329cd54e2",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: not an image"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Digestol Tablets 100 NOS",
+      "brand": "Vaidyaratnam",
+      "_id": "2a0ee98cad28efa2b2a728a7",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Fitfem Granules 250 GMS",
+      "brand": "Vaidyaratnam",
+      "_id": "014fee5e7a4566f50b6e506a",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Gasnope Tablet 60 NOS",
+      "brand": "Vaidyaratnam",
+      "_id": "9b0b297153baee16a3e43984",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Glycicept Tablet 120 NOS",
+      "brand": "Vaidyaratnam",
+      "_id": "e62a95d2797960f3376c96b4",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Kunkumadi Thailam 10 ML",
+      "brand": "Vaidyaratnam",
+      "_id": "8409379a4f337c42f3760b44",
+      "category": "Personal and Beauty Care",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Mehanil Plus Tablets 100 NOS",
+      "brand": "Vaidyaratnam",
+      "_id": "c928d04de52730f3074b7cbe",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Narasimha Rasayanam 500 GM",
+      "brand": "Vaidyaratnam",
+      "_id": "11958386a1915cc2cbcc0121",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Panchajeeraka Gudam 250 GM",
+      "brand": "Vaidyaratnam",
+      "_id": "d95341f0fc857234bb786747",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Rheumacalm Tablets 100 NOS",
+      "brand": "Vaidyaratnam",
+      "_id": "deddd2a7b6fc18b05f126087",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Swasamritham 100 ML",
+      "brand": "Vaidyaratnam",
+      "_id": "fffca5ef9e4ee092d6aebbfa",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Triphala Tablet 60 NOS",
+      "brand": "Vaidyaratnam",
+      "_id": "dee2889d42561cdb58d7c00b",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Vyoshadi Vatakam 50 GM",
+      "brand": "Vaidyaratnam",
+      "_id": "b5d95b648bc4c9ce1f6fbf7f",
+      "category": "Ayurvedic Medicines",
+      "reason": "download_failed: bad response 404"
+    },
+    {
+      "store": "Vaidyaratnam",
+      "name": "Chyavanaprasam 500 GM",
+      "brand": "Vaidyaratnam",
+      "_id": "b8393e67395643c275e32d66",
+      "category": "Organic Foods",
+      "reason": "download_failed: not an image"
+    }
+  ]
+}
