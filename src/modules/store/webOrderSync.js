@@ -61,6 +61,8 @@ function buildFirestoreOrderPayload(orderData, orderId, options = {}) {
     total_amount: totalAmount,
     totalAmount,
     deliveryAddress: orderData.deliveryAddress || '',
+    deliveryAddressId: orderData.deliveryAddressId || null,
+    deliveryAddressSnapshot: orderData.deliveryAddressSnapshot || null,
     deliveryMode: 'home_delivery',
     deliveryStatus: 'pending',
     notes: orderData.notes || '',

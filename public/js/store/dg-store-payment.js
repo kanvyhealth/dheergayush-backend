@@ -1,10 +1,21 @@
 (function (global) {
+  function resolveFirebaseIdToken() {
+    try {
+      if (global.DgStoreCartBridge && typeof global.DgStoreCartBridge.getFirebaseIdToken === 'function') {
+        var bridgeToken = global.DgStoreCartBridge.getFirebaseIdToken();
+        if (bridgeToken) return String(bridgeToken);
+      }
+    } catch (_) { /* ignore */ }
+    try {
+      return localStorage.getItem('firebaseIdToken') || '';
+    } catch (_) {
+      return '';
+    }
+  }
+
   function orderRequestHeaders() {
     var headers = { 'Content-Type': 'application/json' };
-    var token = '';
-    try {
-      token = localStorage.getItem('firebaseIdToken') || '';
-    } catch (_) { /* ignore */ }
+    var token = resolveFirebaseIdToken();
     if (token) headers.Authorization = 'Bearer ' + token;
     return headers;
   }

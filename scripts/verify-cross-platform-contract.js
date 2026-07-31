@@ -22,11 +22,16 @@ const {
   patientCanJoinVideo
 } = require('../src/modules/consultations/consultationWorkflow');
 const { buildPaymentLifecyclePatch } = require('../src/modules/consultations/consultationLifecycleSync');
-const { buildFirestoreOrderPayload } = require('../src/modules/store/webOrderSync');
+  const { buildFirestoreOrderPayload } = require('../src/modules/store/webOrderSync');
+  const {
+    isPrescriptionLinkedOrder,
+    evaluatePrescriptionOrderAuth,
+    bindOrderIdentity
+  } = require('../src/modules/store/prescriptionOrderAuth');
 
-function hasOwn(obj, key) {
-  return Object.prototype.hasOwnProperty.call(obj, key);
-}
+  function hasOwn(obj, key) {
+    return Object.prototype.hasOwnProperty.call(obj, key);
+  }
 
 function assertFields(obj, fields, label) {
   for (const field of fields) {
@@ -269,6 +274,89 @@ function run() {
   assert.strictEqual(order.userId, patientId);
   assert.strictEqual(order.patientId, patientId);
   assert.strictEqual(order.sourceCollection, 'orders');
+
+  // Prescription-linked order auth contract
+  assert.strictEqual(
+    isPrescriptionLinkedOrder({ appointmentId: 'appt_1' }),
+    true
+  );
+  assert.strictEqual(
+    isPrescriptionLinkedOrder({ source: 'prescription' }),
+    true
+  );
+  assert.strictEqual(isPrescriptionLinkedOrder({ source: 'website' }), false);
+
+  const matchingPatient = evaluatePrescriptionOrderAuth({
+    firebaseUid: patientId,
+    orderData: { appointmentId, prescriptionId: appointmentId, source: 'prescription' },
+    prescription: {
+      patientId,
+      sharedWithPatient: true,
+      shareStatus: 'shared',
+      appointmentId
+    },
+    appointment: { patientId, userId: patientId }
+  });
+  assert.strictEqual(matchingPatient.ok, true);
+  assert.strictEqual(matchingPatient.userId, patientId);
+
+  const missingToken = evaluatePrescriptionOrderAuth({
+    firebaseUid: '',
+    orderData: { appointmentId, source: 'prescription' }
+  });
+  assert.strictEqual(missingToken.ok, false);
+  assert.strictEqual(missingToken.status, 401);
+
+  const forgedUid = bindOrderIdentity(
+    { userId: 'attacker', uid: 'attacker', appointmentId },
+    patientId
+  );
+  assert.strictEqual(forgedUid.userId, patientId);
+  assert.strictEqual(forgedUid.patientId, patientId);
+  assert.strictEqual(forgedUid.uid, undefined);
+
+  const otherPatient = evaluatePrescriptionOrderAuth({
+    firebaseUid: 'other_patient_uid',
+    orderData: { appointmentId, prescriptionId: appointmentId, source: 'prescription' },
+    prescription: {
+      patientId,
+      sharedWithPatient: true,
+      shareStatus: 'shared'
+    }
+  });
+  assert.strictEqual(otherPatient.ok, false);
+  assert.strictEqual(otherPatient.status, 403);
+
+  const guestStripped = bindOrderIdentity(
+    { userId: 'spoofed', uid: 'spoofed', customerName: 'Guest' },
+    ''
+  );
+  assert.strictEqual(guestStripped.userId, undefined);
+  assert.strictEqual(guestStripped.uid, undefined);
+
+  const addressOrder = buildFirestoreOrderPayload(
+    {
+      userId: patientId,
+      customerName: 'Patient',
+      customerPhone: '7842736777',
+      deliveryAddress: 'Hyderabad',
+      deliveryAddressId: 'addr_1',
+      deliveryAddressSnapshot: { line1: 'Hyderabad', pincode: '500001' },
+      items: [{ medicineId: 'med_001', name: 'Medicine', pricePerUnit: 100, quantity: 1, totalPrice: 100 }],
+      subtotal: 100,
+      totalAmount: 100,
+      paymentMethod: 'razorpay',
+      paymentStatus: 'paid',
+      source: 'prescription',
+      appointmentId,
+      prescriptionId: appointmentId
+    },
+    'order_rx_001'
+  );
+  assert.strictEqual(addressOrder.deliveryAddressId, 'addr_1');
+  assert.strictEqual(addressOrder.appointmentId, appointmentId);
+  assert.strictEqual(addressOrder.prescriptionId, appointmentId);
+  assert.ok(addressOrder.deliveryAddressSnapshot);
 }
 
 run();

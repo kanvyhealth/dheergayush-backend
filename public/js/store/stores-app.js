@@ -48,6 +48,17 @@
     selectedAddressId: '',
     source: ''
   };
+  // Firebase ID token held only in page memory (never localStorage / URL).
+  var firebaseAuthToken = '';
+
+  function setFirebaseIdToken(token) {
+    firebaseAuthToken = String(token || '').trim();
+    return !!firebaseAuthToken;
+  }
+
+  function getFirebaseIdToken() {
+    return firebaseAuthToken || '';
+  }
 
   (function readConsultationContextFromUrl() {
     try {
@@ -1304,6 +1315,18 @@
     if (els.placeOrderBtn) els.placeOrderBtn.disabled = true;
     setCheckoutStatus('Opening Razorpay…', false);
     try {
+      var requiresAuth =
+        !!(consultationContext.appointmentId || consultationContext.prescriptionId) ||
+        orderData.source === 'prescription';
+      if (requiresAuth) {
+        var authToken = '';
+        if (window.DgStoreCartBridge && DgStoreCartBridge.getFirebaseIdToken) {
+          authToken = DgStoreCartBridge.getFirebaseIdToken() || '';
+        }
+        if (!authToken) {
+          throw new Error('Sign in required to order from a prescription. Re-open the store from the app.');
+        }
+      }
       if (isDoctor && window.DgAuth && DgAuth.ensureValidToken) {
         var doctorToken = await DgAuth.ensureValidToken();
         if (!doctorToken) {
@@ -1437,6 +1460,9 @@
 
   window.DgStoreCartBridge = {
     setAppUserContext: setAppUserContext,
+    setFirebaseIdToken: setFirebaseIdToken,
+    setAuthToken: setFirebaseIdToken,
+    getFirebaseIdToken: getFirebaseIdToken,
     addPrescriptionItems: addPrescriptionItemsToCart,
     openCart: function () {
       showSection('cartSection');

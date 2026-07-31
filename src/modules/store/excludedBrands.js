@@ -9,7 +9,9 @@ const EXCLUDED_BRAND_LABELS = [
   'soultree',
   'soul tree',
   'the ayurveda experience',
-  'ayurveda experience'
+  'ayurveda experience',
+  'imc ayurvedic',
+  'imc'
 ];
 
 const EXCLUDED_BRAND_KEYS = new Set(

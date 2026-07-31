@@ -177,25 +177,75 @@ module.exports = function register(app, deps) {
             if (orderData.appointmentId || orderData.prescriptionId) {
                 orderData.source = orderData.source || 'prescription';
             }
-    
+
+            const {
+                isPrescriptionLinkedOrder,
+                evaluatePrescriptionOrderAuth,
+                bindOrderIdentity
+            } = require('./prescriptionOrderAuth');
+
+            const isPrescriptionLinked = isPrescriptionLinkedOrder(orderData);
+
+            let prescriptionDoc = null;
+            let appointmentDoc = null;
+            if (isPrescriptionLinked) {
+                const prescriptionId = String(
+                    orderData.prescriptionId || orderData.appointmentId || ''
+                ).trim();
+                const appointmentId = String(orderData.appointmentId || '').trim();
+
+                if (prescriptionId) {
+                    prescriptionDoc = await Prescription.findById(prescriptionId);
+                    if (
+                        prescriptionDoc &&
+                        !appointmentId &&
+                        prescriptionDoc.appointmentId
+                    ) {
+                        orderData.appointmentId = String(
+                            prescriptionDoc.appointmentId
+                        ).trim();
+                    }
+                }
+
+                const resolvedAppointmentId = String(
+                    orderData.appointmentId || ''
+                ).trim();
+                if (resolvedAppointmentId) {
+                    appointmentDoc = await ConsultationRequest.findById(
+                        resolvedAppointmentId
+                    );
+                }
+
+                const ownership = evaluatePrescriptionOrderAuth({
+                    firebaseUid: req.firebaseUid,
+                    orderData,
+                    prescription: prescriptionDoc,
+                    appointment: appointmentDoc
+                });
+                if (!ownership.ok) {
+                    return res.status(ownership.status || 403).json({
+                        success: false,
+                        message: ownership.message
+                    });
+                }
+            }
+
+            orderData = bindOrderIdentity(orderData, req.firebaseUid || '');
+
             const orderId = buildSharedOrderId();
             orderData.paymentMethod = 'razorpay';
             orderData.paymentStatus = 'paid';
-            if (req.firebaseUid) {
-                orderData.userId = req.firebaseUid;
-                orderData.patientId = req.firebaseUid;
-            }
-    
+
             const firestorePayload = buildFirestoreOrderPayload(orderData, orderId, {
                 paymentProof: razorpayPaymentId,
                 razorpayOrderId,
                 razorpayPaymentId,
                 transactionId: razorpayPaymentId
             });
-    
+
             const savedOrder = await Order.create(firestorePayload);
             await MedicineOrder.create({ ...firestorePayload });
-    
+
             res.status(201).json({
                 success: true,
                 message: 'Order placed successfully!',
