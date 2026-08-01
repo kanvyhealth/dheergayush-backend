@@ -16,6 +16,7 @@ const { buildAyurvedicSeedMedicines } = require('../../modules/store/ayurvedicCa
 const { loadMedicineCatalogJson } = require('../../modules/store/medicineCatalogJson');
 const { filterExcludedMedicines } = require('../../modules/store/excludedBrands');
 const { isValidAyurvedicProduct } = require('../../modules/store/excludedProducts');
+const { buildSearchIndex, searchMedicines } = require('../../modules/store/catalogSearch');
 const {
   STORE_DEPARTMENTS,
   STORE_SUBCATEGORIES,
@@ -379,6 +380,7 @@ async function loadCatalogCache(force = false) {
       medicines,
       stores,
       summary: buildStoresSummary(stores),
+      searchIndex: buildSearchIndex(medicines),
       imageMap,
       loadedAt: Date.now(),
       count: medicines.length,
@@ -405,7 +407,7 @@ async function warmCatalogCache() {
   }
 }
 
-function filterMedicines(medicines, { company, category, subcategory, q } = {}) {
+function filterMedicines(medicines, { company, category, subcategory, q, searchIndex } = {}) {
   let list = medicines.filter(isStoreProduct);
   if (company && company !== 'all') {
     const brand = normalizeBrand(company);
@@ -418,10 +420,50 @@ function filterMedicines(medicines, { company, category, subcategory, q } = {}) 
     list = list.filter((m) => productMatchesSubcategory(m, subcategory));
   }
   if (q) {
-    const { searchMedicines } = require('../../modules/store/catalogSearch');
-    list = searchMedicines(list, q);
+    list = searchMedicines(list, q, { index: searchIndex });
   }
   return list;
+}
+
+function toListMedicine(m) {
+  return {
+    _id: m._id,
+    id: m.id || m._id,
+    name: m.name,
+    brand: m.brand || m.company,
+    company: m.company,
+    imageUrl: m.imageUrl || null,
+    imageFile: m.imageFile || null,
+    category: m.category,
+    subCategory: m.subCategory,
+    price: m.price,
+    weights: m.weights,
+    storeId: normalizeBrand(m.company) || String(m.company || '').toLowerCase().replace(/\s+/g, '_'),
+    storeName: m.company || 'General'
+  };
+}
+
+async function getMedicinesPaginated(opts = {}) {
+  const cache = await loadCatalogCache();
+  const page = Math.max(1, parseInt(opts.page, 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(opts.limit, 10) || 48));
+  const medicines = await getCatalogMedicinesWithOverrides();
+  const list = filterMedicines(medicines, {
+    ...opts,
+    searchIndex: cache.searchIndex
+  });
+  const total = list.length;
+  const start = (page - 1) * limit;
+  const items = list.slice(start, start + limit).map(toListMedicine);
+
+  return {
+    items,
+    total,
+    page,
+    limit,
+    pages: Math.ceil(total / limit) || 1,
+    cachedAt: cache.loadedAt
+  };
 }
 
 function findCatalogMedicineById(medicines, medicineId) {
@@ -611,30 +653,6 @@ async function validateOrderItemsAgainstCatalog(items = []) {
   return {
     items: normalized,
     subtotal: Math.round(subtotal * 100) / 100
-  };
-}
-
-async function getMedicinesPaginated(opts = {}) {
-  const cache = await loadCatalogCache();
-  const page = Math.max(1, parseInt(opts.page, 10) || 1);
-  const limit = Math.min(100, Math.max(1, parseInt(opts.limit, 10) || 48));
-  const medicines = await getCatalogMedicinesWithOverrides();
-  const list = filterMedicines(medicines, opts);
-  const total = list.length;
-  const start = (page - 1) * limit;
-  const items = list.slice(start, start + limit).map((m) => ({
-    ...m,
-    storeId: normalizeBrand(m.company) || m.company.toLowerCase().replace(/\s+/g, '_'),
-    storeName: m.company || 'General'
-  }));
-
-  return {
-    items,
-    total,
-    page,
-    limit,
-    pages: Math.ceil(total / limit) || 1,
-    cachedAt: cache.loadedAt
   };
 }
 

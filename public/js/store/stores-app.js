@@ -50,6 +50,9 @@
   };
   // Firebase ID token held only in page memory (never localStorage / URL).
   var firebaseAuthToken = '';
+  var checkoutLibsPromise = null;
+  var invoiceLibsPromise = null;
+  var softRefreshTimer = null;
 
   function setFirebaseIdToken(token) {
     firebaseAuthToken = String(token || '').trim();
@@ -58,6 +61,65 @@
 
   function getFirebaseIdToken() {
     return firebaseAuthToken || '';
+  }
+
+  function loadScriptOnce(src) {
+    return new Promise(function (resolve, reject) {
+      var existing = document.querySelector('script[data-dg-src="' + src + '"]');
+      if (existing) {
+        if (existing.getAttribute('data-dg-loaded') === '1') {
+          resolve();
+          return;
+        }
+        existing.addEventListener('load', function () { resolve(); });
+        existing.addEventListener('error', function () { reject(new Error('Failed to load ' + src)); });
+        return;
+      }
+      var script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      script.setAttribute('data-dg-src', src);
+      script.onload = function () {
+        script.setAttribute('data-dg-loaded', '1');
+        resolve();
+      };
+      script.onerror = function () { reject(new Error('Failed to load ' + src)); };
+      document.head.appendChild(script);
+    });
+  }
+
+  function ensureCheckoutLibs() {
+    if (window.DgRazorpayCheckout && window.DgStorePayment && window.DgFlutterNativeCheckout) {
+      return Promise.resolve();
+    }
+    if (checkoutLibsPromise) return checkoutLibsPromise;
+    checkoutLibsPromise = Promise.resolve()
+      .then(function () { return loadScriptOnce('/js/store/dg-flutter-native-checkout.js'); })
+      .then(function () { return loadScriptOnce('/js/store/dg-razorpay-checkout.js'); })
+      .then(function () { return loadScriptOnce('https://checkout.razorpay.com/v1/checkout.js'); })
+      .then(function () { return loadScriptOnce('/js/store/dg-store-payment.js'); })
+      .catch(function (err) {
+        checkoutLibsPromise = null;
+        throw err;
+      });
+    return checkoutLibsPromise;
+  }
+
+  function ensureInvoiceLibs() {
+    if (window.DgStoreInvoice && typeof html2pdf !== 'undefined') {
+      return Promise.resolve();
+    }
+    if (invoiceLibsPromise) return invoiceLibsPromise;
+    invoiceLibsPromise = Promise.resolve()
+      .then(function () {
+        return loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
+      })
+      .then(function () { return loadScriptOnce('/js/store/dg-store-invoice.js'); })
+      .catch(function (err) {
+        invoiceLibsPromise = null;
+        throw err;
+      });
+    return invoiceLibsPromise;
   }
 
   (function readConsultationContextFromUrl() {
@@ -595,8 +657,6 @@
 
   function productCardHtml(item, globalIdx) {
     var med = item;
-    var rating = getStaticRating(med.name);
-    var reviews = getReviewCount(med.name);
     var minP = minPrice(med);
     var weights = med.weights || [];
     var weightOptions = weights.map(function (w, i) {
@@ -618,10 +678,6 @@
       '<div class="product-body">' +
       (storeLabel ? '<span class="product-store">' + escapeHtml(storeLabel) + '</span>' : '') +
       '<h3 class="product-title" title="' + escapeHtml(med.name) + '"><a href="' + detailsHref + '" style="color:inherit;text-decoration:none;">' + escapeHtml(med.name) + '</a></h3>' +
-      '<p class="product-desc">' + escapeHtml(med.description || 'Authentic Ayurvedic formulation') + '</p>' +
-      '<div class="product-rating">' + renderStarsHtml(rating) +
-      '<span class="rating-num">' + rating + '</span>' +
-      '<span class="review-count">(' + reviews.toLocaleString() + ')</span></div>' +
       '<div class="product-price">₹<span class="price-from">' + minP + '</span>' +
       (weights.length > 1 ? '<span class="price-note"> onwards</span>' : '') + '</div>' +
       '<div class="product-prime"><i class="fas fa-truck"></i> DHEERGAYUSH Delivery</div>' +
@@ -879,48 +935,47 @@
   }
 
   async function loadLegacyFallback() {
-    try {
-      var fallback = await fetch('/data/medicine-catalog.json');
-      if (!fallback.ok) throw new Error('empty');
-      var legacyStores = (await fallback.json()).filter(function (s) {
-        return s && Array.isArray(s.medicines) && !isExcludedStoreName(s.name);
-      });
-      stores = mapStoreSummary(legacyStores);
-      products = [];
-      legacyStores.forEach(function (s) {
-        var brandKey = storeBrandKey(s.name);
-        (s.medicines || []).forEach(function (m) {
-          if (isExcludedProduct(m)) return;
-          var imageFile = m.imageFile || (m._id ? m._id + '.jpg' : '');
-          var imageUrl = m.imageUrl || (imageFile ? '/medicine-assets/' + encodeURIComponent(imageFile) : null);
-          products.push(Object.assign({}, m, {
-            imageFile: imageFile,
-            storeId: brandKey,
-            storeName: s.name,
-            company: m.company || m.brand || s.name,
-            category: m.category || (window.DgStoreCategories
-              ? DgStoreCategories.normalizeDepartment(m.category)
-              : m.category),
-            subCategory: m.subCategory || (window.DgStoreCategories
-              ? DgStoreCategories.classifyStoreSubcategory(m)
-              : ''),
-            imageUrl: imageUrl
-          }));
-        });
-      });
-      products = mergeProducts(products);
-      legacyMode = true;
-      legacyFiltered = filterLegacyProducts(products);
-      totalProducts = legacyFiltered.length;
-      products = [];
-      currentPage = 0;
-      hasMore = legacyFiltered.length > 0;
-      renderStoresStrip();
-      if (els.productGrid) els.productGrid.innerHTML = '';
-      appendLegacyPage();
-    } catch (err) {
-      els.productGrid.innerHTML = '<p class="empty-grid">Could not load store. Please ensure the server is running.</p>';
+    // Avoid downloading the full ~4MB catalog JSON for the store grid.
+    // Keep any already-painted cache/products and show a retry message.
+    if (products.length) {
+      if (els.loadSentinel) {
+        els.loadSentinel.style.display = 'block';
+        els.loadSentinel.innerHTML = 'Could not refresh catalog. Scroll or retry filters.';
+      }
+      return;
     }
+    if (els.productGrid) {
+      els.productGrid.innerHTML =
+        '<p class="empty-grid">Could not load store products. ' +
+        '<button type="button" class="dg-btn-outline" id="storeRetryLoad" style="margin-left:8px;">Retry</button></p>';
+      var retryBtn = document.getElementById('storeRetryLoad');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', function () {
+          loadStores();
+        });
+      }
+    }
+  }
+
+  async function softRefreshFirstPage() {
+    if (legacyMode || loading) return;
+    try {
+      currentPage = 1;
+      var res = await fetch('/api/medicines?' + apiQuery());
+      if (!res.ok) return;
+      var data = await res.json();
+      products = [];
+      if (els.productGrid) els.productGrid.innerHTML = '';
+      applyProductsPage(data);
+    } catch (_) { /* keep painted cache */ }
+  }
+
+  function scheduleSoftRefresh() {
+    if (softRefreshTimer) clearTimeout(softRefreshTimer);
+    softRefreshTimer = setTimeout(function () {
+      softRefreshTimer = null;
+      softRefreshFirstPage();
+    }, 1500);
   }
 
   async function loadTaxonomy() {
@@ -944,7 +999,11 @@
     totalProducts = 0;
     currentPage = 1;
     var renderedCached = renderCachedStore(readStoreCache());
-    if (!renderedCached && els.productGrid) els.productGrid.innerHTML = '';
+    if (renderedCached) {
+      scheduleSoftRefresh();
+      return;
+    }
+    if (els.productGrid) els.productGrid.innerHTML = '';
     fetchProductsPage(true);
   }
 
@@ -1145,21 +1204,34 @@
       var renderedCached = renderCachedStore(readStoreCache());
       if (!renderedCached && els.productGrid) els.productGrid.innerHTML = '';
 
-      // Catalog responses carry max-age + ETag; force-cache would pin stale product
-      // counts in the browser cache long after the catalog changes.
+      // Never fall back to /api/stores (full catalog ~4MB) for the brand strip.
       var fetchOpts = {};
-      var summaryPromise = fetch('/api/stores/summary', fetchOpts).catch(function () { return fetch('/api/stores', fetchOpts); });
-      var productsPromise = fetch('/api/medicines?' + apiQuery(), fetchOpts);
+      var summaryPromise = fetch('/api/stores/summary', fetchOpts);
+      var productsPromise = renderedCached ? null : fetch('/api/medicines?' + apiQuery(), fetchOpts);
 
-      var summaryRes = await summaryPromise;
-      if (!summaryRes.ok) throw new Error('fail');
-      var data = await summaryRes.json();
-      stores = mapStoreSummary(data);
-      if (!stores.length) throw new Error('empty');
-      renderStoresStrip();
+      try {
+        var summaryRes = await summaryPromise;
+        if (summaryRes.ok) {
+          stores = mapStoreSummary(await summaryRes.json());
+          renderStoresStrip();
+        } else if (!stores.length) {
+          stores = [];
+          renderStoresStrip();
+        }
+      } catch (_) {
+        if (!stores.length) {
+          stores = [];
+          renderStoresStrip();
+        }
+      }
+
+      if (renderedCached) {
+        scheduleSoftRefresh();
+        return;
+      }
 
       loading = true;
-      if (!renderedCached) setLoadingState(true);
+      setLoadingState(true);
       var productsRes = await productsPromise;
       if (!productsRes.ok) throw new Error('products fail');
       applyProductsPage(await productsRes.json());
@@ -1239,7 +1311,7 @@
     renderCart();
     showSection('cartSection');
   });
-  document.getElementById('checkoutBtn').addEventListener('click', function () {
+  document.getElementById('checkoutBtn').addEventListener('click', async function () {
     var totals = computeCartTotals();
     renderCheckoutSummary();
     els.paymentAmount.textContent = totals.total;
@@ -1248,6 +1320,16 @@
       els.checkoutStatus.textContent = '';
     }
     showSection('checkoutSection');
+    try {
+      setCheckoutStatus('Preparing secure checkout…', false);
+      await ensureCheckoutLibs();
+      if (els.checkoutStatus) {
+        els.checkoutStatus.style.display = 'none';
+        els.checkoutStatus.textContent = '';
+      }
+    } catch (err) {
+      setCheckoutStatus(err.message || 'Could not load payment libraries. Check your connection and try again.', true);
+    }
   });
 
   function setCheckoutStatus(msg, isError) {
@@ -1272,6 +1354,15 @@
     if (!/^\d{10}$/.test(phone)) { alert('Phone: 10 digits.'); return; }
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('Invalid email.'); return; }
     if (!/^[A-Za-z0-9 ,\.\-#]{10,}$/.test(address)) { alert('Address: min 10 characters.'); return; }
+    if (!window.DgRazorpayCheckout || !window.DgStorePayment) {
+      try {
+        setCheckoutStatus('Loading payment libraries…', false);
+        await ensureCheckoutLibs();
+      } catch (_) {
+        alert('Payment system failed to load. Refresh the page.');
+        return;
+      }
+    }
     if (!window.DgRazorpayCheckout || !window.DgStorePayment) {
       alert('Payment system failed to load. Refresh the page.');
       return;
@@ -1376,9 +1467,12 @@
       }
       els.successMessage.classList.add('show');
       setTimeout(function () { els.successMessage.classList.remove('show'); }, 4000);
-      if (window.DgStoreInvoice && DgStoreInvoice.download) {
+      if (lastInvoicePayload) {
         try {
-          await DgStoreInvoice.download(lastInvoicePayload);
+          await ensureInvoiceLibs();
+          if (window.DgStoreInvoice && DgStoreInvoice.download) {
+            await DgStoreInvoice.download(lastInvoicePayload);
+          }
         } catch (invoiceErr) {
           console.warn('Auto invoice download failed:', invoiceErr);
           setCheckoutStatus('Order paid. Use Download Invoice if the PDF did not start.', false);
@@ -1500,12 +1594,12 @@
         alert('No invoice available yet. Complete a paid order first.');
         return;
       }
-      if (!window.DgStoreInvoice || !DgStoreInvoice.download) {
-        alert('Invoice download is unavailable. Refresh the page and try again.');
-        return;
-      }
       els.downloadInvoiceBtn.disabled = true;
       try {
+        await ensureInvoiceLibs();
+        if (!window.DgStoreInvoice || !DgStoreInvoice.download) {
+          throw new Error('Invoice download is unavailable. Refresh the page and try again.');
+        }
         await DgStoreInvoice.download(lastInvoicePayload);
       } catch (err) {
         console.error(err);

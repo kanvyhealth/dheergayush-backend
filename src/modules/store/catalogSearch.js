@@ -95,6 +95,61 @@ function scoreMedicine(medicine, query) {
 
 const DEFAULT_MIN_SCORE = 0.42;
 
+/**
+ * Build a token → medicine-id set for fast candidate lookup.
+ * Tokens come from name/brand/company (not long descriptions).
+ */
+function buildSearchIndex(medicines) {
+  const tokenToIds = new Map();
+  const list = Array.isArray(medicines) ? medicines : [];
+
+  list.forEach((medicine) => {
+    const id = String(medicine._id || medicine.id || '');
+    if (!id) return;
+    const text = normalizeText(
+      [medicine.name, medicine.brand, medicine.company, medicine.storeName]
+        .filter(Boolean)
+        .join(' ')
+    );
+    const tokens = new Set(text.split(' ').filter((t) => t.length >= 2));
+    tokens.forEach((token) => {
+      if (!tokenToIds.has(token)) tokenToIds.set(token, new Set());
+      tokenToIds.get(token).add(id);
+      if (token.length >= 3) {
+        for (let len = 3; len <= Math.min(token.length, 8); len++) {
+          const prefix = token.slice(0, len);
+          if (!tokenToIds.has(prefix)) tokenToIds.set(prefix, new Set());
+          tokenToIds.get(prefix).add(id);
+        }
+      }
+    });
+  });
+
+  return { tokenToIds, size: list.length };
+}
+
+function candidateIdsFromIndex(index, query) {
+  if (!index || !index.tokenToIds) return null;
+  const q = normalizeText(query);
+  const queryTokens = q.split(' ').filter((t) => t.length >= 2);
+  if (!queryTokens.length) return null;
+
+  let intersection = null;
+  for (const token of queryTokens) {
+    let bucket = index.tokenToIds.get(token);
+    if (!bucket || !bucket.size) {
+      if (token.length >= 3) {
+        bucket = index.tokenToIds.get(token.slice(0, Math.min(token.length, 8)));
+      }
+      if (!bucket || !bucket.size) return new Set();
+    }
+    intersection = intersection
+      ? new Set([...intersection].filter((id) => bucket.has(id)))
+      : new Set(bucket);
+  }
+  return intersection || new Set();
+}
+
 function searchMedicines(medicines, query, options = {}) {
   const list = Array.isArray(medicines) ? medicines : [];
   const q = String(query || '').trim();
@@ -102,7 +157,16 @@ function searchMedicines(medicines, query, options = {}) {
 
   if (!q) return list.slice();
 
-  return list
+  let pool = list;
+  if (q.length >= 2 && options.index) {
+    const candidateIds = candidateIdsFromIndex(options.index, q);
+    if (candidateIds && candidateIds.size > 0) {
+      const narrowed = list.filter((m) => candidateIds.has(String(m._id || m.id || '')));
+      if (narrowed.length) pool = narrowed;
+    }
+  }
+
+  return pool
     .map((medicine) => ({ medicine, score: scoreMedicine(medicine, q) }))
     .filter((row) => row.score >= minScore)
     .sort((a, b) => b.score - a.score)
@@ -139,6 +203,7 @@ module.exports = {
   normalizeText,
   scoreMedicine,
   searchMedicines,
+  buildSearchIndex,
   matchText,
   filterByFields,
   DEFAULT_MIN_SCORE

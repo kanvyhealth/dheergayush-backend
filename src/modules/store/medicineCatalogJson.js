@@ -10,35 +10,68 @@ const { classifyStoreProduct, classifyStoreSubcategory } = require('./storeCateg
 
 const CATALOG_PATH = path.join(__dirname, '..', '..', '..', 'public', 'data', 'medicine-catalog.json');
 
+let catalogMemo = {
+  mtimeMs: 0,
+  size: 0,
+  medicines: null
+};
+
+function flattenCatalogStores(stores) {
+  const medicines = [];
+  stores.forEach((store) => {
+    if (!Array.isArray(store.medicines)) return;
+    const storeBrand = String(store.name || '').trim();
+    (store.medicines || []).forEach((med) => {
+      if (isExcludedMedicine({ ...med, storeName: storeBrand })) return;
+      if (!isValidAyurvedicProduct(med)) return;
+      const brand = String(med.brand || med.company || storeBrand || '').trim();
+      const classified = { ...med, storeName: storeBrand };
+      medicines.push({
+        ...med,
+        company: brand,
+        brand,
+        storeName: storeBrand,
+        storeId: store._id,
+        category: classifyStoreProduct(classified),
+        subCategory: classifyStoreSubcategory(classified)
+      });
+    });
+  });
+  return medicines;
+}
+
 function loadMedicineCatalogJson() {
   if (!fs.existsSync(CATALOG_PATH)) return [];
   try {
-    const stores = filterExcludedStores(JSON.parse(fs.readFileSync(CATALOG_PATH, 'utf8')));
-    if (!Array.isArray(stores)) return [];
-    const medicines = [];
-    stores.forEach((store) => {
-      if (!Array.isArray(store.medicines)) return;
-      const storeBrand = String(store.name || '').trim();
-      (store.medicines || []).forEach((med) => {
-        if (isExcludedMedicine({ ...med, storeName: storeBrand })) return;
-        if (!isValidAyurvedicProduct(med)) return;
-        const brand = String(med.brand || med.company || storeBrand || '').trim();
-        const classified = { ...med, storeName: storeBrand };
-        medicines.push({
-          ...med,
-          company: brand,
-          brand,
-          storeName: storeBrand,
-          storeId: store._id,
-          category: classifyStoreProduct(classified),
-          subCategory: classifyStoreSubcategory(classified)
-        });
-      });
-    });
+    const stat = fs.statSync(CATALOG_PATH);
+    if (
+      catalogMemo.medicines &&
+      catalogMemo.mtimeMs === stat.mtimeMs &&
+      catalogMemo.size === stat.size
+    ) {
+      return catalogMemo.medicines;
+    }
+
+    const parsed = JSON.parse(fs.readFileSync(CATALOG_PATH, 'utf8'));
+    const stores = filterExcludedStores(Array.isArray(parsed) ? parsed : []);
+    const medicines = flattenCatalogStores(stores);
+    catalogMemo = {
+      mtimeMs: stat.mtimeMs,
+      size: stat.size,
+      medicines
+    };
     return medicines;
   } catch (_) {
     return [];
   }
 }
 
-module.exports = { loadMedicineCatalogJson, CATALOG_PATH };
+function invalidateMedicineCatalogJsonMemo() {
+  catalogMemo = { mtimeMs: 0, size: 0, medicines: null };
+}
+
+module.exports = {
+  loadMedicineCatalogJson,
+  CATALOG_PATH,
+  invalidateMedicineCatalogJsonMemo
+};

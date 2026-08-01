@@ -1344,7 +1344,7 @@ async function bootstrap() {
             await ensureDoctorPublicId(doctor);
         }
         console.log('✅ Firebase catalog ready (medicines, doctors, users)');
-        warmCatalogCache().catch(() => {});
+        await warmCatalogCache();
         await validateRazorpayOnStartup();
     } catch (err) {
         const credentialHint =
@@ -2122,9 +2122,9 @@ async function startServer(app) {
     for (const doctor of approvedDoctors) {
       await ensureDoctorPublicId(doctor);
     }
-    console.log('Firebase catalog ready (medicines, doctors, users)');
-    warmCatalogCache().catch(() => {});
-    await validateRazorpayOnStartup();
+        console.log('Firebase catalog ready (medicines, doctors, users)');
+        await warmCatalogCache();
+        await validateRazorpayOnStartup();
   } catch (err) {
     console.error('Firebase startup sync skipped:', err.message);
     console.warn('Static website pages will still run; API/Firestore routes may return 503 until credentials are set.');
