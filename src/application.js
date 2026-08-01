@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const compression = require('compression');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
@@ -333,6 +334,7 @@ app.get('/stores.html', (req, res) => {
 });
 
 applySecurityMiddleware(app);
+app.use(compression());
 app.use(cors(getCorsOptions()));
 app.use(bodyParser.json({ limit: '2mb' }));
 app.use(globalLimiter);
@@ -355,7 +357,19 @@ app.use((req, res, next) => {
   return next();
 });
 app.use('/uploads', express.static(path.join(ROOT_DIR, 'uploads')));
-app.use('/medicine-assets', express.static(path.join(ROOT_DIR, 'medicine', 'medicine'), {
+{
+  const { createMedicineThumbHandler } = require('./modules/store/medicineAssetThumbs');
+  const medicineSourceDir = path.resolve(ROOT_DIR, 'medicine', 'medicine');
+  const medicineThumbCacheDir = path.resolve(ROOT_DIR, 'medicine', '.thumbs');
+  app.get(
+    '/medicine-thumbs/:width/:file',
+    createMedicineThumbHandler({
+      sourceDir: medicineSourceDir,
+      cacheDir: medicineThumbCacheDir
+    })
+  );
+}
+app.use('/medicine-assets', express.static(path.resolve(ROOT_DIR, 'medicine', 'medicine'), {
   maxAge: '365d',
   immutable: true,
   etag: true

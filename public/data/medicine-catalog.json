@@ -66773,7 +66773,7 @@
       {
         "_id": "pn-himalayan-pink-crystal-salt",
         "name": "Himalayan Pink Crystal Salt",
-        "imageFile": "",
+        "imageFile": "pn-himalayan-pink-crystal-salt.png",
         "description": "Himalayan Pink Crystal Salt is naturally harvested and rich in essential minerals, ideal for cooking and seasoning.",
         "category": "Organic Foods",
         "brand": "Pernati Naturals",
@@ -66906,7 +66906,7 @@
       {
         "_id": "pn-red-poha",
         "name": "Red Poha",
-        "imageFile": "",
+        "imageFile": "pn-red-poha.png",
         "description": "Red poha made from whole grain rice, rich in nutrients and ideal for healthy meals.",
         "category": "Organic Foods",
         "brand": "Pernati Naturals",
@@ -66934,7 +66934,7 @@
           {
             "value": 500,
             "unit": "gm",
-            "price": 90,
+            "price": 135,
             "pack_label": "500gm Pack",
             "variant_id": "PN-BTM-500GM"
           }
@@ -67029,7 +67029,7 @@
           {
             "value": 500,
             "unit": "gm",
-            "price": 90,
+            "price": 135,
             "pack_label": "500gm Pack",
             "variant_id": "PN-BYM-500GM"
           }
@@ -67160,30 +67160,30 @@
         "company": "Pernati Naturals",
         "weights": [
           {
-            "value": 250,
+            "value": 500,
             "unit": "gm",
-            "price": 250,
-            "pack_label": "250gm Pack",
-            "variant_id": "PN-ALM-250GM"
+            "price": 1030,
+            "pack_label": "500gm Pack",
+            "variant_id": "PN-ALM-500GM"
           }
         ],
-        "subCategory": "Packaged Foods"
+        "subCategory": "Nuts and Dry Fruits"
       },
       {
         "_id": "pn-cashew-nuts",
         "name": "Cashew Nuts",
-        "imageFile": "",
+        "imageFile": "pn-cashew-nuts.png",
         "description": "",
         "category": "Organic Foods",
         "brand": "Pernati Naturals",
         "company": "Pernati Naturals",
         "weights": [
           {
-            "value": 250,
+            "value": 500,
             "unit": "gm",
-            "price": 280,
-            "pack_label": "250gm Pack",
-            "variant_id": "PN-CN-250GM"
+            "price": 1500,
+            "pack_label": "500gm Pack",
+            "variant_id": "PN-CN-500GM"
           }
         ],
         "subCategory": "Nuts and Dry Fruits"
@@ -67200,7 +67200,7 @@
           {
             "value": 250,
             "unit": "gm",
-            "price": 180,
+            "price": 340,
             "pack_label": "250gm Pack",
             "variant_id": "PN-BR-250GM"
           }
@@ -67217,14 +67217,1743 @@
         "company": "Pernati Naturals",
         "weights": [
           {
-            "value": 500,
-            "unit": "gm",
-            "price": 60,
-            "pack_label": "500gm Pack",
-            "variant_id": "PN-BWR-500GM"
+            "value": 1,
+            "unit": "kg",
+            "price": 107,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-BWR-1KG"
           }
         ],
         "subCategory": "Flours and Ravva"
+      },
+      {
+        "_id": "pn-brown-sugar",
+        "name": "Brown Sugar",
+        "imageFile": "pn-brown-sugar.png",
+        "description": "Brown Sugar from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 120,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-BROWN-SUGAR-1KG"
+          }
+        ],
+        "subCategory": "Salts and Sugars"
+      },
+      {
+        "_id": "pn-tamarind",
+        "name": "Tamarind",
+        "imageFile": "pn-tamarind.png",
+        "description": "Tamarind from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 500,
+            "unit": "gm",
+            "price": 515,
+            "pack_label": "500gm Pack",
+            "variant_id": "PN-TAMARIND-500GM"
+          }
+        ],
+        "subCategory": "Spices and Masalas"
+      },
+      {
+        "_id": "pn-tirgamata-vadiyam",
+        "name": "Tirgamata Vadiyam",
+        "imageFile": "pn-tirgamata-vadiyam.png",
+        "description": "Tirgamata Vadiyam from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 2,
+            "unit": "pcs",
+            "price": 290,
+            "pack_label": "2 pcs",
+            "variant_id": "PN-TIRGAMATA-VADIYAM-2PCS"
+          }
+        ],
+        "subCategory": "Spices and Masalas"
+      },
+      {
+        "_id": "pn-turmeric-komulu",
+        "name": "Turmeric Komulu",
+        "imageFile": "pn-turmeric-komulu.png",
+        "description": "Turmeric Komulu from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 500,
+            "unit": "gm",
+            "price": 550,
+            "pack_label": "500gm Pack",
+            "variant_id": "PN-TURMERIC-KOMULU-500GM"
+          }
+        ],
+        "subCategory": "Spices and Masalas"
+      },
+      {
+        "_id": "pn-turmeric-powder",
+        "name": "Turmeric Powder",
+        "imageFile": "pn-turmeric-powder.png",
+        "description": "Turmeric Powder from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 310,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-TURMERIC-POWDER-1KG"
+          }
+        ],
+        "subCategory": "Spices and Masalas"
+      },
+      {
+        "_id": "pn-channa-dal-roasted",
+        "name": "Channa Dal Roasted",
+        "imageFile": "pn-channa-dal-roasted.png",
+        "description": "Channa Dal Roasted from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 125,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-CHANNA-DAL-ROASTED-1KG"
+          }
+        ],
+        "subCategory": "Pulses"
+      },
+      {
+        "_id": "pn-chickpea-black",
+        "name": "Chickpea Black",
+        "imageFile": "pn-chickpea-black.png",
+        "description": "Chickpea Black from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "unit",
+            "price": 380,
+            "pack_label": "1 unit",
+            "variant_id": "PN-CHICKPEA-BLACK-1UNIT"
+          }
+        ],
+        "subCategory": "Pulses"
+      },
+      {
+        "_id": "pn-chickpea-white-kaboli",
+        "name": "Chickpea White (Kaboli)",
+        "imageFile": "pn-chickpea-white-kaboli.png",
+        "description": "Chickpea White (Kaboli) from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "unit",
+            "price": 400,
+            "pack_label": "1 unit",
+            "variant_id": "PN-CHICKPEA-WHITE-KABOLI-1UNIT"
+          }
+        ],
+        "subCategory": "Pulses"
+      },
+      {
+        "_id": "pn-masoor-dal-1kg",
+        "name": "Masoor Dal 1kg",
+        "imageFile": "pn-masoor-dal-1kg.png",
+        "description": "Masoor Dal 1kg from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 360,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-MASOOR-DAL-1KG-1KG"
+          }
+        ],
+        "subCategory": "Pulses"
+      },
+      {
+        "_id": "pn-mix-dal",
+        "name": "Mix Dal",
+        "imageFile": "pn-mix-dal.png",
+        "description": "Mix Dal from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 300,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-MIX-DAL-1KG"
+          }
+        ],
+        "subCategory": "Pulses"
+      },
+      {
+        "_id": "pn-moong-dal",
+        "name": "Moong Dal",
+        "imageFile": "pn-moong-dal.png",
+        "description": "Moong Dal from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 350,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-MOONG-DAL-1KG"
+          }
+        ],
+        "subCategory": "Pulses"
+      },
+      {
+        "_id": "pn-peanuts",
+        "name": "Peanuts",
+        "imageFile": "pn-peanuts.png",
+        "description": "Peanuts from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 300,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-PEANUTS-1KG"
+          }
+        ],
+        "subCategory": "Pulses"
+      },
+      {
+        "_id": "pn-rajma-red",
+        "name": "Rajma Red",
+        "imageFile": "pn-rajma-red.png",
+        "description": "Rajma Red from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 400,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-RAJMA-RED-1KG"
+          }
+        ],
+        "subCategory": "Pulses"
+      },
+      {
+        "_id": "pn-rajma-white",
+        "name": "Rajma White",
+        "imageFile": "pn-rajma-white.png",
+        "description": "Rajma White from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 210,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-RAJMA-WHITE-1KG"
+          }
+        ],
+        "subCategory": "Pulses"
+      },
+      {
+        "_id": "pn-sesame-black",
+        "name": "Sesame Black",
+        "imageFile": "pn-sesame-black.png",
+        "description": "Sesame Black from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 135,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-SESAME-BLACK-1KG"
+          }
+        ],
+        "subCategory": "Pulses"
+      },
+      {
+        "_id": "pn-sesame-white",
+        "name": "Sesame White",
+        "imageFile": "pn-sesame-white.png",
+        "description": "Sesame White from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 200,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-SESAME-WHITE-1KG"
+          }
+        ],
+        "subCategory": "Pulses"
+      },
+      {
+        "_id": "pn-soyabean-500g",
+        "name": "Soyabean 500g",
+        "imageFile": "",
+        "description": "Soyabean 500g from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 500,
+            "unit": "gm",
+            "price": 128,
+            "pack_label": "500gm Pack",
+            "variant_id": "PN-SOYABEAN-500G-500GM"
+          }
+        ],
+        "subCategory": "Pulses"
+      },
+      {
+        "_id": "pn-toor-dal",
+        "name": "Toor Dal",
+        "imageFile": "pn-toor-dal.png",
+        "description": "Toor Dal from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 374,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-TOOR-DAL-1KG"
+          }
+        ],
+        "subCategory": "Pulses"
+      },
+      {
+        "_id": "pn-ulavalu",
+        "name": "Ulavalu",
+        "imageFile": "pn-ulavalu.png",
+        "description": "Ulavalu from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 143,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-ULAVALU-1KG"
+          }
+        ],
+        "subCategory": "Pulses"
+      },
+      {
+        "_id": "pn-urad-dal",
+        "name": "Urad Dal",
+        "imageFile": "pn-urad-dal.png",
+        "description": "Urad Dal from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 315,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-URAD-DAL-1KG"
+          }
+        ],
+        "subCategory": "Pulses"
+      },
+      {
+        "_id": "pn-chia-seeds",
+        "name": "Chia Seeds",
+        "imageFile": "pn-chia-seeds.png",
+        "description": "Chia Seeds from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 250,
+            "unit": "gm",
+            "price": 535,
+            "pack_label": "250gm Pack",
+            "variant_id": "PN-CHIA-SEEDS-250GM"
+          }
+        ],
+        "subCategory": "Nuts and Dry Fruits"
+      },
+      {
+        "_id": "pn-dry-fig",
+        "name": "Dry Fig",
+        "imageFile": "pn-dry-fig.webp",
+        "description": "Dry Fig from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 100,
+            "unit": "gm",
+            "price": 370,
+            "pack_label": "100gm Pack",
+            "variant_id": "PN-DRY-FIG-100GM"
+          }
+        ],
+        "subCategory": "Nuts and Dry Fruits"
+      },
+      {
+        "_id": "pn-flax-seeds",
+        "name": "Flax Seeds",
+        "imageFile": "pn-flax-seeds.png",
+        "description": "Flax Seeds from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 250,
+            "unit": "gm",
+            "price": 220,
+            "pack_label": "250gm Pack",
+            "variant_id": "PN-FLAX-SEEDS-250GM"
+          }
+        ],
+        "subCategory": "Nuts and Dry Fruits"
+      },
+      {
+        "_id": "pn-kismis",
+        "name": "Kismis",
+        "imageFile": "pn-kismis.png",
+        "description": "Kismis from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 250,
+            "unit": "gm",
+            "price": 370,
+            "pack_label": "250gm Pack",
+            "variant_id": "PN-KISMIS-250GM"
+          }
+        ],
+        "subCategory": "Nuts and Dry Fruits"
+      },
+      {
+        "_id": "pn-organic-almonds",
+        "name": "Organic Almonds",
+        "imageFile": "pn-organic-almonds.png",
+        "description": "Organic Almonds from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 250,
+            "unit": "gm",
+            "price": 500,
+            "pack_label": "250gm Pack",
+            "variant_id": "PN-ORGANIC-ALMONDS-250GM"
+          }
+        ],
+        "subCategory": "Nuts and Dry Fruits"
+      },
+      {
+        "_id": "pn-pista",
+        "name": "Pista",
+        "imageFile": "pn-pista.png",
+        "description": "Pista from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 250,
+            "unit": "gm",
+            "price": 590,
+            "pack_label": "250gm Pack",
+            "variant_id": "PN-PISTA-250GM"
+          }
+        ],
+        "subCategory": "Nuts and Dry Fruits"
+      },
+      {
+        "_id": "pn-pumpkin-seeds",
+        "name": "Pumpkin Seeds",
+        "imageFile": "pn-pumpkin-seeds.png",
+        "description": "Pumpkin Seeds from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 200,
+            "unit": "gm",
+            "price": 345,
+            "pack_label": "200gm Pack",
+            "variant_id": "PN-PUMPKIN-SEEDS-200GM"
+          }
+        ],
+        "subCategory": "Nuts and Dry Fruits"
+      },
+      {
+        "_id": "pn-sabja-seeds",
+        "name": "Sabja Seeds",
+        "imageFile": "pn-sabja-seeds.png",
+        "description": "Sabja Seeds from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 100,
+            "unit": "gm",
+            "price": 105,
+            "pack_label": "100gm Pack",
+            "variant_id": "PN-SABJA-SEEDS-100GM"
+          }
+        ],
+        "subCategory": "Nuts and Dry Fruits"
+      },
+      {
+        "_id": "pn-sunflower-seeds",
+        "name": "Sunflower Seeds",
+        "imageFile": "pn-sunflower-seeds.png",
+        "description": "Sunflower Seeds from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 250,
+            "unit": "gm",
+            "price": 255,
+            "pack_label": "250gm Pack",
+            "variant_id": "PN-SUNFLOWER-SEEDS-250GM"
+          }
+        ],
+        "subCategory": "Nuts and Dry Fruits"
+      },
+      {
+        "_id": "pn-walnuts",
+        "name": "Walnuts",
+        "imageFile": "pn-walnuts.jpg",
+        "description": "Walnuts from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 200,
+            "unit": "gm",
+            "price": 500,
+            "pack_label": "200gm Pack",
+            "variant_id": "PN-WALNUTS-200GM"
+          }
+        ],
+        "subCategory": "Nuts and Dry Fruits"
+      },
+      {
+        "_id": "pn-watermelon-seeds",
+        "name": "Watermelon Seeds",
+        "imageFile": "pn-watermelon-seeds.png",
+        "description": "Watermelon Seeds from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 250,
+            "unit": "gm",
+            "price": 535,
+            "pack_label": "250gm Pack",
+            "variant_id": "PN-WATERMELON-SEEDS-250GM"
+          }
+        ],
+        "subCategory": "Nuts and Dry Fruits"
+      },
+      {
+        "_id": "pn-channa-besan-flour-1kg",
+        "name": "Channa Besan Flour 1kg",
+        "imageFile": "pn-channa-besan-flour-1kg.jpg",
+        "description": "Channa Besan Flour 1kg from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 290,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-CHANNA-BESAN-FLOUR-1KG-1KG"
+          }
+        ],
+        "subCategory": "Flours and Ravva"
+      },
+      {
+        "_id": "pn-idly-ravva",
+        "name": "Idly Ravva",
+        "imageFile": "pn-idly-ravva.png",
+        "description": "Idly Ravva from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 175,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-IDLY-RAVVA-1KG"
+          }
+        ],
+        "subCategory": "Flours and Ravva"
+      },
+      {
+        "_id": "pn-jonna-flour",
+        "name": "Jonna Flour",
+        "imageFile": "pn-jonna-flour.png",
+        "description": "Jonna Flour from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 220,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-JONNA-FLOUR-1KG"
+          }
+        ],
+        "subCategory": "Flours and Ravva"
+      },
+      {
+        "_id": "pn-jonna-ravva",
+        "name": "Jonna Ravva",
+        "imageFile": "pn-jonna-ravva.png",
+        "description": "Jonna Ravva from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 220,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-JONNA-RAVVA-1KG"
+          }
+        ],
+        "subCategory": "Flours and Ravva"
+      },
+      {
+        "_id": "pn-multi-grain-atta",
+        "name": "Multi Grain Atta",
+        "imageFile": "pn-multi-grain-atta.png",
+        "description": "Multi Grain Atta from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 245,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-MULTI-GRAIN-ATTA-1KG"
+          }
+        ],
+        "subCategory": "Flours and Ravva"
+      },
+      {
+        "_id": "pn-ragi-flour",
+        "name": "Ragi Flour",
+        "imageFile": "pn-ragi-flour.png",
+        "description": "Ragi Flour from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 240,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-RAGI-FLOUR-1KG"
+          }
+        ],
+        "subCategory": "Flours and Ravva"
+      },
+      {
+        "_id": "pn-ragi-ravva-1kg",
+        "name": "Ragi Ravva 1kg",
+        "imageFile": "pn-ragi-ravva-1kg.png",
+        "description": "Ragi Ravva 1kg from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 220,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-RAGI-RAVVA-1KG-1KG"
+          }
+        ],
+        "subCategory": "Flours and Ravva"
+      },
+      {
+        "_id": "pn-rice-flour",
+        "name": "Rice Flour",
+        "imageFile": "pn-rice-flour.png",
+        "description": "Rice Flour from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 200,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-RICE-FLOUR-1KG"
+          }
+        ],
+        "subCategory": "Flours and Ravva"
+      },
+      {
+        "_id": "pn-sajja-flour",
+        "name": "Sajja Flour",
+        "imageFile": "pn-sajja-flour.png",
+        "description": "Sajja Flour from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 220,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-SAJJA-FLOUR-1KG"
+          }
+        ],
+        "subCategory": "Flours and Ravva"
+      },
+      {
+        "_id": "pn-sooji-ravva",
+        "name": "Sooji Ravva",
+        "imageFile": "pn-sooji-ravva.png",
+        "description": "Sooji Ravva from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 200,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-SOOJI-RAVVA-1KG"
+          }
+        ],
+        "subCategory": "Flours and Ravva"
+      },
+      {
+        "_id": "pn-sprouted-and-roasted-ragi-flour",
+        "name": "Sprouted And Roasted Ragi Flour",
+        "imageFile": "pn-sprouted-and-roasted-ragi-flour.png",
+        "description": "Sprouted And Roasted Ragi Flour from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 300,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-SPROUTED-AND-ROASTED-RAGI-FL-1KG"
+          }
+        ],
+        "subCategory": "Flours and Ravva"
+      },
+      {
+        "_id": "pn-wheat-ravva",
+        "name": "Wheat Ravva",
+        "imageFile": "pn-wheat-ravva.png",
+        "description": "Wheat Ravva from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 220,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-WHEAT-RAVVA-1KG"
+          }
+        ],
+        "subCategory": "Flours and Ravva"
+      },
+      {
+        "_id": "pn-whole-wheat-atta",
+        "name": "Whole Wheat Atta",
+        "imageFile": "pn-whole-wheat-atta.png",
+        "description": "Whole Wheat Atta from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 200,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-WHOLE-WHEAT-ATTA-1KG"
+          }
+        ],
+        "subCategory": "Flours and Ravva"
+      },
+      {
+        "_id": "pn-ajwain",
+        "name": "Ajwain",
+        "imageFile": "pn-ajwain.png",
+        "description": "Ajwain from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 330,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-AJWAIN-1KG"
+          }
+        ],
+        "subCategory": "Spices and Masalas"
+      },
+      {
+        "_id": "pn-bay-leaves",
+        "name": "Bay Leaves",
+        "imageFile": "pn-bay-leaves.png",
+        "description": "Bay Leaves from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 460,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-BAY-LEAVES-1KG"
+          }
+        ],
+        "subCategory": "Spices and Masalas"
+      },
+      {
+        "_id": "pn-black-pepper",
+        "name": "Black Pepper",
+        "imageFile": "pn-black-pepper.png",
+        "description": "Black Pepper from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 230,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-BLACK-PEPPER-1KG"
+          }
+        ],
+        "subCategory": "Spices and Masalas"
+      },
+      {
+        "_id": "pn-cinnamon-powder",
+        "name": "Cinnamon Powder",
+        "imageFile": "pn-cinnamon-powder.png",
+        "description": "Cinnamon Powder from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 200,
+            "unit": "gm",
+            "price": 560,
+            "pack_label": "200gm Pack",
+            "variant_id": "PN-CINNAMON-POWDER-200GM"
+          }
+        ],
+        "subCategory": "Spices and Masalas"
+      },
+      {
+        "_id": "pn-cinnamon",
+        "name": "Cinnamon",
+        "imageFile": "pn-cinnamon.webp",
+        "description": "Cinnamon from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "unit",
+            "price": 230,
+            "pack_label": "1 unit",
+            "variant_id": "PN-CINNAMON-1UNIT"
+          }
+        ],
+        "subCategory": "Spices and Masalas"
+      },
+      {
+        "_id": "pn-cloves",
+        "name": "Cloves",
+        "imageFile": "pn-cloves.png",
+        "description": "Cloves from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 225,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-CLOVES-1KG"
+          }
+        ],
+        "subCategory": "Spices and Masalas"
+      },
+      {
+        "_id": "pn-cumin",
+        "name": "Cumin",
+        "imageFile": "pn-cumin.png",
+        "description": "Cumin from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 420,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-CUMIN-1KG"
+          }
+        ],
+        "subCategory": "Spices and Masalas"
+      },
+      {
+        "_id": "pn-cumin-powder",
+        "name": "Cumin Powder",
+        "imageFile": "pn-cumin-powder.png",
+        "description": "Cumin Powder from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 235,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-CUMIN-POWDER-1KG"
+          }
+        ],
+        "subCategory": "Spices and Masalas"
+      },
+      {
+        "_id": "pn-elachi",
+        "name": "Elachi",
+        "imageFile": "pn-elachi.png",
+        "description": "Elachi from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 335,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-ELACHI-1KG"
+          }
+        ],
+        "subCategory": "Spices and Masalas"
+      },
+      {
+        "_id": "pn-fenugreek",
+        "name": "Fenugreek",
+        "imageFile": "pn-fenugreek.png",
+        "description": "Fenugreek from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 170,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-FENUGREEK-1KG"
+          }
+        ],
+        "subCategory": "Spices and Masalas"
+      },
+      {
+        "_id": "pn-nutmeg",
+        "name": "Nutmeg",
+        "imageFile": "pn-nutmeg.png",
+        "description": "Nutmeg from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "unit",
+            "price": 335,
+            "pack_label": "1 unit",
+            "variant_id": "PN-NUTMEG-1UNIT"
+          }
+        ],
+        "subCategory": "Spices and Masalas"
+      },
+      {
+        "_id": "pn-pepper-powder",
+        "name": "Pepper Powder",
+        "imageFile": "pn-pepper-powder.png",
+        "description": "Pepper Powder from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 175,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-PEPPER-POWDER-1KG"
+          }
+        ],
+        "subCategory": "Spices and Masalas"
+      },
+      {
+        "_id": "pn-star-anise",
+        "name": "Star Anise",
+        "imageFile": "pn-star-anise.png",
+        "description": "Star Anise from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 230,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-STAR-ANISE-1KG"
+          }
+        ],
+        "subCategory": "Spices and Masalas"
+      },
+      {
+        "_id": "pn-basmati-rice",
+        "name": "Basmati Rice",
+        "imageFile": "pn-basmati-rice.png",
+        "description": "Basmati Rice from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 285,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-BASMATI-RICE-1KG"
+          }
+        ],
+        "subCategory": "Rice"
+      },
+      {
+        "_id": "pn-brown-rice",
+        "name": "Brown Rice",
+        "imageFile": "pn-brown-rice.png",
+        "description": "Brown Rice from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 150,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-BROWN-RICE-1KG"
+          }
+        ],
+        "subCategory": "Rice"
+      },
+      {
+        "_id": "pn-chitti-mutyalu",
+        "name": "Chitti Mutyalu",
+        "imageFile": "pn-chitti-mutyalu.png",
+        "description": "Chitti Mutyalu from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "unit",
+            "price": 235,
+            "pack_label": "1 unit",
+            "variant_id": "PN-CHITTI-MUTYALU-1UNIT"
+          }
+        ],
+        "subCategory": "Rice"
+      },
+      {
+        "_id": "pn-khala-batti-rice",
+        "name": "Khala Batti Rice",
+        "imageFile": "pn-khala-batti-rice.png",
+        "description": "Khala Batti Rice from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 270,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-KHALA-BATTI-RICE-1KG"
+          }
+        ],
+        "subCategory": "Rice"
+      },
+      {
+        "_id": "pn-mysore-malliga",
+        "name": "Mysore Malliga",
+        "imageFile": "pn-mysore-malliga.png",
+        "description": "Mysore Malliga from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "unit",
+            "price": 160,
+            "pack_label": "1 unit",
+            "variant_id": "PN-MYSORE-MALLIGA-1UNIT"
+          }
+        ],
+        "subCategory": "Rice"
+      },
+      {
+        "_id": "pn-navara-rice",
+        "name": "Navara Rice",
+        "imageFile": "pn-navara-rice.png",
+        "description": "Navara Rice from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 250,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-NAVARA-RICE-1KG"
+          }
+        ],
+        "subCategory": "Rice"
+      },
+      {
+        "_id": "pn-single-polish-sona",
+        "name": "Single Polish Sona",
+        "imageFile": "pn-single-polish-sona.png",
+        "description": "Single Polish Sona from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "unit",
+            "price": 150,
+            "pack_label": "1 unit",
+            "variant_id": "PN-SINGLE-POLISH-SONA-1UNIT"
+          }
+        ],
+        "subCategory": "Rice"
+      },
+      {
+        "_id": "pn-sona-masoori",
+        "name": "Sona Masoori",
+        "imageFile": "pn-sona-masoori.png",
+        "description": "Sona Masoori from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 150,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-SONA-MASOORI-1KG"
+          }
+        ],
+        "subCategory": "Rice"
+      },
+      {
+        "_id": "pn-arikalu",
+        "name": "Arikalu",
+        "imageFile": "pn-arikalu.png",
+        "description": "Arikalu from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "unit",
+            "price": 130,
+            "pack_label": "1 unit",
+            "variant_id": "PN-ARIKALU-1UNIT"
+          }
+        ],
+        "subCategory": "Millets"
+      },
+      {
+        "_id": "pn-jonnalu",
+        "name": "Jonnalu",
+        "imageFile": "pn-jonnalu.png",
+        "description": "Jonnalu from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "unit",
+            "price": 115,
+            "pack_label": "1 unit",
+            "variant_id": "PN-JONNALU-1UNIT"
+          }
+        ],
+        "subCategory": "Millets"
+      },
+      {
+        "_id": "pn-korralu",
+        "name": "Korralu",
+        "imageFile": "pn-korralu.png",
+        "description": "Korralu from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "unit",
+            "price": 135,
+            "pack_label": "1 unit",
+            "variant_id": "PN-KORRALU-1UNIT"
+          }
+        ],
+        "subCategory": "Millets"
+      },
+      {
+        "_id": "pn-quinoa",
+        "name": "Quinoa",
+        "imageFile": "pn-quinoa.png",
+        "description": "Quinoa from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kg",
+            "price": 250,
+            "pack_label": "1kg Pack",
+            "variant_id": "PN-QUINOA-1KG"
+          }
+        ],
+        "subCategory": "Millets"
+      },
+      {
+        "_id": "pn-ragulu",
+        "name": "Ragulu",
+        "imageFile": "pn-ragulu.png",
+        "description": "Ragulu from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "unit",
+            "price": 115,
+            "pack_label": "1 unit",
+            "variant_id": "PN-RAGULU-1UNIT"
+          }
+        ],
+        "subCategory": "Millets"
+      },
+      {
+        "_id": "pn-saamalu",
+        "name": "Saamalu",
+        "imageFile": "pn-saamalu.png",
+        "description": "Saamalu from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "unit",
+            "price": 130,
+            "pack_label": "1 unit",
+            "variant_id": "PN-SAAMALU-1UNIT"
+          }
+        ],
+        "subCategory": "Millets"
+      },
+      {
+        "_id": "pn-sajjalu",
+        "name": "Sajjalu",
+        "imageFile": "pn-sajjalu.png",
+        "description": "Sajjalu from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "unit",
+            "price": 115,
+            "pack_label": "1 unit",
+            "variant_id": "PN-SAJJALU-1UNIT"
+          }
+        ],
+        "subCategory": "Millets"
+      },
+      {
+        "_id": "pn-bare-honey",
+        "name": "Bare Honey",
+        "imageFile": "pn-bare-honey.webp",
+        "description": "Bare Honey from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 500,
+            "unit": "gm",
+            "price": 600,
+            "pack_label": "500gm Pack",
+            "variant_id": "PN-BARE-HONEY-500GM"
+          }
+        ],
+        "subCategory": "Honey"
+      },
+      {
+        "_id": "pn-carom-honey",
+        "name": "Carom Honey",
+        "imageFile": "pn-carom-honey.webp",
+        "description": "Carom Honey from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 500,
+            "unit": "gm",
+            "price": 600,
+            "pack_label": "500gm Pack",
+            "variant_id": "PN-CAROM-HONEY-500GM"
+          }
+        ],
+        "subCategory": "Honey"
+      },
+      {
+        "_id": "pn-coriander-honey",
+        "name": "Coriander Honey",
+        "imageFile": "pn-coriander-honey.webp",
+        "description": "Coriander Honey from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 500,
+            "unit": "gm",
+            "price": 600,
+            "pack_label": "500gm Pack",
+            "variant_id": "PN-CORIANDER-HONEY-500GM"
+          }
+        ],
+        "subCategory": "Honey"
+      },
+      {
+        "_id": "pn-eucalyptus-honey",
+        "name": "Eucalyptus Honey",
+        "imageFile": "pn-eucalyptus-honey.webp",
+        "description": "Eucalyptus Honey from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 500,
+            "unit": "gm",
+            "price": 650,
+            "pack_label": "500gm Pack",
+            "variant_id": "PN-EUCALYPTUS-HONEY-500GM"
+          }
+        ],
+        "subCategory": "Honey"
+      },
+      {
+        "_id": "pn-jamun-honey",
+        "name": "Jamun Honey",
+        "imageFile": "pn-jamun-honey.webp",
+        "description": "Jamun Honey from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 500,
+            "unit": "gm",
+            "price": 650,
+            "pack_label": "500gm Pack",
+            "variant_id": "PN-JAMUN-HONEY-500GM"
+          }
+        ],
+        "subCategory": "Honey"
+      },
+      {
+        "_id": "pn-kashmiri-kikar-honey",
+        "name": "Kashmiri Kikar Honey",
+        "imageFile": "pn-kashmiri-kikar-honey.webp",
+        "description": "Kashmiri Kikar Honey from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 500,
+            "unit": "gm",
+            "price": 750,
+            "pack_label": "500gm Pack",
+            "variant_id": "PN-KASHMIRI-KIKAR-HONEY-500GM"
+          }
+        ],
+        "subCategory": "Honey"
+      },
+      {
+        "_id": "pn-mustard-honey",
+        "name": "Mustard Honey",
+        "imageFile": "pn-mustard-honey.webp",
+        "description": "Mustard Honey from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 500,
+            "unit": "gm",
+            "price": 600,
+            "pack_label": "500gm Pack",
+            "variant_id": "PN-MUSTARD-HONEY-500GM"
+          }
+        ],
+        "subCategory": "Honey"
+      },
+      {
+        "_id": "pn-sesame-honey",
+        "name": "Sesame Honey",
+        "imageFile": "pn-sesame-honey.webp",
+        "description": "Sesame Honey from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 500,
+            "unit": "gm",
+            "price": 650,
+            "pack_label": "500gm Pack",
+            "variant_id": "PN-SESAME-HONEY-500GM"
+          }
+        ],
+        "subCategory": "Honey"
+      },
+      {
+        "_id": "pn-wild-honey",
+        "name": "Wild Honey",
+        "imageFile": "pn-wild-honey.webp",
+        "description": "Wild Honey from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 500,
+            "unit": "gm",
+            "price": 600,
+            "pack_label": "500gm Pack",
+            "variant_id": "PN-WILD-HONEY-500GM"
+          }
+        ],
+        "subCategory": "Honey"
+      },
+      {
+        "_id": "pn-amla-pickle",
+        "name": "Amla Pickle",
+        "imageFile": "pn-amla-pickle.webp",
+        "description": "Amla Pickle from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 250,
+            "unit": "gm",
+            "price": 320,
+            "pack_label": "250gm Pack",
+            "variant_id": "PN-AMLA-PICKLE-250GM"
+          }
+        ],
+        "subCategory": "Pickles (Veg)"
+      },
+      {
+        "_id": "pn-chilli-pickle",
+        "name": "Chilli Pickle",
+        "imageFile": "pn-chilli-pickle.webp",
+        "description": "Chilli Pickle from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 250,
+            "unit": "gm",
+            "price": 300,
+            "pack_label": "250gm Pack",
+            "variant_id": "PN-CHILLI-PICKLE-250GM"
+          }
+        ],
+        "subCategory": "Pickles (Veg)"
+      },
+      {
+        "_id": "pn-coriander-pickle",
+        "name": "Coriander Pickle",
+        "imageFile": "pn-coriander-pickle.png",
+        "description": "Coriander Pickle from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 250,
+            "unit": "gm",
+            "price": 320,
+            "pack_label": "250gm Pack",
+            "variant_id": "PN-CORIANDER-PICKLE-250GM"
+          }
+        ],
+        "subCategory": "Pickles (Veg)"
+      },
+      {
+        "_id": "pn-cut-mango-pickle",
+        "name": "Cut Mango Pickle",
+        "imageFile": "pn-cut-mango-pickle.webp",
+        "description": "Cut Mango Pickle from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 250,
+            "unit": "gm",
+            "price": 310,
+            "pack_label": "250gm Pack",
+            "variant_id": "PN-CUT-MANGO-PICKLE-250GM"
+          }
+        ],
+        "subCategory": "Pickles (Veg)"
+      },
+      {
+        "_id": "pn-gongura-pickle",
+        "name": "Gongura Pickle",
+        "imageFile": "pn-gongura-pickle.png",
+        "description": "Gongura Pickle from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 250,
+            "unit": "gm",
+            "price": 320,
+            "pack_label": "250gm Pack",
+            "variant_id": "PN-GONGURA-PICKLE-250GM"
+          }
+        ],
+        "subCategory": "Pickles (Veg)"
+      },
+      {
+        "_id": "pn-lemon-pickle",
+        "name": "Lemon Pickle",
+        "imageFile": "pn-lemon-pickle.png",
+        "description": "Lemon Pickle from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 250,
+            "unit": "gm",
+            "price": 320,
+            "pack_label": "250gm Pack",
+            "variant_id": "PN-LEMON-PICKLE-250GM"
+          }
+        ],
+        "subCategory": "Pickles (Veg)"
+      },
+      {
+        "_id": "pn-mango-avakaya",
+        "name": "Mango Avakaya",
+        "imageFile": "pn-mango-avakaya.png",
+        "description": "Mango Avakaya from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 250,
+            "unit": "gm",
+            "price": 310,
+            "pack_label": "250gm Pack",
+            "variant_id": "PN-MANGO-AVAKAYA-250GM"
+          }
+        ],
+        "subCategory": "Pickles (Veg)"
+      },
+      {
+        "_id": "pn-munakaya-avakaya",
+        "name": "Munakaya Avakaya",
+        "imageFile": "pn-munakaya-avakaya.webp",
+        "description": "Munakaya Avakaya from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 250,
+            "unit": "gm",
+            "price": 320,
+            "pack_label": "250gm Pack",
+            "variant_id": "PN-MUNAKAYA-AVAKAYA-250GM"
+          }
+        ],
+        "subCategory": "Pickles (Veg)"
+      },
+      {
+        "_id": "pn-tamarind-tokku",
+        "name": "Tamarind Tokku",
+        "imageFile": "pn-tamarind-tokku.webp",
+        "description": "Tamarind Tokku from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 250,
+            "unit": "gm",
+            "price": 320,
+            "pack_label": "250gm Pack",
+            "variant_id": "PN-TAMARIND-TOKKU-250GM"
+          }
+        ],
+        "subCategory": "Pickles (Veg)"
+      },
+      {
+        "_id": "pn-tomato-pickle",
+        "name": "Tomato Pickle",
+        "imageFile": "pn-tomato-pickle.webp",
+        "description": "Tomato Pickle from Pernati Naturals.",
+        "category": "Organic Foods",
+        "brand": "Pernati Naturals",
+        "company": "Pernati Naturals",
+        "weights": [
+          {
+            "value": 250,
+            "unit": "gm",
+            "price": 320,
+            "pack_label": "250gm Pack",
+            "variant_id": "PN-TOMATO-PICKLE-250GM"
+          }
+        ],
+        "subCategory": "Pickles (Veg)"
       }
     ]
   },

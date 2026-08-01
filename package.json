@@ -30,8 +30,10 @@
     "catalog:images-refresh:baidyanath": "node scripts/refreshBrandImages.js --brand Baidyanath",
     "catalog:cleanup": "node scripts/cleanupCatalog.js",
     "catalog:images-all": "node scripts/downloadAllBrandImages.js --missing-only",
+    "thumbs:prebuild": "node scripts/prebuildMedicineThumbs.js",
+    "store:bootstrap": "node scripts/exportStoreBootstrap.js",
     "build:brand": "python scripts/build-brand-assets.py",
-    "build": "npm install"
+    "build": "npm install && npm run thumbs:prebuild && npm run store:bootstrap"
   },
   "keywords": [],
   "author": "",
@@ -40,6 +42,7 @@
     "@ngrok/ngrok": "^1.5.1",
     "agora-token": "^2.0.5",
     "body-parser": "^2.2.0",
+    "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
@@ -50,6 +53,7 @@
     "pdf-parse": "^2.2.2",
     "pdfkit": "^0.17.1",
     "razorpay": "^2.9.6",
+    "sharp": "^0.34.5",
     "socket.io": "^4.8.1",
     "uuid": "^11.1.0",
     "xlsx": "^0.18.5"
@@ -59,7 +63,6 @@
     "@napi-rs/canvas": "^1.0.0",
     "mongoose": "^8.15.1",
     "pdfjs-dist": "^6.0.227",
-    "sharp": "^0.34.5",
     "tesseract.js": "^7.0.0"
   }
 }

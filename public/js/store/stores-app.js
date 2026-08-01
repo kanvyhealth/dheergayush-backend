@@ -1,7 +1,9 @@
 /* DHEERGAYUSH Stores — paginated catalog with lazy images */
 (function () {
-  var PAGE_SIZE = 36;
-  var STORE_CACHE_PREFIX = 'dg-store-page-v4:';
+  var PAGE_SIZE = 24;
+  var EAGER_IMAGE_COUNT = 4;
+  var PRELOAD_IMAGE_COUNT = 4;
+  var STORE_CACHE_PREFIX = 'dg-store-page-v6:';
   var STORE_CACHE_TTL_MS = 5 * 60 * 1000;
   var stores = [];
   var products = [];
@@ -392,7 +394,7 @@
       : 'fa-mortar-pestle';
     var fallback = '<div class="product-img-fallback" style="display:none"><i class="fas ' + icon + '"></i></div>';
     if (url) {
-      var eager = cardIdx !== undefined && cardIdx < 12;
+      var eager = cardIdx !== undefined && cardIdx < EAGER_IMAGE_COUNT;
       var loadAttrs = eager
         ? 'loading="eager" fetchpriority="high" decoding="async"'
         : 'loading="lazy" fetchpriority="low" decoding="async"';
@@ -403,7 +405,7 @@
   }
 
   function preloadProductImages(items) {
-    (items || []).slice(0, 8).forEach(function (med) {
+    (items || []).slice(0, PRELOAD_IMAGE_COUNT).forEach(function (med) {
       var url = med.imageUrl || getMedicineImageUrl(med);
       if (!url || document.querySelector('link[rel="preload"][href="' + url + '"]')) return;
       var link = document.createElement('link');
@@ -412,6 +414,13 @@
       link.href = url;
       document.head.appendChild(link);
     });
+  }
+
+  function pageFingerprint(data) {
+    var items = (data && data.items) || [];
+    return items.map(function (item) {
+      return String(item._id || item.id || '') + ':' + String(item.imageUrl || '') + ':' + String(item.price || '');
+    }).join('|') + '#' + String((data && data.total) || items.length);
   }
 
   function getStoreMenuLabel(store) {
@@ -960,12 +969,23 @@
   async function softRefreshFirstPage() {
     if (legacyMode || loading) return;
     try {
+      var prevPage = currentPage;
       currentPage = 1;
       var res = await fetch('/api/medicines?' + apiQuery());
+      currentPage = prevPage;
       if (!res.ok) return;
       var data = await res.json();
+      var nextFp = pageFingerprint(data);
+      var currentFp = pageFingerprint({
+        items: products.slice(0, (data.items || []).length),
+        total: totalProducts
+      });
+      if (nextFp && nextFp === currentFp) {
+        writeStoreCache(data);
+        return;
+      }
+      currentPage = 1;
       products = [];
-      if (els.productGrid) els.productGrid.innerHTML = '';
       applyProductsPage(data);
     } catch (_) { /* keep painted cache */ }
   }
@@ -1195,6 +1215,36 @@
     });
   }
 
+  function isDefaultStoreView() {
+    var q = (els.searchInput && els.searchInput.value.trim()) || '';
+    return currentStoreFilter === 'all'
+      && currentCategory === 'all'
+      && currentSubcategory === 'all'
+      && !q;
+  }
+
+  function loadStoreBootstrap() {
+    return fetch('/data/store-bootstrap.json', { cache: 'force-cache' })
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .catch(function () { return null; });
+  }
+
+  function prefetchNextPage() {
+    if (!hasMore || legacyMode) return;
+    var run = function () {
+      try {
+        var params = new URLSearchParams(apiQuery());
+        params.set('page', String((currentPage || 1) + 1));
+        fetch('/api/medicines?' + params.toString()).catch(function () { /* warm cache */ });
+      } catch (_) { /* ignore */ }
+    };
+    if (typeof requestIdleCallback === 'function') {
+      requestIdleCallback(run, { timeout: 2500 });
+    } else {
+      setTimeout(run, 1200);
+    }
+  }
+
   async function loadStores() {
     try {
       currentPage = 1;
@@ -1204,37 +1254,69 @@
       var renderedCached = renderCachedStore(readStoreCache());
       if (!renderedCached && els.productGrid) els.productGrid.innerHTML = '';
 
-      // Never fall back to /api/stores (full catalog ~4MB) for the brand strip.
       var fetchOpts = {};
-      var summaryPromise = fetch('/api/stores/summary', fetchOpts);
-      var productsPromise = renderedCached ? null : fetch('/api/medicines?' + apiQuery(), fetchOpts);
+      var usedBootstrap = false;
 
-      try {
-        var summaryRes = await summaryPromise;
-        if (summaryRes.ok) {
-          stores = mapStoreSummary(await summaryRes.json());
+      // Instant first paint from static bootstrap (default unfiltered view only).
+      if (!renderedCached && isDefaultStoreView()) {
+        var bootstrap = await loadStoreBootstrap();
+        if (bootstrap && bootstrap.page1 && Array.isArray(bootstrap.page1.items)) {
+          if (bootstrap.summary) {
+            stores = mapStoreSummary(bootstrap.summary);
+            renderStoresStrip();
+          }
+          if (bootstrap.taxonomy) {
+            taxonomy = bootstrap.taxonomy;
+            renderDepartmentFilters();
+            renderSubcategoryStrip();
+          }
+          applyProductsPage(bootstrap.page1, { skipCacheWrite: true });
+          usedBootstrap = true;
+          scheduleSoftRefresh();
+          prefetchNextPage();
+        }
+      }
+
+      // Never fall back to /api/stores (full catalog ~4MB) for the brand strip.
+      var productsPromise = (renderedCached || usedBootstrap)
+        ? null
+        : fetch('/api/medicines?' + apiQuery(), fetchOpts);
+      var summaryPromise = fetch('/api/stores/summary', fetchOpts).then(function (summaryRes) {
+        return summaryRes.ok ? summaryRes.json() : null;
+      }).then(function (summary) {
+        if (summary) {
+          stores = mapStoreSummary(summary);
           renderStoresStrip();
         } else if (!stores.length) {
           stores = [];
           renderStoresStrip();
         }
-      } catch (_) {
+      }).catch(function () {
         if (!stores.length) {
           stores = [];
           renderStoresStrip();
         }
-      }
+      });
 
       if (renderedCached) {
         scheduleSoftRefresh();
+        await summaryPromise;
+        return;
+      }
+
+      if (usedBootstrap) {
+        await summaryPromise;
         return;
       }
 
       loading = true;
       setLoadingState(true);
+      // Paint products as soon as medicines return — do not wait on brand summary.
       var productsRes = await productsPromise;
       if (!productsRes.ok) throw new Error('products fail');
       applyProductsPage(await productsRes.json());
+      prefetchNextPage();
+      await summaryPromise;
     } catch (e) {
       await loadLegacyFallback();
     } finally {

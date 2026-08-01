@@ -7,4 +7,5 @@ render-firebase-oneline.txt
 uploads/*
 !uploads/.gitkeep
 ayurvedic_store_dataset/
+medicine/.thumbs/
 

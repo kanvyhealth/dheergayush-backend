@@ -17,6 +17,7 @@ const { loadMedicineCatalogJson } = require('../../modules/store/medicineCatalog
 const { filterExcludedMedicines } = require('../../modules/store/excludedBrands');
 const { isValidAyurvedicProduct } = require('../../modules/store/excludedProducts');
 const { buildSearchIndex, searchMedicines } = require('../../modules/store/catalogSearch');
+const { toListImageUrl } = require('../../modules/store/medicineAssetThumbs');
 const {
   STORE_DEPARTMENTS,
   STORE_SUBCATEGORIES,
@@ -32,6 +33,7 @@ const {
 const { sortStoresWithFeatured, getStoreMenuLabel } = require('../../modules/store/featuredStoreBrands');
 
 const CACHE_TTL_MS = 30 * 60 * 1000;
+const LIST_THUMB_WIDTH = 400;
 
 const EXCLUDED_CATEGORIES = new Set([
   'others', 'hidden', 'festival', 'general', 'all', 'all catagery'
@@ -381,13 +383,31 @@ async function loadCatalogCache(force = false) {
       stores,
       summary: buildStoresSummary(stores),
       searchIndex: buildSearchIndex(medicines),
+      taxonomy: buildTaxonomyFromMedicines(medicines),
+      page1: null,
       imageMap,
       loadedAt: Date.now(),
       count: medicines.length,
       rawCount
     };
+    // Precompute default unfiltered page-1 for instant /api/medicines hits.
+    {
+      const list = filterMedicines(medicines, {});
+      const limit = 24;
+      catalogCache.page1 = {
+        items: list.slice(0, limit).map(toListMedicine),
+        total: list.length,
+        page: 1,
+        limit,
+        pages: Math.ceil(list.length / limit) || 1,
+        cachedAt: catalogCache.loadedAt
+      };
+    }
     catalogExpiry = Date.now() + CACHE_TTL_MS;
     catalogPromise = null;
+    // Warm Firestore overrides in the background so the first /api/medicines
+    // request does not block on a cold Medicine.find().
+    loadFirestoreCatalogOverrides(imageMap).catch(() => {});
     return catalogCache;
   })();
 
@@ -397,6 +417,7 @@ async function loadCatalogCache(force = false) {
 async function warmCatalogCache() {
   try {
     const cache = await loadCatalogCache(true);
+    await loadFirestoreCatalogOverrides(cache.imageMap || {});
     const withImages = cache.medicines.filter((m) => m.imageUrl).length;
     const raw = cache.rawCount || cache.count;
     console.log(`📦 Store catalog cached: ${cache.count} unique products (${raw} raw), ${cache.summary.length} brands, ${withImages} with images`);
@@ -426,13 +447,14 @@ function filterMedicines(medicines, { company, category, subcategory, q, searchI
 }
 
 function toListMedicine(m) {
+  const fullUrl = m.imageUrl || imageUrlFromFile(m.imageFile) || null;
   return {
     _id: m._id,
     id: m.id || m._id,
     name: m.name,
     brand: m.brand || m.company,
     company: m.company,
-    imageUrl: m.imageUrl || null,
+    imageUrl: toListImageUrl(fullUrl, LIST_THUMB_WIDTH),
     imageFile: m.imageFile || null,
     category: m.category,
     subCategory: m.subCategory,
@@ -447,7 +469,20 @@ async function getMedicinesPaginated(opts = {}) {
   const cache = await loadCatalogCache();
   const page = Math.max(1, parseInt(opts.page, 10) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(opts.limit, 10) || 48));
-  const medicines = await getCatalogMedicinesWithOverrides();
+  const unfiltered = (!opts.company || opts.company === 'all')
+    && (!opts.category || opts.category === 'all')
+    && (!opts.subcategory || opts.subcategory === 'all')
+    && !opts.q;
+
+  if (unfiltered && page === 1 && cache.page1 && cache.page1.limit === limit) {
+    return {
+      ...cache.page1,
+      cachedAt: cache.loadedAt
+    };
+  }
+
+  // List endpoints tolerate a brief stale catalog while overrides warm.
+  const medicines = await getCatalogMedicinesWithOverrides({ allowStale: true });
   const list = filterMedicines(medicines, {
     ...opts,
     searchIndex: cache.searchIndex
@@ -456,7 +491,7 @@ async function getMedicinesPaginated(opts = {}) {
   const start = (page - 1) * limit;
   const items = list.slice(start, start + limit).map(toListMedicine);
 
-  return {
+  const result = {
     items,
     total,
     page,
@@ -464,6 +499,12 @@ async function getMedicinesPaginated(opts = {}) {
     pages: Math.ceil(total / limit) || 1,
     cachedAt: cache.loadedAt
   };
+
+  if (unfiltered && page === 1) {
+    cache.page1 = result;
+  }
+
+  return result;
 }
 
 function findCatalogMedicineById(medicines, medicineId) {
@@ -539,10 +580,33 @@ function applyCatalogOverrides(baseMedicines, overrides) {
   return merged;
 }
 
-async function getCatalogMedicinesWithOverrides() {
+async function getCatalogMedicinesWithOverrides(opts = {}) {
+  const allowStale = !!opts.allowStale;
   const cache = await loadCatalogCache();
-  const overrides = await loadFirestoreCatalogOverrides(cache.imageMap || {});
-  return applyCatalogOverrides(cache.medicines, overrides);
+  // Fast path: if overrides were already warmed and are empty, skip merge work.
+  if (overridesCache && Date.now() < overridesExpiry) {
+    if (!overridesCache.length) return cache.medicines;
+    return applyCatalogOverrides(cache.medicines, overridesCache);
+  }
+
+  const pending = loadFirestoreCatalogOverrides(cache.imageMap || {});
+  if (!allowStale) {
+    const overrides = await pending;
+    if (!overrides.length) return cache.medicines;
+    return applyCatalogOverrides(cache.medicines, overrides);
+  }
+
+  // List path: don't block first paint on a cold Firestore round-trip.
+  const raced = await Promise.race([
+    pending.then((overrides) => ({ ready: true, overrides })),
+    new Promise((resolve) => setTimeout(() => resolve({ ready: false }), 50))
+  ]);
+
+  if (!raced.ready) {
+    return cache.medicines;
+  }
+  if (!raced.overrides.length) return cache.medicines;
+  return applyCatalogOverrides(cache.medicines, raced.overrides);
 }
 
 async function getMedicinesByIds(ids = []) {
@@ -661,36 +725,64 @@ async function getStoresSummaryFromFirebase() {
   return cache.summary;
 }
 
-async function getStoreTaxonomy() {
-  const medicines = await getCatalogMedicinesWithOverrides();
-  const list = medicines.filter(isStoreProduct);
+/** Single-pass taxonomy from already-classified catalog rows (no nested filters). */
+function buildTaxonomyFromMedicines(medicines) {
+  const list = (medicines || []).filter(isStoreProduct);
+  const deptCounts = Object.create(null);
+  const subCounts = Object.create(null);
+  for (const name of STORE_DEPARTMENTS) {
+    deptCounts[name] = 0;
+    subCounts[name] = Object.create(null);
+    for (const sub of STORE_SUBCATEGORIES[name] || []) {
+      subCounts[name][sub] = 0;
+    }
+  }
+
+  for (const m of list) {
+    const dept = STORE_DEPARTMENTS.includes(m.category)
+      ? m.category
+      : classifyStoreProduct(m);
+  if (!(dept in deptCounts)) continue;
+    deptCounts[dept] += 1;
+
+    const allowedSubs = STORE_SUBCATEGORIES[dept] || [];
+    if (!allowedSubs.length) continue;
+    const sub = allowedSubs.includes(m.subCategory)
+      ? m.subCategory
+      : classifyStoreSubcategory(m);
+    if (sub && Object.prototype.hasOwnProperty.call(subCounts[dept], sub)) {
+      subCounts[dept][sub] += 1;
+    }
+  }
+
   const departments = STORE_DEPARTMENTS.map((name) => {
-    const count = list.filter((m) => productMatchesDepartment(m, name)).length;
-    const slug = toStoreSlug(name);
-    const subs = (STORE_SUBCATEGORIES[name] || []).map((subName) => {
-      const subCount = list.filter(
-        (m) => productMatchesDepartment(m, name) && productMatchesSubcategory(m, subName)
-      ).length;
-      return {
-        name: subName,
-        slug: toStoreSlug(subName),
-        count: subCount,
-        href: storePathFor(name, subName)
-      };
-    }).filter((s) => s.count > 0);
+    const subs = (STORE_SUBCATEGORIES[name] || []).map((subName) => ({
+      name: subName,
+      slug: toStoreSlug(subName),
+      count: subCounts[name][subName] || 0,
+      href: storePathFor(name, subName)
+    })).filter((s) => s.count > 0);
     return {
       name,
-      slug,
-      count,
+      slug: toStoreSlug(name),
+      count: deptCounts[name] || 0,
       href: storePathFor(name),
       subcategories: subs
     };
   });
+
   return {
     departments,
     organicFoodSubcategories: ORGANIC_FOOD_SUBCATEGORIES,
     total: list.length
   };
+}
+
+async function getStoreTaxonomy() {
+  const cache = await loadCatalogCache();
+  if (cache.taxonomy) return cache.taxonomy;
+  cache.taxonomy = buildTaxonomyFromMedicines(cache.medicines);
+  return cache.taxonomy;
 }
 
 async function getStoresFromFirebase() {
