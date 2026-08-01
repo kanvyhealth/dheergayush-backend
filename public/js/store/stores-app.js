@@ -673,24 +673,34 @@
       return '<option value="' + globalIdx + '|' + medId + '|' + w.value + '|' + w.unit + '|' + w.price + '"' +
         (i === 0 ? ' selected' : '') + '>' + w.value + ' ' + w.unit + ' — ₹' + w.price + '</option>';
     }).join('');
-    var packSelect = weights.length > 1
-      ? '<label class="pack-label">Pack size</label><select class="product-weight dg-select" aria-label="Pack size">' + weightOptions + '</select>'
-      : (weights.length === 1
-        ? '<input type="hidden" class="product-weight" value="' + globalIdx + '|' + (weights[0].medicineId || med._id) + '|' + weights[0].value + '|' + weights[0].unit + '|' + weights[0].price + '">' +
-          '<div class="pack-single">' + weights[0].value + ' ' + weights[0].unit + ' — ₹' + weights[0].price + '</div>'
-        : '');
+    var packBlock;
+    if (weights.length > 1) {
+      packBlock = '<div class="product-pack">' +
+        '<label class="pack-label">Pack size</label>' +
+        '<select class="product-weight dg-select" aria-label="Pack size">' + weightOptions + '</select>' +
+        '</div>';
+    } else if (weights.length === 1) {
+      packBlock = '<div class="product-pack">' +
+        '<label class="pack-label">Pack size</label>' +
+        '<input type="hidden" class="product-weight" value="' + globalIdx + '|' + (weights[0].medicineId || med._id) + '|' + weights[0].value + '|' + weights[0].unit + '|' + weights[0].price + '">' +
+        '<div class="pack-single">' + weights[0].value + ' ' + weights[0].unit + ' — ₹' + weights[0].price + '</div>' +
+        '</div>';
+    } else {
+      packBlock = '<div class="product-pack product-pack--empty" aria-hidden="true">' +
+        '<span class="pack-label">Pack size</span><div class="pack-single">&nbsp;</div></div>';
+    }
     var storeLabel = displayStoreLabel(med);
     var detailsHref = '/product-details.html?id=' + encodeURIComponent(med._id || med.id || '') +
       (med.storeId ? '&store=' + encodeURIComponent(med.storeId) : '');
     return '<article class="product-card" data-idx="' + globalIdx + '">' +
       '<div class="product-img-wrap"><a href="' + detailsHref + '" class="product-img-link" aria-label="View details">' + productImageHtml(med, globalIdx) + '</a></div>' +
       '<div class="product-body">' +
-      (storeLabel ? '<span class="product-store">' + escapeHtml(storeLabel) + '</span>' : '') +
+      '<span class="product-store">' + (storeLabel ? escapeHtml(storeLabel) : '&nbsp;') + '</span>' +
       '<h3 class="product-title" title="' + escapeHtml(med.name) + '"><a href="' + detailsHref + '" style="color:inherit;text-decoration:none;">' + escapeHtml(med.name) + '</a></h3>' +
       '<div class="product-price">₹<span class="price-from">' + minP + '</span>' +
       (weights.length > 1 ? '<span class="price-note"> onwards</span>' : '') + '</div>' +
       '<div class="product-prime"><i class="fas fa-truck"></i> DHEERGAYUSH Delivery</div>' +
-      packSelect +
+      packBlock +
       '<div class="product-actions">' + productActionHtml(globalIdx, med) + '</div></div></article>';
   }
 

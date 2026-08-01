@@ -298,6 +298,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 18px;
+            align-items: stretch;
         }
 
         /* Mobile: 2 products per row (compact cards) */
@@ -332,13 +333,15 @@
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
+                min-height: 1em;
             }
 
             .product-title {
                 font-size: 0.72rem;
                 line-height: 1.25;
-                margin: 4px 0;
-                min-height: 2.5em;
+                margin: 4px 0 6px;
+                height: 2.5em;
+                min-height: 0;
                 -webkit-line-clamp: 2;
             }
 
@@ -351,40 +354,36 @@
             .product-price {
                 font-size: 0.88rem;
                 margin-bottom: 2px;
+                min-height: 1.2em;
             }
 
             .price-note {
                 font-size: 0.62rem;
             }
 
-            .product-weight {
-                margin-bottom: 4px;
-                font-size: 0.62rem;
+            .product-pack {
+                min-height: 2.2em;
+                margin-bottom: 6px;
             }
 
-            .product-weight .pack-label {
+            .product-pack .pack-label {
                 display: none;
             }
 
-            .product-weight select.product-weight,
-            .product-weight .dg-select {
+            .product-pack select.product-weight,
+            .product-pack .dg-select,
+            .product-pack .pack-single {
                 width: 100%;
                 font-size: 0.62rem;
                 padding: 2px 4px;
                 max-width: 100%;
-            }
-
-            .pack-single {
-                font-size: 0.62rem;
-                line-height: 1.2;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
+                min-height: 1.8em;
             }
 
             .product-actions {
                 min-height: 32px;
                 gap: 4px;
+                margin-top: auto;
             }
 
             .btn-add-cart {
@@ -482,24 +481,31 @@
         .product-img-wrap .product-img-fallback { display: flex; }
         .product-img-wrap img.product-img + .product-img-fallback { display: none; }
 
-        .product-body { padding: 14px; flex: 1; display: flex; flex-direction: column; }
+        .product-body { padding: 14px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
         .product-store {
             font-size: 0.72rem;
             color: var(--dg-orange);
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.04em;
+            min-height: 1.15em;
+            line-height: 1.15;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .product-title {
             font-size: 0.95rem;
             font-weight: 600;
             line-height: 1.35;
-            margin: 6px 0;
+            margin: 6px 0 8px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            min-height: 2.6em;
+            height: 2.7em;
+            flex-shrink: 0;
         }
         .product-desc {
             font-size: 0.78rem;
@@ -510,7 +516,6 @@
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            flex: 1;
         }
         .product-rating {
             display: flex;
@@ -527,19 +532,70 @@
             font-weight: 700;
             color: var(--dg-charcoal);
             margin-bottom: 4px;
+            min-height: 1.5em;
+            line-height: 1.2;
+            flex-shrink: 0;
         }
         .price-note { font-size: 0.75rem; font-weight: 400; color: #666; }
         .product-prime {
             font-size: 0.75rem;
             color: #007185;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            min-height: 1.2em;
+            line-height: 1.2;
+            flex-shrink: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .product-weight { margin-bottom: 8px; font-size: 0.82rem; }
+        .product-pack {
+            flex-shrink: 0;
+            margin-bottom: 10px;
+            min-height: 3.55em;
+        }
+        .product-pack .pack-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #555;
+            margin: 0 0 4px;
+            line-height: 1.2;
+            min-height: 1.2em;
+        }
+        .product-pack select.product-weight,
+        .product-pack .dg-select {
+            width: 100%;
+            min-height: 2.35em;
+            box-sizing: border-box;
+        }
+        .product-pack .pack-single {
+            margin: 0;
+            min-height: 2.35em;
+            padding: 8px 10px;
+            border: 1px solid var(--dg-border);
+            border-radius: 8px;
+            background: #fafafa;
+            font-size: 0.88rem;
+            color: #444;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .product-pack--empty .pack-single {
+            visibility: hidden;
+        }
+        .product-weight { margin-bottom: 0; font-size: 0.82rem; }
         .product-actions {
             display: flex;
             gap: 8px;
             align-items: center;
             min-height: 42px;
+            margin-top: auto;
+            flex-shrink: 0;
         }
         .btn-add-cart {
             flex: 1;
@@ -760,8 +816,8 @@
         }
         @keyframes dg-spin { to { transform: rotate(360deg); } }
         .chip-count { opacity: 0.7; font-size: 0.85em; font-weight: 400; }
-        .pack-label { display: block; font-size: 0.8rem; font-weight: 600; color: #555; margin: 8px 0 4px; }
-        .pack-single { font-size: 0.88rem; color: #444; margin: 8px 0; font-weight: 500; }
+        .pack-label { display: block; font-size: 0.8rem; font-weight: 600; color: #555; margin: 0 0 4px; }
+        .pack-single { font-size: 0.88rem; color: #444; font-weight: 500; }
         .success-toast {
             position: fixed;
             bottom: 24px;
