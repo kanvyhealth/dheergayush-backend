@@ -27,6 +27,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const transitionDuration = 500;
     let dashboardTabsReady = false;
 
+    function escapeHtml(value) {
+        return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
     function setPortalLayout(mode) {
         document.body.classList.toggle('dashboard-view', mode === 'dashboard');
         document.body.classList.toggle('auth-login-view', mode === 'login');
@@ -265,7 +273,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showMessage(data.message || 'Could not start follow-up call.', 'error', 'dashboard');
             if (data.requiresPayment) {
                 localStorage.setItem('selectedDoctorName', doctorName);
-                window.location.href = 'telemedicine_platform.html?mode=new-appointment';
+                window.location.href = 'book-appointment.html';
             }
             return;
         }
@@ -352,7 +360,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderAppointmentsPanel(panel, appointments, accessPlans) {
         panel.innerHTML = '';
         if (!appointments.length) {
-            panel.innerHTML = '<p class="dg-dash-empty">No active appointments.</p>';
+            const hasAnyPlan = (accessPlans || []).length > 0;
+            const hasActive = (accessPlans || []).some((p) => p.active);
+            if (!hasAnyPlan) {
+                panel.innerHTML = '<p class="dg-dash-empty">No active appointments. Book a consultation to get started — your 15-day free follow-up plan begins after payment.</p>';
+            } else if (!hasActive) {
+                panel.innerHTML = '<p class="dg-dash-empty">Your follow-up access plans have expired. Book a new paid consultation to renew access with your doctor.</p>';
+            } else {
+                panel.innerHTML = '<p class="dg-dash-empty">No active appointments right now. You still have follow-up access — use Start free follow-up from history when available.</p>';
+            }
             return;
         }
         appointments.forEach((appointment, index) => {
@@ -434,7 +450,43 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <p><strong>Medicines:</strong> ${itemSummary || '—'}${items.length > 4 ? '…' : ''}</p>
                 ${rx.orderId ? `<p><strong>Order ID:</strong> ${rx.orderId}</p>` : ''}
                 <p><strong>Date:</strong> ${rx.createdAt ? new Date(rx.createdAt).toLocaleDateString() : '—'}</p>
+                <div class="dg-record-actions" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
+                  <button type="button" class="dg-btn dg-btn-primary" data-order-rx="${index}">Order from store</button>
+                  ${rx.orderId ? `<a class="dg-btn dg-btn-secondary" href="/store-invoice.html?orderId=${encodeURIComponent(rx.orderId)}" target="_blank" rel="noopener">View order</a>` : ''}
+                </div>
             `;
+            const orderBtn = card.querySelector('[data-order-rx]');
+            if (orderBtn) {
+                orderBtn.addEventListener('click', () => {
+                    try {
+                        const handoff = {
+                            items: items.map((i) => ({
+                                medicineId: i.medicineId || i.productId || i.id || '',
+                                name: i.name || 'Medicine',
+                                pricePerUnit: Number(i.pricePerUnit != null ? i.pricePerUnit : i.price) || 0,
+                                quantity: Number(i.quantity || 1) || 1,
+                                weightValue: i.weightValue != null ? i.weightValue : (i.selectedWeight && i.selectedWeight.value) || 1,
+                                weightUnit: i.weightUnit || (i.selectedWeight && i.selectedWeight.unit) || i.unit || 'unit',
+                                storeId: i.storeId || i.company || 'general',
+                                storeName: i.storeName || i.company || '',
+                                imageUrl: i.imageUrl || ''
+                            })),
+                            total: rx.total || 0,
+                            savedAt: new Date().toISOString(),
+                            roomId: rx.roomID || rx.appointmentId || '',
+                            appointmentId: rx.appointmentId || rx.roomID || '',
+                            prescriptionId: rx._id || rx.id || rx.prescriptionId || ''
+                        };
+                        localStorage.setItem('dgStorePrescriptionCartHandoff', JSON.stringify(handoff));
+                        const q = new URLSearchParams();
+                        if (handoff.prescriptionId) q.set('prescriptionId', handoff.prescriptionId);
+                        if (handoff.appointmentId) q.set('appointmentId', handoff.appointmentId);
+                        window.location.href = '/store' + (q.toString() ? ('?' + q.toString()) : '');
+                    } catch (err) {
+                        showMessage(err.message || 'Could not open store', 'error', 'dashboard');
+                    }
+                });
+            }
             panel.appendChild(card);
         });
     }
@@ -450,20 +502,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             const card = document.createElement('div');
             card.className = 'dg-record-card';
             card.innerHTML = `
-                <h3>Order ${index + 1}</h3>
+                <h3>Order ${escapeHtml(order._id || order.id || String(index + 1))}</h3>
                 <p><strong>Items:</strong> ${order.itemCount || items.length}</p>
                 <p><strong>Total:</strong> ₹${order.totalAmount || 0}</p>
                 <p><strong>Payment:</strong> ${order.paymentStatus || '—'}</p>
                 <p><strong>Status:</strong> ${order.orderStatus || 'pending'}</p>
                 <p><strong>Source:</strong> ${order.source || 'website'}</p>
-                <p><strong>Date:</strong> ${order.orderDate ? new Date(order.orderDate).toLocaleDateString() : '—'}</p>
-                ${order.shipment && (order.shipment.trackingNumber || order.shipment.courier) ? `
-                <p><strong>Shipment:</strong> ${order.shipment.courier || 'Courier'}
-                  ${order.shipment.trackingNumber ? ` · ${order.shipment.trackingNumber}` : ''}
-                  ${order.shipment.trackingUrl ? ` · <a href="${order.shipment.trackingUrl}" target="_blank" rel="noopener">Track</a>` : ''}
-                </p>` : ''}
+                <p><strong>Date:</strong> ${order.orderDate ? new Date(order.orderDate).toLocaleString() : '—'}</p>
+                ${items.length ? `<p><strong>Line items:</strong> ${items.slice(0, 5).map((it) => escapeHtml(it.name || it.medicineName || 'Item')).join(', ')}${items.length > 5 ? '…' : ''}</p>` : ''}
+                ${order.shipment && (order.shipment.trackingNumber || order.shipment.courier || order.shipment.status) ? `
+                <p><strong>Shipment:</strong> ${escapeHtml(order.shipment.status || '')}
+                  ${order.shipment.courier ? ` · ${escapeHtml(order.shipment.courier)}` : ''}
+                  ${order.shipment.trackingNumber ? ` · ${escapeHtml(order.shipment.trackingNumber)}` : ''}
+                  ${order.shipment.trackingUrl ? ` · <a href="${escapeHtml(order.shipment.trackingUrl)}" target="_blank" rel="noopener">Track</a>` : ''}
+                </p>` : '<p><strong>Shipment:</strong> Not shipped yet — check back after the pharmacy confirms.</p>'}
                 <div class="dg-record-actions" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
                   <a class="dg-btn dg-btn-secondary" href="/store-invoice.html?orderId=${encodeURIComponent(order._id || order.id || '')}" target="_blank" rel="noopener">Download invoice</a>
+                  <a class="dg-btn dg-btn-secondary" href="/store">Reorder from store</a>
                   ${['pending', 'confirmed'].includes(String(order.orderStatus || order.status || '').toLowerCase())
                     ? `<button type="button" class="dg-btn dg-btn-secondary" data-cancel-order="${order._id || order.id || ''}">Cancel order</button>`
                     : ''}
@@ -579,7 +634,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     yourAppointmentsBtn.addEventListener('click', () => openDashboard());
 
     function goNewAppointment() {
-        window.location.href = 'telemedicine_platform.html?mode=new-appointment';
+        window.location.href = 'book-appointment.html';
     }
 
     newAppointmentBtn.addEventListener('click', goNewAppointment);

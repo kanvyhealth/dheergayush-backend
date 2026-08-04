@@ -1298,152 +1298,30 @@
             <div class="auth-section">
                 <div class="auth-form" id="doctorRegForm">
                     <h3><span class="dg-section-icon"><i class="fas fa-user-md" aria-hidden="true"></i></span>Doctor Registration</h3>
-                    <p class="reg-subtitle">Create your doctor account for the Dheergayush app and website. Admin approval is required before you can take consultations.</p>
-                    <p class="required-hint">Fields marked with * are required. Upload at least one certificate/document and your profile photo.</p>
-                    <div class="form-group">
-                        <label>Full Name *</label>
-                        <input type="text" id="doctorName" placeholder="Dr. John Smith" required>
+                    <p class="reg-subtitle">Doctor registration has moved to the dedicated doctor portal.</p>
+                    <p style="margin:16px 0;">
+                        <a class="btn btn-success" href="doctor-auth.html">Open doctor login &amp; registration</a>
+                    </p>
+                    <p class="required-hint">Admin approval is still required before you can take consultations.</p>
+                    <!-- Legacy fields kept hidden so any leftover scripts do not break -->
+                    <div style="display:none;" aria-hidden="true">
+                        <input type="text" id="doctorName">
+                        <input type="text" id="doctorSpec">
+                        <input type="email" id="doctorEmail">
+                        <input type="password" id="doctorPassword">
+                        <input type="text" id="doctorDegree">
+                        <input type="text" id="doctorLicense">
+                        <input type="text" id="doctorLocation">
+                        <input type="number" id="doctorFee">
+                        <textarea id="doctorBio"></textarea>
+                        <input type="number" id="doctorExperience">
+                        <input type="text" id="doctorUpiId">
+                        <input type="text" id="doctorAccountHolder">
+                        <input type="text" id="doctorBankName">
+                        <input type="text" id="doctorAccountNumber">
+                        <input type="text" id="doctorIfsc">
+                        <button type="button" id="doctorRegisterBtn" onclick="window.location.href='doctor-auth.html'">Register Doctor</button>
                     </div>
-                    <div class="form-group">
-                        <label>Specialization *</label>
-                        <input type="text" id="doctorSpec" placeholder="e.g. Kayachikitsa, Balachikitsa" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Email (same as Android app login) *</label>
-                        <input type="email" id="doctorEmail" placeholder="doctor@email.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Password *</label>
-                        <input type="password" id="doctorPassword" placeholder="Min 6 characters" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Degree / Qualification</label>
-                        <input type="text" id="doctorDegree" placeholder="e.g. BAMS, MD Ayurveda">
-                    </div>
-                    <div class="form-group">
-                        <label>Doctor ID (License) *</label>
-                        <input type="text" id="doctorLicense" placeholder="KH01" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Location *</label>
-                        <input type="text" id="doctorLocation" placeholder="City, State" required>
-                    </div>
-                    <label style="font-weight: 600; margin-bottom: 8px; display: block; color: #444;">Languages Known *</label>
-                    <div class="doctor-languages" id="doctorLanguagesGroup">
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" class="form-checkbox doctor-lang-cb" value="English">
-                            <span class="ml-2">English</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" class="form-checkbox doctor-lang-cb" value="Hindi">
-                            <span class="ml-2">Hindi</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" class="form-checkbox doctor-lang-cb" value="Telugu">
-                            <span class="ml-2">Telugu</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" class="form-checkbox doctor-lang-cb" value="Kannada">
-                            <span class="ml-2">Kannada</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" class="form-checkbox doctor-lang-cb" value="Malayalam">
-                            <span class="ml-2">Malayalam</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" class="form-checkbox doctor-lang-cb" value="Tamil">
-                            <span class="ml-2">Tamil</span>
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label>Doctor's Time (1-hour slot) *</label>
-                        <div class="custom-time-picker-wrapper">
-                            <div id="doctorTimeDisplay" class="custom-time-display">
-                                <span class="time-placeholder">Select a time...</span>
-                                <span class="dropdown-arrow">&#9660;</span>
-                            </div>
-                            <div id="doctorTimePickerDropdown" class="custom-time-picker-dropdown">
-                                <div id="hourButtonsGrid" class="hour-buttons-grid"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-inputfile form-group">
-                        <label for="doctorDocs" class="file-input-button"><i class="fas fa-file-lines dg-label-icon" aria-hidden="true"></i>Upload Documents (PDF, JPG, PNG):</label>
-                        <input type="file" id="doctorDocs" name="documents" multiple accept=".pdf,.jpg,.jpeg,.png" class="hidden">
-                        <ul id="fileList"></ul>
-                    </div>
-                    <div class="form-inputfile form-group">
-                        <label for="doctorPhoto" class="file-input-button"><i class="fas fa-image dg-label-icon" aria-hidden="true"></i>Upload Your Photo:</label>
-                        <input type="file" id="doctorPhoto" name="photo" accept=".jpg,.jpeg,.png" class="hidden">
-                        <ul id="photoList"></ul>
-                    </div>
-                    <div class="form-group">
-                        <label>Fee Amount (per video call) *</label>
-                        <input type="number" id="doctorFee" placeholder="e.g. 500" min="0" step="1" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Bio *</label>
-                        <textarea id="doctorBio" placeholder="Brief professional background…" rows="3" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Years of Experience *</label>
-                        <input type="number" id="doctorExperience" placeholder="e.g. 5" min="0" step="1" required>
-                    </div>
-                    <div class="form-group" id="doctorPayoutSection">
-                        <label style="font-weight: 600; margin-bottom: 8px; display: block; color: #444;">Consultation payout details *</label>
-                        <p class="reg-subtitle" style="margin-top:0;">Required for receiving consultation fees. Choose UPI or bank account.</p>
-                        <div style="display:flex;gap:16px;margin:10px 0;flex-wrap:wrap;">
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="doctorPaymentMode" value="upi" checked onchange="toggleDoctorRegPaymentMode('upi')">
-                                <span class="ml-2">UPI</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="doctorPaymentMode" value="bank" onchange="toggleDoctorRegPaymentMode('bank')">
-                                <span class="ml-2">Bank account</span>
-                            </label>
-                        </div>
-                        <div id="doctorUpiFields">
-                            <label for="doctorUpiId">UPI ID *</label>
-                            <input type="text" id="doctorUpiId" placeholder="yourname@bank" autocomplete="off">
-                        </div>
-                        <div id="doctorBankFields" style="display:none;">
-                            <div class="form-group" style="margin-top:8px;">
-                                <label for="doctorAccountHolder">Account holder name *</label>
-                                <input type="text" id="doctorAccountHolder" placeholder="Name as on bank account" autocomplete="off">
-                            </div>
-                            <div class="form-group">
-                                <label for="doctorBankName">Bank name *</label>
-                                <input type="text" id="doctorBankName" placeholder="e.g. SBI, HDFC" autocomplete="off">
-                            </div>
-                            <div class="form-group">
-                                <label for="doctorAccountNumber">Account number *</label>
-                                <input type="text" id="doctorAccountNumber" placeholder="Account number" autocomplete="off" inputmode="numeric">
-                            </div>
-                            <div class="form-group">
-                                <label for="doctorIfsc">IFSC *</label>
-                                <input type="text" id="doctorIfsc" placeholder="e.g. SBIN0001234" autocomplete="off" style="text-transform:uppercase;">
-                            </div>
-                        </div>
-                    </div>
-                     <div class="terms-box">
-                        <div class="terms-row">
-                            <input type="checkbox" id="doctorAgreePrivacy">
-                            <label for="doctorAgreePrivacy">
-                                I agree to the
-                                <a href="/privacy-policy">Privacy Policy</a>
-                            </label>
-                        </div>
-                        <div class="terms-row">
-                            <input type="checkbox" id="doctorAgreeTerms">
-                            <label for="doctorAgreeTerms">
-                                I agree to the
-                                <a href="/terms-and-conditions">Terms and Conditions</a>
-                            </label>
-                        </div>
-                    </div>
-                    <div id="serverHealthBanner" class="server-health-banner" role="status"></div>
-                    <div id="doctorRegStatus" role="alert"></div>
-                    <button type="button" class="btn" id="doctorRegisterBtn" onclick="registerDoctor()">Register Doctor</button>
                 </div>
 
                 <div class="auth-form" id="patientRegForm">
@@ -1596,7 +1474,7 @@
             <div class="video-call-section hidden" id="videoCallSection">
                 <h3><span class="dg-section-icon"><i class="fas fa-video" aria-hidden="true"></i></span>Video Consultation in Progress</h3>
                 <div class="video-placeholder">
-                    <p><i class="fas fa-video dg-inline-icon" aria-hidden="true"></i>Video Call Connected - Doctor Code: <strong id="doctorCode">VID-001</strong></p>
+                    <p><i class="fas fa-video dg-inline-icon" aria-hidden="true"></i>Live video uses Agora on <a href="/video-call.html">video-call.html</a>. <strong id="doctorCode"></strong></p>
                 </div>
                 <button class="btn btn-warning" onclick="endConsultation()">End Consultation</button>
             </div>
@@ -1608,10 +1486,9 @@
     <h2><span class="dg-section-icon"><i class="fas fa-lock" aria-hidden="true"></i></span>Secure Payment</h2>
     <p>Processing your payment of <strong id="modalFee"></strong></p>
 
-    <!-- Placeholder for payment logic -->
     <div id="paymentFormContainer">
-      <!-- Inject payment form/process script here -->
-      <p>Payment form goes here...</p>
+      <p>Redirecting to secure Razorpay checkout…</p>
+      <p style="font-size:0.9rem;color:#666;">If you are not redirected, open <a href="payment.html">payment.html</a>.</p>
     </div>
   </div>
 </div>
@@ -1650,115 +1527,42 @@
             </div>
         </div>
 
-        <!-- Medicine Store -->
+        <!-- Medicine Store (post-call buy journey — full catalog on /store) -->
         <div class="section hidden" id="medicineStore">
-            <h2><span class="dg-section-icon"><i class="fas fa-pills" aria-hidden="true"></i></span>Medicine Store &amp; Prescription</h2>
-            <p>Doctor selects prescribed medicines from available inventory</p>
-            <div class="medicine-grid">
-                <div class="medicine-card">
-                    <h4>Paracetamol 500mg</h4>
-                    <p>Pain Relief</p>
-                    <p><strong>$12.99</strong></p>
-                    <button class="btn" onclick="addMedicine('Paracetamol 500mg', 12.99)">Add to Prescription</button>
-                </div>
-                <div class="medicine-card">
-                    <h4>Amoxicillin 250mg</h4>
-                    <p>Antibiotic</p>
-                    <p><strong>$24.50</strong></p>
-                    <button class="btn" onclick="addMedicine('Amoxicillin 250mg', 24.50)">Add to Prescription</button>
-                </div>
-                <div class="medicine-card">
-                    <h4>Cough Syrup</h4>
-                    <p>Respiratory Relief</p>
-                    <p><strong>$8.75</strong></p>
-                    <button class="btn" onclick="addMedicine('Cough Syrup', 8.75)">Add to Prescription</button>
-                </div>
-                <div class="medicine-card">
-                    <h4>Vitamin D3</h4>
-                    <p>Supplement</p>
-                    <p><strong>$15.20</strong></p>
-                    <button class="btn" onclick="addMedicine('Vitamin D3', 15.20)">Add to Prescription</button>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 20px;">
-                <button class="btn btn-success" onclick="generateInvoice()">Generate Invoice</button>
+            <h2><span class="dg-section-icon"><i class="fas fa-pills" aria-hidden="true"></i></span>Order medicines</h2>
+            <p>After your consultation, order prescribed Ayurvedic medicines from the official store. Demo inventory and fake dollar prices have been removed.</p>
+            <div style="text-align:center;margin:24px 0;">
+                <a class="btn btn-success" href="/store">Open medicine store</a>
+                <p style="margin-top:12px;color:#666;font-size:0.95rem;">Prefer paying in-call? Complete consultation payment first, then open the store with your prescription handoff.</p>
             </div>
         </div>
 
-        <!-- Invoice Section -->
+        <!-- Invoice / thank-you (real money flows use payment.html + /store) -->
         <div class="section hidden" id="invoiceSection">
-            <h2><span class="dg-section-icon"><i class="fas fa-file-invoice" aria-hidden="true"></i></span>Invoice Generation</h2>
+            <h2><span class="dg-section-icon"><i class="fas fa-file-invoice" aria-hidden="true"></i></span>Consultation complete</h2>
             <div class="invoice-section">
-                <h3>Medical Invoice</h3>
-                <p><strong>Patient ID:</strong> <span id="invoicePatientId">PAT001</span></p>
-                <p><strong>Doctor:</strong> <span id="invoiceDoctor">Dr. Sarah Johnson</span></p>
-                <p><strong>Date:</strong> <span id="invoiceDate"></span></p>
-                
-                <table class="invoice-table">
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Quantity</th>
-                            <th>Price</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody id="invoiceItems">
-                        <tr>
-                            <td>Consultation Fee</td>
-                            <td>1</td>
-                            <td id="consultationFeeInvoice">$150</td>
-                            <td id="consultationFeeTotal">$150</td>
-                        </tr>
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <th colspan="3">Total Amount</th>
-                            <th id="totalAmount">$150.00</th>
-                        </tr>
-                    </tfoot>
-                </table>
-                
-                <div style="text-align: center;">
-                    <button class="btn btn-success" onclick="payInvoice()">Pay Invoice</button>
+                <h3>Next steps</h3>
+                <p>Consultation payments use <a href="payment.html">payment.html</a> (Razorpay). After payment you can continue to <a href="Thankyou.html">Thankyou.html</a>. Medicine orders and invoices are handled on <a href="/store">/store</a>.</p>
+                <p id="invoicePatientId" hidden></p>
+                <p id="invoiceDoctor" hidden></p>
+                <p id="invoiceDate" hidden></p>
+                <span id="consultationFeeInvoice" hidden></span>
+                <span id="consultationFeeTotal" hidden></span>
+                <span id="totalAmount" hidden></span>
+                <tbody id="invoiceItems" hidden></tbody>
+                <div style="text-align:center;margin-top:16px;">
+                    <a class="btn btn-success" href="/store">Buy medicines from store</a>
+                    <a class="btn" href="Thankyou.html" style="margin-left:8px;">Thank you</a>
                 </div>
             </div>
         </div>
 
-        <!-- Delivery Section -->
+        <!-- Delivery: track real orders in the patient portal -->
         <div class="section hidden" id="deliverySection">
             <h2><span class="dg-section-icon"><i class="fas fa-truck-fast" aria-hidden="true"></i></span>Medicine Delivery</h2>
-            <div class="delivery-tracking">
-                <h3>Delivery Address</h3>
-                <div style="background: white; padding: 15px; border-radius: 10px; margin: 15px 0;">
-                    <p><strong>Address:</strong> 123 Main Street, Apartment 4B</p>
-                    <p><strong>City:</strong> New York, NY 10001</p>
-                    <p><strong>Phone:</strong> <a href="tel:+917842736777">+91 7842736777</a></p>
-                    <p><strong>Email:</strong> <a href="mailto:support@dheergayush.net">support@dheergayush.net</a></p>
-                </div>
-                
-                <h3>Delivery Status</h3>
-                <div class="tracking-status status-active">
-                    <span><i class="fas fa-circle-check dg-tracking-icon dg-tracking-icon--success" aria-hidden="true"></i>Order Confirmed</span>
-                    <span>Processing</span>
-                </div>
-                <div class="tracking-status">
-                    <span><i class="fas fa-box dg-tracking-icon" aria-hidden="true"></i>Medicines Packed</span>
-                    <span>Pending</span>
-                </div>
-                <div class="tracking-status">
-                    <span><i class="fas fa-truck-fast dg-tracking-icon" aria-hidden="true"></i>Out for Delivery</span>
-                    <span>Pending</span>
-                </div>
-                <div class="tracking-status">
-                    <span><i class="fas fa-circle-check dg-tracking-icon dg-tracking-icon--success" aria-hidden="true"></i>Delivered</span>
-                    <span>Pending</span>
-                </div>
-                
-                <div style="text-align: center; margin-top: 20px;">
-                    <button class="btn" onclick="updateDeliveryStatus()">Update Delivery Status</button>
-                    <button class="btn btn-success" onclick="completeDelivery()">Mark as Delivered</button>
-                </div>
+            <p>Live delivery tracking is shown on your orders in the <a href="patient.html">patient portal</a> after you place a store order. Fake demo tracking has been removed.</p>
+            <div style="text-align:center;margin-top:16px;">
+                <a class="btn btn-success" href="patient.html">Open patient portal</a>
             </div>
         </div>
     </div>

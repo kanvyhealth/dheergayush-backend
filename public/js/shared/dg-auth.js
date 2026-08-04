@@ -49,6 +49,7 @@
 
     localStorage.setItem('userRole', 'doctor');
     localStorage.setItem('isLoggedInDoctor', 'true');
+    localStorage.setItem('isDoctor', '1');
 
     var doc = data.doctor;
     if (!doc) return;
@@ -84,6 +85,7 @@
     } else {
       localStorage.setItem('userRole', 'patient');
       localStorage.removeItem('isLoggedInDoctor');
+      localStorage.removeItem('isDoctor');
     }
   }
 
@@ -158,7 +160,7 @@
 
   function clearSession() {
     [TOKEN_KEY, REFRESH_KEY, USER_KEY, 'firebaseUid', 'patientId', 'patientPhoneNumber', 'userEmail',
-      'userRole', 'isLoggedInDoctor', 'doctorName', 'doctorLicense', 'doctorUid', 'doctorSpecialization'].forEach(function (k) {
+      'userRole', 'isDoctor', 'isLoggedInDoctor', 'doctorName', 'doctorLicense', 'doctorUid', 'doctorSpecialization'].forEach(function (k) {
       localStorage.removeItem(k);
     });
   }

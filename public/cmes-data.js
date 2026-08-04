@@ -1,6 +1,9 @@
 /**
  * Curated Ayurveda CME videos (YouTube embeds).
  * Only videos with "CME" in the title — grouped by clinical disorder categories.
+ *
+ * Refresh process: update CME_VIDEOS entries (id, title, topic, youtubeId) when
+ * marketing adds or retires sessions; keep topic ids aligned with CME_TOPICS.
  */
 const CME_TOPICS = [
   { id: 'all', label: 'All Topics', icon: 'fa-table-cells-large' },

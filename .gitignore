@@ -8,4 +8,14 @@ uploads/*
 !uploads/.gitkeep
 ayurvedic_store_dataset/
 medicine/.thumbs/
+medicine/medicine/
+public/data/*-cloudinary-report.json
+public/data/*-merge-report.json
+public/data/missing-product-images.*
+public/data/brand-image-match-unmatched.json
+public/data/medicine-catalog.json.bak
+public/data/medicine-catalog_old.json
+public/data/medicine-catalog_2.json
+scripts/_*.log
+scripts/_*.json
 

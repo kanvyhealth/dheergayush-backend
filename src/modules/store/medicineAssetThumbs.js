@@ -153,7 +153,15 @@ function createMedicineThumbHandler({ sourceDir, cacheDir }) {
 
 function toListImageUrl(imageUrl, width = DEFAULT_W) {
   if (!imageUrl) return null;
-  const url = String(imageUrl);
+  let url = String(imageUrl).trim();
+  // Cloudinary: optional list-size transform; PDP uses full imageUrl unchanged.
+  if (/res\.cloudinary\.com/i.test(url) && /\/upload\//i.test(url) && !/\/upload\/w_\d+/i.test(url)) {
+    const w = parseWidth(width);
+    return url.replace('/upload/', `/upload/w_${w},f_auto,q_auto/`);
+  }
+  // Absolute same-site asset URLs → relative so thumbs work on any host.
+  const absAsset = url.match(/^https?:\/\/[^/]+(\/medicine-assets\/.+)$/i);
+  if (absAsset) url = absAsset[1];
   const match = url.match(/^\/medicine-assets\/(.+)$/i);
   if (!match) return url;
   let file = match[1];

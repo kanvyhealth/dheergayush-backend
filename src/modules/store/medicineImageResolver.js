@@ -76,6 +76,57 @@ function imageUrlFromFile(imageFile) {
   return '/medicine-assets/' + encodeURIComponent(file);
 }
 
+/** Recover basename from absolute/relative medicine asset or thumb URLs. */
+function extractMedicineAssetFile(urlOrFile) {
+  if (!urlOrFile) return null;
+  const raw = String(urlOrFile).trim();
+  if (!raw) return null;
+  if (!raw.includes('/') && !raw.includes('\\') && IMAGE_EXT.test(raw)) {
+    return path.basename(raw);
+  }
+  let pathname = raw;
+  try {
+    if (/^https?:\/\//i.test(raw)) pathname = new URL(raw).pathname;
+  } catch (_) { /* keep raw */ }
+  pathname = pathname.split('?')[0].split('#')[0];
+  const thumb = pathname.match(/\/medicine-thumbs\/\d+\/([^/]+)$/i);
+  if (thumb) {
+    try { return decodeURIComponent(thumb[1]); } catch (_) { return thumb[1]; }
+  }
+  const asset = pathname.match(/\/medicine-assets\/([^/]+)$/i);
+  if (asset) {
+    try { return decodeURIComponent(asset[1]); } catch (_) { return asset[1]; }
+  }
+  const base = path.basename(pathname);
+  if (base && IMAGE_EXT.test(base)) return base;
+  return null;
+}
+
+/** True when URL is Cloudinary or other external CDN (not local medicine-assets). */
+function isExternalMedicineImageUrl(url) {
+  const s = String(url || '').trim();
+  if (!s) return false;
+  if (/^https?:\/\//i.test(s)) {
+    if (/\/medicine-assets\//i.test(s) || /\/medicine-thumbs\//i.test(s)) return false;
+    return true;
+  }
+  return false;
+}
+
+function isCloudinaryUrl(url) {
+  return /res\.cloudinary\.com/i.test(String(url || ''));
+}
+
+/** Prefer Cloudinary/external imageUrl; fall back to local /medicine-assets/. */
+function normalizeMedicineImageUrl(url, imageFile) {
+  const s = String(url || '').trim();
+  if (isExternalMedicineImageUrl(s)) return s;
+  const fromFile = imageUrlFromFile(imageFile || extractMedicineAssetFile(url));
+  if (fromFile) return fromFile;
+  if (s.startsWith('/')) return s;
+  return s || null;
+}
+
 function normalizeName(str) {
   return String(str || '')
     .toLowerCase()
@@ -212,12 +263,13 @@ function tokenOverlap(a, b) {
 }
 
 function resolveMedicineImageUrl(med, firebaseImageMap = {}) {
-  if (med.imageUrl) return med.imageUrl;
+  const normalized = normalizeMedicineImageUrl(med && med.imageUrl, med && med.imageFile);
+  if (normalized) return normalized;
 
-  const fromFile = imageUrlFromFile(med.imageFile);
+  const fromFile = imageUrlFromFile(med && med.imageFile);
   if (fromFile) return fromFile;
 
-  const id = String(med._id || med.id || '').toLowerCase();
+  const id = String((med && (med._id || med.id)) || '').toLowerCase();
   if (firebaseImageMap[id]) return firebaseImageMap[id];
 
   const index = buildImageIndex();
@@ -256,6 +308,10 @@ module.exports = {
   buildImageIndex,
   resolveMedicineImageUrl,
   imageUrlFromFile,
+  extractMedicineAssetFile,
+  normalizeMedicineImageUrl,
+  isExternalMedicineImageUrl,
+  isCloudinaryUrl,
   normalizeName,
   normalizeBrand,
   inferBrandFromName,

@@ -4,9 +4,10 @@
 module.exports = function register(app, deps) {
   with (deps) {
     app.get('/api/banners', async (req, res) => {
+      // App / Firestore banners — no website admin CRUD. Returns [] when none configured.
       try {
         const banners = await getBannersFromFirebase();
-        res.json(banners);
+        res.json(Array.isArray(banners) ? banners : []);
       } catch (err) {
         res.status(500).json({ message: 'Failed to load banners', error: err.message });
       }

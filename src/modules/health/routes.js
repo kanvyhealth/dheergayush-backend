@@ -29,10 +29,16 @@ module.exports = function register(app, deps) {
       );
       const razorpayConfigured = isRazorpayConfigured();
       const razorpayAuth = global.__razorpayAuth === true;
+      // Store checkout only needs Firestore + Razorpay; video needs Agora separately.
+      const storeReady = firestoreOk && razorpayConfigured && razorpayAuth;
+      const videoReady = agoraConfigured;
+      const ok = storeReady && videoReady;
     
       res.json({
         ready: true,
-        ok: firestoreOk && agoraConfigured && razorpayConfigured && razorpayAuth,
+        ok,
+        storeReady,
+        videoReady,
         provider: getProvider(),
         db: dbStatus,
         firestore: firestoreOk,
@@ -47,6 +53,34 @@ module.exports = function register(app, deps) {
         ...(razorpayConfigured && !razorpayAuth && global.__razorpayAuthError
           ? { razorpayError: global.__razorpayAuthError }
           : {})
+      });
+    });
+
+    /** Store-only readiness — does not require Agora video infra. */
+    app.get('/api/health/store', async (req, res) => {
+      const { verifyFirestoreRead, hasServiceAccount } = require('../../core/firebase');
+      let firestoreOk = false;
+      let firestoreError = null;
+      if (isConnected() && hasServiceAccount()) {
+        try {
+          await verifyFirestoreRead();
+          firestoreOk = true;
+        } catch (err) {
+          firestoreError = err.message;
+        }
+      }
+      const razorpayConfigured = isRazorpayConfigured();
+      const razorpayAuth = global.__razorpayAuth === true;
+      const storeReady = firestoreOk && razorpayConfigured && razorpayAuth;
+      res.json({
+        ready: true,
+        ok: storeReady,
+        storeReady,
+        firestore: firestoreOk,
+        razorpay: razorpayConfigured,
+        razorpayAuth,
+        uptime: process.uptime(),
+        ...(firestoreError ? { error: firestoreError } : {})
       });
     });
     

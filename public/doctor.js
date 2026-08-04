@@ -63,7 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Doctor login error:', error);
             const msg = error.message || 'Invalid email or password.';
             if (/pending admin approval/i.test(msg)) {
-                showMessage(msg, 'error');
+                showMessage(msg + ' Your registration is waiting for admin review. You will be able to log in after approval.', 'error');
+            } else if (/fee|rejected|not approved/i.test(msg)) {
+                showMessage(msg + ' If your fee or registration was rejected, update details on doctor registration or contact support.', 'error');
             } else {
                 showMessage(msg, 'error');
             }

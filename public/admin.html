@@ -58,6 +58,7 @@
             <button class="tab-btn" data-tab="prescriptions">Prescriptions</button>
             <button class="tab-btn" data-tab="orders">Orders</button>
             <button class="tab-btn" data-tab="medicines">Medicines</button>
+            <button class="tab-btn" data-tab="deletions">Account deletions</button>
         </nav>
 
         <main>
@@ -312,6 +313,32 @@
                             </tr>
                         </thead>
                         <tbody id="medicinesTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="deletions" class="tab-content">
+                <div class="section-header">
+                    <h2>Account deletion requests</h2>
+                    <div class="filter-buttons">
+                        <button type="button" class="filter-btn" onclick="loadDeletionRequests()">Refresh</button>
+                    </div>
+                </div>
+                <p style="margin:0 0 12px;color:#555;">Requests from website/app (<code>POST /api/account/deletion-request</code>). Mark completed after Firebase Auth / Firestore cleanup.</p>
+                <div class="table-container">
+                    <table id="deletionsTable">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Account</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Requested</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deletionsTableBody"></tbody>
                     </table>
                 </div>
             </section>

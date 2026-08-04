@@ -97,10 +97,22 @@ function resolveMedicineImageFile(name) {
 function getMedicineImageUrl(nameOrProduct) {
   if (nameOrProduct && typeof nameOrProduct === 'object') {
     if (nameOrProduct.imageUrl) {
-      return nameOrProduct.imageUrl;
+      var u = String(nameOrProduct.imageUrl).trim();
+      // Cloudinary / external CDN — use as-is
+      if (/^https?:\/\//i.test(u) && !/\/medicine-assets\//i.test(u) && !/\/medicine-thumbs\//i.test(u)) {
+        return u;
+      }
+      var abs = u.match(/^https?:\/\/[^/]+(\/medicine-assets\/.+)$/i);
+      if (abs) return abs[1];
+      var thumb = u.match(/\/medicine-thumbs\/\d+\/([^/?#]+)/i);
+      if (thumb) {
+        try { return '/medicine-assets/' + decodeURIComponent(thumb[1]); }
+        catch (_) { return '/medicine-assets/' + thumb[1]; }
+      }
+      if (u.startsWith('/')) return u;
     }
     if (nameOrProduct.imageFile) {
-      return '/medicine-assets/' + encodeURIComponent(nameOrProduct.imageFile);
+      return '/medicine-assets/' + encodeURIComponent(String(nameOrProduct.imageFile).split(/[/\\]/).pop());
     }
     return getMedicineImageUrl(nameOrProduct.name);
   }

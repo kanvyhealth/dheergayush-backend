@@ -1709,11 +1709,11 @@
 </head>
 <body>
     <!-- Left Image (clickable) -->
-    <a href="https://www.ayurveda.com" target="_blank" rel="noopener noreferrer" class="side-ad-link" id="leftAdLink">
-      <img id="leftAdImage" src="./adposter.jpg" alt="Ad Poster">
+    <a href="/store" class="side-ad-link" id="leftAdLink" aria-label="Open Ayurvedic store">
+      <img id="leftAdImage" src="./adposter.jpg" alt="Shop DHEERGAYUSH store">
     </a>
     <!-- Right Video (clickable) -->
-    <a href="https://www.healthline.com" target="_blank" rel="noopener noreferrer" class="side-ad-link" id="rightAdLink">
+    <a href="/CMEs.html" class="side-ad-link" id="rightAdLink" aria-label="Browse CMEs">
       <video id="rightAdVideo" src="./advideo.mp4" autoplay loop muted playsinline></video>
     </a>
 
@@ -2181,33 +2181,15 @@
                         <div class="stat-item"><div class="stat-number">General</div><div class="stat-label">Category</div></div>
                         <div class="stat-item"><div class="stat-number"><i class="fas fa-star" style="color:#F26727;margin-right:4px;" aria-hidden="true"></i>4.8</div><div class="stat-label">Rating</div></div>
                     </div>
-                    <button class="btn btn-success" onclick="openStoreModal('${store._id}')">Visit Store</button>
+                    <button class="btn btn-success" onclick="window.location.href='/store?company='+encodeURIComponent('${store._id}')">Visit Store</button>
                 </div>
             `).join('');
         }
 
         window.openStoreModal = function(storeId) {
-            currentStore = allStores.find(s => s._id === storeId);
-            if (!currentStore) return;
-            document.getElementById('modalStoreName').textContent = currentStore.name;
-            document.getElementById('modalMedicines').innerHTML = '<p style="text-align:center;padding:20px;">Loading products…</p>';
-            document.getElementById('storeModal').style.display = 'flex';
-            document.getElementById('orderPaymentForm').style.display = 'none';
-            document.getElementById('orderSuccessMsg').style.display = 'none';
-            document.getElementById('proceedToPaymentBtn').style.display = cart.length > 0 ? 'block' : 'none';
-            renderModalCart();
-            fetch('/api/medicines?company=' + encodeURIComponent(storeId) + '&category=Ayurvedic%20Medicines&limit=100&page=1')
-                .then(r => r.json())
-                .then(function(data) {
-                    var meds = data.items || data;
-                    currentStore.medicines = window.DgCatalogMerge
-                        ? DgCatalogMerge.mergeProducts(meds, currentStore.name)
-                        : meds;
-                    renderModalMedicines();
-                })
-                .catch(function() {
-                    document.getElementById('modalMedicines').innerHTML = '<p>Could not load products. <a href="/store">Visit full store</a></p>';
-                });
+            // Checkout lives on /store — keep modal as a thin redirect for any leftover callers.
+            var q = storeId ? ('?company=' + encodeURIComponent(storeId)) : '';
+            window.location.href = '/store' + q;
         };
 
         document.getElementById('closeStoreModal').onclick = function() {

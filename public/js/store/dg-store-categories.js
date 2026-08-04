@@ -4,8 +4,17 @@
     'Ayurvedic Medicines',
     'Personal and Beauty Care',
     'Organic Foods',
+    'Dairy Products',
     'Yoga and Meditation Accessories',
     'Medical Devices'
+  ];
+
+  var DAIRY_SUBCATEGORIES = [
+    'Milk',
+    'Ghee',
+    'Junnu',
+    'Curd and Paneer',
+    'Other Dairy'
   ];
 
   var ORGANIC_FOOD_SUBCATEGORIES = [
@@ -26,13 +35,17 @@
   ];
 
   var STORE_SUBCATEGORIES = {
-    'Organic Foods': ORGANIC_FOOD_SUBCATEGORIES
+    'Organic Foods': ORGANIC_FOOD_SUBCATEGORIES,
+    'Dairy Products': DAIRY_SUBCATEGORIES
   };
 
   var DEPARTMENT_KEYS = {
     'ayurvedic medicines': 'Ayurvedic Medicines',
     'personal and beauty care': 'Personal and Beauty Care',
     'organic foods': 'Organic Foods',
+    'dairy products': 'Dairy Products',
+    'dairy': 'Dairy Products',
+    'milk products': 'Dairy Products',
     'yoga and meditation accessories': 'Yoga and Meditation Accessories',
     'medical devices': 'Medical Devices',
     'ayurvedic beauty': 'Personal and Beauty Care',
@@ -144,6 +157,9 @@
     for (var i = 0; i < ORGANIC_FOOD_SUBCATEGORIES.length; i++) {
       if (normalizeText(ORGANIC_FOOD_SUBCATEGORIES[i]) === key) return ORGANIC_FOOD_SUBCATEGORIES[i];
     }
+    for (var j = 0; j < DAIRY_SUBCATEGORIES.length; j++) {
+      if (normalizeText(DAIRY_SUBCATEGORIES[j]) === key) return DAIRY_SUBCATEGORIES[j];
+    }
     for (var alias in SUBCATEGORY_ALIASES) {
       if (!Object.prototype.hasOwnProperty.call(SUBCATEGORY_ALIASES, alias)) continue;
       if (key.indexOf(alias) >= 0) return SUBCATEGORY_ALIASES[alias];
@@ -160,6 +176,14 @@
     var explicit = normalizeSubcategoryLabel(med && (med.subCategory || med.subcategory));
     if (explicit) return explicit;
     var category = String((med && med.category) || '').trim();
+    if (normalizeDepartmentKey(category) === 'dairy products') {
+      var n = String((med && med.name) || '').toLowerCase();
+      if (/junnu/.test(n)) return 'Junnu';
+      if (/ghee/.test(n)) return 'Ghee';
+      if (/\bmilk\b/.test(n)) return 'Milk';
+      if (/paneer|curd|dahi|lassi|buttermilk|cheese/.test(n)) return 'Curd and Paneer';
+      return 'Other Dairy';
+    }
     var fromCat = normalizeSubcategoryLabel(category);
     if (fromCat && category !== 'Organic Foods' && category !== 'Cooking Essentials') return fromCat;
     var name = String((med && med.name) || '').trim();
@@ -228,6 +252,7 @@
     var key = normalizeDepartmentKey(category);
     if (key === 'personal and beauty care') return 'fa-spa';
     if (key === 'organic foods') return 'fa-leaf';
+    if (key === 'dairy products') return 'fa-cheese';
     if (key === 'yoga and meditation accessories') return 'fa-om';
     if (key === 'medical devices') return 'fa-stethoscope';
     return 'fa-mortar-pestle';
@@ -285,6 +310,7 @@
   global.DgStoreCategories = {
     STORE_DEPARTMENTS: STORE_DEPARTMENTS,
     ORGANIC_FOOD_SUBCATEGORIES: ORGANIC_FOOD_SUBCATEGORIES,
+    DAIRY_SUBCATEGORIES: DAIRY_SUBCATEGORIES,
     STORE_SUBCATEGORIES: STORE_SUBCATEGORIES,
     FEATURED_STORE_BRANDS: FEATURED_STORE_BRANDS,
     normalizeDepartment: normalizeDepartment,

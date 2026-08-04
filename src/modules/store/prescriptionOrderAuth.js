@@ -61,6 +61,12 @@ function evaluatePrescriptionOrderAuth({
         message: 'Prescription has not been shared with the patient yet.'
       };
     }
+  } else if (String(orderData.prescriptionId || '').trim()) {
+    return {
+      ok: false,
+      status: 404,
+      message: 'Prescription not found for this order.'
+    };
   }
 
   if (appointment) {
@@ -78,6 +84,12 @@ function evaluatePrescriptionOrderAuth({
         message: 'Appointment does not belong to the signed-in patient.'
       };
     }
+  } else if (String(orderData.appointmentId || '').trim()) {
+    return {
+      ok: false,
+      status: 404,
+      message: 'Appointment not found for this order.'
+    };
   }
 
   return { ok: true, userId: firebaseUid, guestAllowed: false };

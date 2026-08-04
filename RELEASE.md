@@ -32,12 +32,12 @@ node scripts/verify-razorpay-checkout.js
 
 ---
 
-## Mobile app (Flutter — `hosp_test/`)
+## Mobile app (Flutter — external repo)
 
-Build release APK (same Firebase project):
+The Flutter patient/doctor app is **not** in this website/backend repository. Build it from the separate app project (same Firebase project as production), for example:
 
 ```bash
-cd "hosp_test (4)/hosp_test"
+cd /path/to/dheergayush-flutter-app
 flutter pub get
 flutter build apk --release \
   --dart-define=FIREBASE_PROJECT_ID=hosp-test-app \
@@ -51,7 +51,23 @@ Store catalog in the app loads from the **website API** first, then falls back t
 
 Cross-platform video: app tries Firebase `createAgoraRtcToken`, then website `/api/createAgoraRtcToken`.
 
-Store pricing matches website: ₹150 delivery, free over ₹1000, 10% doctor discount.
+Store pricing matches website: ₹150 delivery, free over ₹1000, **20%** doctor discount.
+
+Native WebView store checkout: see `docs/WEBSITE_STORE_BRIDGE.md` (Firebase token injection + `DgNativePayment` signature contract).
+
+Website auth note: email verification is **soft-fail** — login proceeds if the verification email cannot be sent (`ensureAuthEmailVerified` in `src/application.js`).
+
+Admin OTP: set real email/SMS providers (Brevo, Fast2SMS/MSG91). In production, console OTP fallback is disabled unless `ALLOW_ADMIN_OTP_CONSOLE=1`. Never rely on `devOtp` in production responses.
+
+`GET /api/banners` and consultation coupons (`consultation_coupons`) are **app/Firestore-backed**; there is no website admin CRUD UI — manage in Firebase / the mobile app.
+
+Referral invites (`/invite`) are **app deep-link only** — website does not redeem codes.
+
+Health: `GET /api/health` returns `storeReady` / `videoReady`; use `GET /api/health/store` when checking store-only readiness (Agora not required).
+
+Admin medicines: use **Export JSON** on the Medicines tab (`POST /api/admin/medicines/export-json`) to sync the on-disk catalog with Firestore cache warm.
+
+Admin account deletions: **Account deletions** tab lists `account_deletion_requests` for manual Firebase cleanup.
 
 ---
 

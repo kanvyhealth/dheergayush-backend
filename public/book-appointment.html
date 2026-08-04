@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book appointment — DHEERGAYUSH</title>
+  <meta name="description" content="Book an Ayurvedic video consultation on DHEERGAYUSH.">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <script>
+    (function () {
+      var token = '';
+      try {
+        token = localStorage.getItem('firebaseIdToken') || localStorage.getItem('idToken') || '';
+      } catch (e) {}
+      if (!token) {
+        window.location.replace('landingpage.html?mode=login&next=book');
+        return;
+      }
+      window.location.replace('telemedicine_platform.html?mode=new-appointment');
+    })();
+  </script>
+</head>
+<body>
+  <p>Opening booking… If nothing happens,
+    <a href="patient.html">sign in</a> or
+    <a href="telemedicine_platform.html?mode=new-appointment">continue to booking</a>.
+  </p>
+</body>
+</html>

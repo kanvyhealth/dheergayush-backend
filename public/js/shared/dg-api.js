@@ -46,8 +46,10 @@
       const res = await fetch(healthUrl || DEFAULT_HEALTH_URL, { cache: 'no-store' });
       if (!res.ok) return false;
       const data = await res.json().catch(function () { return {}; });
-      // Server is awake once /api/health responds — full `ok` also needs Firestore/Razorpay.
+      // Server is awake once health responds. Prefer storeReady so store pages
+      // are not blocked when Agora video env is missing.
       if (data.ready === true || typeof data.uptime === 'number') return true;
+      if (data.storeReady === true) return true;
       return data.ok !== false;
     } catch (e) {
       return false;

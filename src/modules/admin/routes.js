@@ -533,7 +533,7 @@ module.exports = function register(app, deps) {
                     maskedEmail: challenge.maskedEmail,
                     maskedPhone: challenge.maskedPhone
                 };
-                if (delivery.consoleDev) {
+                if (delivery.consoleDev && process.env.NODE_ENV !== 'production') {
                     payload.devOtp = challenge.otp;
                 }
                 return res.json(payload);
@@ -578,7 +578,7 @@ module.exports = function register(app, deps) {
                 maskedEmail: result.maskedEmail,
                 maskedPhone: result.maskedPhone
             };
-            if (delivery.consoleDev) {
+            if (delivery.consoleDev && process.env.NODE_ENV !== 'production') {
                 payload.devOtp = result.otp;
             }
             return res.json(payload);
@@ -700,6 +700,35 @@ module.exports = function register(app, deps) {
             });
         } catch (err) {
             res.status(500).json({ message: err.message });
+        }
+    });
+
+    app.get('/api/admin/account-deletion-requests', async (req, res) => {
+        try {
+            const rows = await AccountDeletionRequest.find({}).sort({ requestedAt: -1 }).exec();
+            res.json(rows);
+        } catch (err) {
+            res.status(500).json({ message: err.message || 'Failed to load deletion requests' });
+        }
+    });
+
+    app.patch('/api/admin/account-deletion-requests/:id', async (req, res) => {
+        try {
+            const id = String(req.params.id || '').trim();
+            const status = String(req.body?.status || '').trim().toLowerCase();
+            if (!id) return res.status(400).json({ message: 'id required' });
+            if (!['pending', 'processing', 'completed', 'rejected'].includes(status)) {
+                return res.status(400).json({ message: 'Invalid status' });
+            }
+            const updated = await AccountDeletionRequest.findByIdAndUpdate(
+                id,
+                { status, reviewedAt: new Date() },
+                { new: true }
+            );
+            if (!updated) return res.status(404).json({ message: 'Request not found' });
+            res.json({ ok: true, request: updated });
+        } catch (err) {
+            res.status(500).json({ message: err.message || 'Failed to update deletion request' });
         }
     });
     

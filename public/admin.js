@@ -86,6 +86,11 @@ async function loadTabData(tabName) {
             await loadMedicinesTab();
             return;
         }
+
+        if (tabName === 'deletions') {
+            await loadDeletionRequests();
+            return;
+        }
         
         const response = await DgApi.apiFetch(`/api/admin/${tabName}`);
         if (!response.ok) {
@@ -1312,6 +1317,70 @@ async function hideMedicine(id) {
 window.loadMedicinesTab = loadMedicinesTab;
 window.exportMedicinesCatalog = exportMedicinesCatalog;
 window.hideMedicine = hideMedicine;
+
+async function loadDeletionRequests() {
+    try {
+        const response = await DgApi.apiFetch('/api/admin/account-deletion-requests');
+        if (!response.ok) throw new Error('Failed to load deletion requests');
+        const rows = await response.json();
+        const tbody = document.getElementById('deletionsTableBody');
+        if (!tbody) return;
+        if (!Array.isArray(rows) || !rows.length) {
+            tbody.innerHTML = '<tr><td colspan="7">No deletion requests.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = rows.map((row) => {
+            const id = row._id || row.id || '';
+            const status = row.status || 'pending';
+            const when = row.requestedAt ? new Date(row.requestedAt).toLocaleString() : '—';
+            const safeId = String(id).replace(/'/g, '');
+            return `<tr>
+              <td>${escapeAdminHtml(row.email || '')}</td>
+              <td>${escapeAdminHtml(row.phone || '')}</td>
+              <td>${escapeAdminHtml(row.accountType || row.source || '')}</td>
+              <td>${escapeAdminHtml(row.reason || '')}</td>
+              <td>${escapeAdminHtml(status)}</td>
+              <td>${escapeAdminHtml(when)}</td>
+              <td>
+                <button type="button" class="filter-btn" onclick="updateDeletionRequest('${safeId}','processing')">Processing</button>
+                <button type="button" class="filter-btn" onclick="updateDeletionRequest('${safeId}','completed')">Completed</button>
+                <button type="button" class="clear-btn" onclick="updateDeletionRequest('${safeId}','rejected')">Reject</button>
+              </td>
+            </tr>`;
+        }).join('');
+    } catch (error) {
+        console.error('loadDeletionRequests failed:', error);
+        showNotification(error.message || 'Failed to load deletion requests', 'error');
+    }
+}
+
+function escapeAdminHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+async function updateDeletionRequest(id, status) {
+    if (!id) return;
+    try {
+        const response = await DgApi.apiFetch('/api/admin/account-deletion-requests/' + encodeURIComponent(id), {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || 'Update failed');
+        showNotification('Deletion request updated', 'success');
+        await loadDeletionRequests();
+    } catch (error) {
+        showNotification(error.message || 'Update failed', 'error');
+    }
+}
+
+window.loadDeletionRequests = loadDeletionRequests;
+window.updateDeletionRequest = updateDeletionRequest;
 
 function adminOrderInvoice(orderId) {
     if (!orderId) return;

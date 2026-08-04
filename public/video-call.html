@@ -4383,7 +4383,11 @@ if (saveRxBtn) {
       items: savedItems,
       total: totalAmount,
       savedAt: new Date().toISOString(),
-      roomId: getActiveRoomId()
+      roomId: getActiveRoomId(),
+      appointmentId: getActiveRoomId(),
+      prescriptionId: (typeof currentPrescriptionId !== 'undefined' && currentPrescriptionId)
+        ? String(currentPrescriptionId)
+        : (localStorage.getItem('currentPrescriptionId') || '')
     };
     localStorage.setItem(getPatientSavedCartKey(), JSON.stringify({
       items: savedPayload.items,

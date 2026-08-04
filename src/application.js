@@ -384,7 +384,12 @@ app.use('/medicines', express.static(path.join(ROOT_DIR, 'public', 'medicines'))
 function isAllowedElibPdfHost(hostname) {
   if (!hostname) return false;
   const h = hostname.toLowerCase();
-  return h === 'archive.org' || h.endsWith('.archive.org');
+  if (h === 'archive.org' || h.endsWith('.archive.org')) return true;
+  const extra = String(process.env.ELIBRARY_PDF_HOSTS || '')
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  return extra.some((allowed) => h === allowed || h.endsWith('.' + allowed));
 }
 
 
@@ -1940,7 +1945,7 @@ function serveLegalPage(req, res, fileName) {
   try {
     const html = fs.readFileSync(filePath, 'utf8');
     const out = injectPageSeo(html, { path: req.path });
-    res.type('html').charset('utf-8').send(out);
+    res.set('Content-Type', 'text/html; charset=utf-8').send(out);
   } catch (err) {
     console.warn('Legal page SEO inject failed for', fileName, err.message);
     res.sendFile(filePath);
@@ -1979,7 +1984,7 @@ app.use((req, res, next) => {
   try {
     const html = fs.readFileSync(filePath, 'utf8');
     const out = injectPageSeo(html, { path: req.path === '/' ? '/' : rel });
-    res.type('html').charset('utf-8').send(out);
+    res.set('Content-Type', 'text/html; charset=utf-8').send(out);
   } catch (err) {
     console.warn('SEO inject failed for', rel, err.message);
     next();

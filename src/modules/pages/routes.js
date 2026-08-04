@@ -4,6 +4,9 @@
 module.exports = function register(app, deps) {
   with (deps) {
     app.get('/dev', (req, res) => {
+        if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEV_PAGE !== '1') {
+          return res.status(404).send('Not found');
+        }
         res.sendFile(path.join(ROOT_DIR, 'public', 'developer.html'));
       });
     

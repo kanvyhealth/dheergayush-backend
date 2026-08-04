@@ -199,8 +199,12 @@ async function sendAdminOtpEmail(otp) {
     return { ok: true, provider: 'email-webhook' };
   }
 
-  // Console fallback when providers missing (unless ADMIN_REQUIRE_OTP_PROVIDERS=true)
-  if (String(process.env.ADMIN_REQUIRE_OTP_PROVIDERS || '').toLowerCase() !== 'true') {
+  // Console fallback when providers missing (blocked in production unless ALLOW_ADMIN_OTP_CONSOLE=1)
+  const allowConsole =
+    String(process.env.ALLOW_ADMIN_OTP_CONSOLE || '').toLowerCase() === '1' ||
+    (process.env.NODE_ENV !== 'production' &&
+      String(process.env.ADMIN_REQUIRE_OTP_PROVIDERS || '').toLowerCase() !== 'true');
+  if (allowConsole) {
     console.warn(`Admin OTP email fallback for ${to}: ${otp}`);
     return { ok: true, provider: 'console-dev' };
   }
@@ -252,7 +256,11 @@ async function sendAdminOtpSms(otp) {
     return { ok: true, provider: 'sms-webhook' };
   }
 
-  if (String(process.env.ADMIN_REQUIRE_OTP_PROVIDERS || '').toLowerCase() !== 'true') {
+  const allowConsoleSms =
+    String(process.env.ALLOW_ADMIN_OTP_CONSOLE || '').toLowerCase() === '1' ||
+    (process.env.NODE_ENV !== 'production' &&
+      String(process.env.ADMIN_REQUIRE_OTP_PROVIDERS || '').toLowerCase() !== 'true');
+  if (allowConsoleSms) {
     console.warn(`Admin OTP SMS fallback for ${digits}: ${otp}`);
     return { ok: true, provider: 'console-dev' };
   }

@@ -168,7 +168,7 @@
       group.name = pickDisplayName(group.name, med.name, brandRaw);
       if (!group.imageFile && med.imageFile) group.imageFile = med.imageFile;
       if (!group.imageUrl && med.imageUrl) group.imageUrl = med.imageUrl;
-      else if (!group.imageUrl && med.imageFile) {
+      else if (!group.imageUrl && med.imageFile && !/^https?:\/\//i.test(String(med.imageUrl || ''))) {
         group.imageUrl = '/medicine-assets/' + encodeURIComponent(med.imageFile);
       }
       if ((med.description || '').length > (group.description || '').length) {

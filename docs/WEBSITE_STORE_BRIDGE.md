@@ -93,6 +93,16 @@ Checkout includes those IDs on `orderData` with `source: "prescription"`.
 
 Server also persists `deliveryAddressId` + `deliveryAddressSnapshot` when provided, and continues catalog/price validation.
 
+## Native Flutter payment contract
+
+When `window.__DG_FLUTTER_APP__` and `DgNativePayment.postMessage` are present:
+
+1. Website calls `DgFlutterNativeCheckout.pay({ amountPaise, description, prefill, receipt, createOrder: true })`.
+2. Flutter creates/opens Razorpay (or equivalent) and must return:
+   `{ razorpay_order_id, razorpay_payment_id, razorpay_signature }`.
+3. Website posts that signature to `POST /api/orders` (same as web checkout). Incomplete payloads are rejected.
+4. On failure Flutter calls `window.__dgFailNativePayment(message)`. Native pay times out after 180s.
+
 ## Verification checklist
 
 - [x] `setAppUserContext` implemented with address picker
@@ -101,4 +111,7 @@ Server also persists `deliveryAddressId` + `deliveryAddressSnapshot` when provid
 - [x] Prescription-linked orders require verified Firebase auth + ownership checks
 - [x] Paid orders store `userId`/`patientId` from token + `deliveryAddressId` snapshot
 - [x] Prescription items / consultation context bridge methods present
-- [ ] Deploy website + Flutter builds and verify WebView end-to-end
+- [x] Native payment requires full Razorpay signature + timeout
+- [x] Browser Firebase token accepted for prescription checkout (not Flutter-only)
+- [x] `openCart()` re-renders cart before showing
+- [ ] Deploy website + Flutter builds and verify WebView end-to-end (manual QA on device)

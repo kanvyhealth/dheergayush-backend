@@ -5,6 +5,7 @@ const STORE_DEPARTMENTS = [
   'Ayurvedic Medicines',
   'Personal and Beauty Care',
   'Organic Foods',
+  'Dairy Products',
   'Yoga and Meditation Accessories',
   'Medical Devices'
 ];
@@ -13,6 +14,9 @@ const DEPARTMENT_KEYS = {
   'ayurvedic medicines': 'Ayurvedic Medicines',
   'personal and beauty care': 'Personal and Beauty Care',
   'organic foods': 'Organic Foods',
+  'dairy products': 'Dairy Products',
+  'dairy': 'Dairy Products',
+  'milk products': 'Dairy Products',
   'yoga and meditation accessories': 'Yoga and Meditation Accessories',
   'medical devices': 'Medical Devices',
   // Legacy labels
@@ -53,8 +57,17 @@ const ORGANIC_FOOD_SUBCATEGORIES = [
   'Sweets'
 ];
 
+const DAIRY_SUBCATEGORIES = [
+  'Milk',
+  'Ghee',
+  'Junnu',
+  'Curd and Paneer',
+  'Other Dairy'
+];
+
 const STORE_SUBCATEGORIES = {
-  'Organic Foods': ORGANIC_FOOD_SUBCATEGORIES
+  'Organic Foods': ORGANIC_FOOD_SUBCATEGORIES,
+  'Dairy Products': DAIRY_SUBCATEGORIES
 };
 
 const SUBCATEGORY_ALIASES = {
@@ -427,6 +440,7 @@ function classifyStoreProduct(med) {
 
   const direct = resolveDepartmentKey(category);
   if (direct && STORE_DEPARTMENTS.includes(direct)) {
+    if (direct === 'Dairy Products') return 'Dairy Products';
     const hasMedicineSignal = containsKeyword(combined, MEDICINE_SIGNAL_KEYWORDS);
     const hasBeautySignal = containsKeyword(combined, BEAUTY_CARE_KEYWORDS);
     const hasFoodSignal = containsKeyword(combined, ORGANIC_FOOD_KEYWORDS);
@@ -518,6 +532,15 @@ function classifyStoreSubcategory(med) {
   if (explicit) return explicit;
 
   const category = String(med?.category || '').trim();
+  if (normalizeStoreCategory(classifyStoreProduct(med)) === 'Dairy Products') {
+    const n = String(med?.name || '').toLowerCase();
+    if (/junnu/.test(n)) return 'Junnu';
+    if (/ghee/.test(n)) return 'Ghee';
+    if (/\bmilk\b/.test(n)) return 'Milk';
+    if (/paneer|curd|dahi|lassi|buttermilk|cheese/.test(n)) return 'Curd and Paneer';
+    return 'Other Dairy';
+  }
+
   const fromCategory = normalizeSubcategoryLabel(category);
   if (fromCategory && category !== 'Organic Foods' && category !== 'Cooking Essentials') {
     return fromCategory;
@@ -632,6 +655,7 @@ function departmentIconClass(category) {
   const key = normalizeStoreCategoryKey(classifyStoreProduct({ category }));
   if (key === 'personal and beauty care') return 'fa-spa';
   if (key === 'organic foods') return 'fa-leaf';
+  if (key === 'dairy products') return 'fa-cheese';
   if (key === 'yoga and meditation accessories') return 'fa-om';
   if (key === 'medical devices') return 'fa-stethoscope';
   return 'fa-mortar-pestle';
@@ -649,6 +673,7 @@ function storePathFor(department, subcategory) {
 module.exports = {
   STORE_DEPARTMENTS,
   ORGANIC_FOOD_SUBCATEGORIES,
+  DAIRY_SUBCATEGORIES,
   STORE_SUBCATEGORIES,
   normalizeStoreCategory,
   normalizeStoreCategoryKey,

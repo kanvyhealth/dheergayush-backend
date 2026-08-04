@@ -6,6 +6,8 @@ const { getStorageBucket, initFirebase } = require('./');
 const {
   resolveMedicineImageUrl,
   imageUrlFromFile,
+  extractMedicineAssetFile,
+  normalizeMedicineImageUrl,
   normalizeBrand,
   normalizeName,
   inferBrandFromName,
@@ -262,7 +264,7 @@ function formatMedicineForStore(med, imageMap) {
   const id = String(doc._id || doc.id || '');
   let company = getMedicineBrand(doc);
   if (!company) company = inferBrandFromName(doc.name) || '';
-  const imageFile = doc.imageFile || null;
+  const imageFile = doc.imageFile || extractMedicineAssetFile(doc.imageUrl || doc.image_url) || null;
   const reviewStatus = String(doc.inventoryReviewStatus || 'ready').toLowerCase();
   const price = Number(doc.price_inr ?? doc.price ?? 0) || 0;
   const storeVisible = reviewStatus === 'ready' && reviewStatus !== 'rejected';
@@ -276,7 +278,7 @@ function formatMedicineForStore(med, imageMap) {
     company,
     brand: doc.brand || company,
     imageFile,
-    imageUrl: doc.imageUrl || doc.image_url || imageUrlFromFile(imageFile) || null,
+    imageUrl: normalizeMedicineImageUrl(doc.imageUrl || doc.image_url, imageFile) || null,
     price,
     weights: buildWeightsFromDoc(doc),
     inventoryReviewStatus: reviewStatus,
@@ -287,6 +289,9 @@ function formatMedicineForStore(med, imageMap) {
   };
   if (!formatted.imageUrl) {
     formatted.imageUrl = resolveMedicineImageUrl(formatted, imageMap);
+  }
+  if (!formatted.imageFile && formatted.imageUrl) {
+    formatted.imageFile = extractMedicineAssetFile(formatted.imageUrl);
   }
   return formatted;
 }
@@ -447,7 +452,8 @@ function filterMedicines(medicines, { company, category, subcategory, q, searchI
 }
 
 function toListMedicine(m) {
-  const fullUrl = m.imageUrl || imageUrlFromFile(m.imageFile) || null;
+  const imageFile = m.imageFile || extractMedicineAssetFile(m.imageUrl) || null;
+  const fullUrl = normalizeMedicineImageUrl(m.imageUrl, imageFile) || imageUrlFromFile(imageFile) || null;
   return {
     _id: m._id,
     id: m.id || m._id,
@@ -455,7 +461,7 @@ function toListMedicine(m) {
     brand: m.brand || m.company,
     company: m.company,
     imageUrl: toListImageUrl(fullUrl, LIST_THUMB_WIDTH),
-    imageFile: m.imageFile || null,
+    imageFile,
     category: m.category,
     subCategory: m.subCategory,
     price: m.price,
@@ -635,7 +641,12 @@ async function getMedicinesByIds(ids = []) {
 
   const items = normalized
     .map((id) => byId.get(id))
-    .filter(Boolean);
+    .filter(Boolean)
+    .map((med) => {
+      const imageFile = med.imageFile || extractMedicineAssetFile(med.imageUrl) || null;
+      const imageUrl = normalizeMedicineImageUrl(med.imageUrl, imageFile) || med.imageUrl || null;
+      return { ...med, imageFile, imageUrl };
+    });
 
   return {
     items,
@@ -699,6 +710,20 @@ async function validateOrderItemsAgainstCatalog(items = []) {
 
     const totalPrice = Math.round(pricePerUnit * qty * 100) / 100;
     subtotal += totalPrice;
+
+    let selectedWeight = null;
+    if (item.selectedWeight && item.selectedWeight.value != null) {
+      selectedWeight = {
+        value: Number(item.selectedWeight.value),
+        unit: String(item.selectedWeight.unit || 'unit')
+      };
+    } else if (Array.isArray(catalogMed.weights) && catalogMed.weights.length === 1) {
+      selectedWeight = {
+        value: Number(catalogMed.weights[0].value),
+        unit: String(catalogMed.weights[0].unit || 'unit')
+      };
+    }
+
     normalized.push({
       medicineId: String(catalogMed._id || catalogMed.id),
       storeProductId: String(catalogMed._id || catalogMed.id),
@@ -709,6 +734,7 @@ async function validateOrderItemsAgainstCatalog(items = []) {
       pricePerUnit,
       quantity: qty,
       totalPrice,
+      selectedWeight,
       productType: item.productType || 'medicine',
       productTypeName: item.productTypeName || 'Medicine'
     });

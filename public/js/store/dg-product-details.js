@@ -55,8 +55,29 @@
   }
 
   function imageUrl(med) {
-    if (med.imageUrl) return med.imageUrl;
-    if (med.imageFile) return '/medicine-assets/' + encodeURIComponent(med.imageFile);
+    if (!med) return '';
+    if (med.imageUrl) {
+      var u = String(med.imageUrl).trim();
+      // Cloudinary / external CDN — use catalog imageUrl directly
+      if (/^https?:\/\//i.test(u) && !/\/medicine-assets\//i.test(u) && !/\/medicine-thumbs\//i.test(u)) {
+        return u;
+      }
+      var abs = u.match(/^https?:\/\/[^/]+(\/medicine-(?:assets|thumbs)\/.+)$/i);
+      if (abs) {
+        if (/\/medicine-thumbs\//i.test(abs[1])) {
+          var t = abs[1].match(/\/medicine-thumbs\/\d+\/([^/?#]+)/i);
+          if (t) {
+            var thumbFile = t[1];
+            try { thumbFile = decodeURIComponent(thumbFile); } catch (_) { /* keep */ }
+            return '/medicine-assets/' + encodeURIComponent(thumbFile);
+          }
+        }
+        return abs[1];
+      }
+      if (u.startsWith('/')) return u;
+    }
+    var file = med.imageFile || '';
+    if (file) return '/medicine-assets/' + encodeURIComponent(String(file).split('/').pop());
     if (typeof getMedicineImageUrl === 'function') return getMedicineImageUrl(med) || '';
     return '';
   }
@@ -133,17 +154,21 @@
   function addToCart(med, weight, quantity) {
     var cart = readCart();
     var medicineId = weight.medicineId || med._id || med.id;
-    var storeId = med.storeId || qs('store') || '';
+    var storeId = String(med.storeId || qs('store') || med.company || med.storeName || 'general').trim();
+    if (!storeId || storeId === 'all') storeId = 'general';
     var price = Number(weight.price) || 0;
     var qty = Math.max(1, Math.min(MAX_QTY, Number(quantity) || 1));
     var idx = cart.findIndex(function (c) {
-      return c.medicineId === medicineId && c.storeId === storeId &&
+      var cStore = String(c.storeId || '').trim() || 'general';
+      if (cStore === 'all') cStore = 'general';
+      return c.medicineId === medicineId && cStore === storeId &&
         String(c.selectedWeight.value) === String(weight.value) && c.selectedWeight.unit === weight.unit;
     });
     if (idx >= 0) {
       cart[idx].quantity = Math.min(MAX_QTY, Number(cart[idx].quantity || 0) + qty);
       cart[idx].pricePerUnit = price;
       cart[idx].totalPrice = price * cart[idx].quantity;
+      cart[idx].storeId = storeId;
     } else {
       cart.push({
         medicineId: medicineId,
@@ -318,7 +343,11 @@
       '<div class="pd-stage">' +
       (med.category ? '<span class="pd-stage-tag">' + escapeHtml(med.category) + '</span>' : '') +
       (img
-        ? '<img src="' + escapeHtml(img) + '" alt="' + escapeHtml(name) + '">'
+        ? '<img src="' + escapeHtml(img) + '" alt="' + escapeHtml(name) + '" ' +
+          'decoding="async" ' +
+          'onerror="this.onerror=null;this.src=this.src.replace(/\\/medicine-thumbs\\/\\d+\\//,\'/medicine-assets/\');if(!this.dataset.fallback){this.dataset.fallback=1;this.style.display=\'none\';var f=this.nextElementSibling;if(f)f.style.display=\'grid\';}">' +
+          '<div class="pd-stage-fallback" style="display:none"><i class="fas ' + categoryIcon(med.category) +
+          '"></i><span>Image coming soon</span></div>'
         : '<div class="pd-stage-fallback"><i class="fas ' + categoryIcon(med.category) +
           '"></i><span>Image coming soon</span></div>') +
       '</div>' +

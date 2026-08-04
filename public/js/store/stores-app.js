@@ -38,7 +38,8 @@
   var legacyFiltered = [];
   var DOCTOR_DISCOUNT_RATE = 0.2;
   var isDoctor = localStorage.getItem('isDoctor') === '1' ||
-    localStorage.getItem('userRole') === 'doctor';
+    localStorage.getItem('userRole') === 'doctor' ||
+    localStorage.getItem('isLoggedInDoctor') === 'true';
   var consultationContext = { appointmentId: '', prescriptionId: '' };
   var appUserContext = {
     uid: '',
@@ -63,6 +64,44 @@
 
   function getFirebaseIdToken() {
     return firebaseAuthToken || '';
+  }
+
+  function resolveCheckoutAuthToken() {
+    var token = getFirebaseIdToken();
+    if (token) return token;
+    try {
+      if (window.DgStoreCartBridge && DgStoreCartBridge.getFirebaseIdToken) {
+        token = DgStoreCartBridge.getFirebaseIdToken() || '';
+        if (token) return token;
+      }
+    } catch (_) { /* ignore */ }
+    try {
+      token = localStorage.getItem('firebaseIdToken') || '';
+    } catch (_) {
+      token = '';
+    }
+    return token || '';
+  }
+
+  function normalizeCartStoreId(medOrId) {
+    var raw = '';
+    if (medOrId && typeof medOrId === 'object') {
+      raw = String(medOrId.storeId || medOrId.company || medOrId.storeName || '').trim();
+    } else {
+      raw = String(medOrId || '').trim();
+    }
+    if (!raw || raw === 'all') return 'general';
+    return raw;
+  }
+
+  function clearDoctorDiscountFlags() {
+    try {
+      localStorage.removeItem('isDoctor');
+      // Keep userRole/isLoggedInDoctor for portal sessions; only clear ephemeral store flag.
+      // Discount still requires a real doctor Bearer session on the server.
+    } catch (_) { /* ignore */ }
+    isDoctor = localStorage.getItem('userRole') === 'doctor' ||
+      localStorage.getItem('isLoggedInDoctor') === 'true';
   }
 
   function loadScriptOnce(src) {
@@ -618,9 +657,9 @@
   }
 
   function getCartQtyForVariant(med, medicineId, value, unit) {
-    var storeId = med.storeId || currentStoreFilter;
+    var storeId = normalizeCartStoreId(med);
     var existing = cart.find(function (c) {
-      return c.medicineId === medicineId && c.storeId === storeId &&
+      return c.medicineId === medicineId && normalizeCartStoreId(c.storeId) === storeId &&
         String(c.selectedWeight.value) === String(value) && c.selectedWeight.unit === unit;
     });
     return existing ? existing.quantity : 0;
@@ -1051,10 +1090,10 @@
   }
 
   function setCartQty(med, medicineId, value, unit, price, qty) {
-    var storeId = med.storeId || currentStoreFilter;
+    var storeId = normalizeCartStoreId(med);
     var storeName = med.storeName || med.company || '';
     var idx = cart.findIndex(function (c) {
-      return c.medicineId === medicineId && c.storeId === storeId &&
+      return c.medicineId === medicineId && normalizeCartStoreId(c.storeId) === storeId &&
         String(c.selectedWeight.value) === String(value) && c.selectedWeight.unit === unit;
     });
     if (qty <= 0) {
@@ -1063,6 +1102,7 @@
       cart[idx].quantity = qty;
       cart[idx].pricePerUnit = price;
       cart[idx].totalPrice = price * qty;
+      cart[idx].storeId = storeId;
     } else {
       cart.push({
         medicineId: medicineId,
@@ -1197,17 +1237,19 @@
         '<div class="cart-row-price">₹' + (item.pricePerUnit * item.quantity) + '</div>' +
         '<button type="button" class="cart-remove" data-i="' + i + '" aria-label="Remove">&times;</button></div>';
     }).join('');
-    var subtotal = cart.reduce(function (t, i) { return t + i.pricePerUnit * i.quantity; }, 0);
-    var delivery = subtotal > 1000 ? 0 : 150;
-    var total = subtotal + delivery;
+    var totals = computeCartTotals();
     els.cartTotal.innerHTML =
-      '<div class="sum-row"><span>Subtotal</span><span>₹' + subtotal + '</span></div>' +
-      '<div class="sum-row"><span>Delivery</span><span>' + (delivery ? '₹' + delivery : 'FREE') + '</span></div>' +
-      '<div class="sum-row total"><span>Total</span><span>₹' + total + '</span></div>';
+      '<div class="sum-row"><span>Subtotal</span><span>₹' + totals.subtotal + '</span></div>' +
+      (isDoctor && totals.discount
+        ? '<div class="sum-row discount"><span>Doctor discount</span><span>-₹' + totals.discount + '</span></div>'
+        : '') +
+      '<div class="sum-row"><span>Delivery</span><span>' + (totals.delivery ? '₹' + totals.delivery : 'FREE') + '</span></div>' +
+      '<div class="sum-row total"><span>Total</span><span>₹' + totals.total + '</span></div>';
     els.checkoutBtn.disabled = false;
     els.cartItems.querySelectorAll('.cart-remove').forEach(function (b) {
       b.addEventListener('click', function () {
         cart.splice(parseInt(b.dataset.i, 10), 1);
+        persistCart();
         renderCart();
         updateCartBadge();
         syncAllCardActions();
@@ -1502,12 +1544,12 @@
         !!(consultationContext.appointmentId || consultationContext.prescriptionId) ||
         orderData.source === 'prescription';
       if (requiresAuth) {
-        var authToken = '';
-        if (window.DgStoreCartBridge && DgStoreCartBridge.getFirebaseIdToken) {
-          authToken = DgStoreCartBridge.getFirebaseIdToken() || '';
+        var authToken = resolveCheckoutAuthToken();
+        if (authToken && !getFirebaseIdToken()) {
+          setFirebaseIdToken(authToken);
         }
         if (!authToken) {
-          throw new Error('Sign in required to order from a prescription. Re-open the store from the app.');
+          throw new Error('Sign in required to order from a prescription. Log in on the website or re-open the store from the app.');
         }
       }
       if (isDoctor && window.DgAuth && DgAuth.ensureValidToken) {
@@ -1515,6 +1557,7 @@
         if (!doctorToken) {
           throw new Error('Doctor session expired. Log in again from the doctor dashboard.');
         }
+        setFirebaseIdToken(doctorToken);
       }
       setCheckoutStatus('Complete payment in the Razorpay window…', false);
       var invoiceSnapshot = {
@@ -1570,12 +1613,15 @@
           setCheckoutStatus('Order paid. Use Download Invoice if the PDF did not start.', false);
         }
       }
-      if (isDoctor) localStorage.removeItem('isDoctor');
+      if (isDoctor) clearDoctorDiscountFlags();
     } catch (err) {
       var msg = err.message || 'Payment failed';
       console.error('Store checkout error:', err);
       if (msg.indexOf('cancelled') !== -1) {
         setCheckoutStatus('Payment cancelled.', true);
+      } else if (err.code === 'ORDER_PLACE_FAILED' || (window.DgStorePayment && DgStorePayment.hasPendingPaidOrder && DgStorePayment.hasPendingPaidOrder())) {
+        setCheckoutStatus(msg + ' Tap “Retry order” below.', true);
+        showPendingOrderRetry();
       } else {
         setCheckoutStatus(msg, true);
       }
@@ -1583,6 +1629,44 @@
       if (els.placeOrderBtn) els.placeOrderBtn.disabled = false;
     }
   });
+
+  function showPendingOrderRetry() {
+    if (!els.checkoutStatus) return;
+    var existing = document.getElementById('retryPendingOrderBtn');
+    if (existing) return;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'retryPendingOrderBtn';
+    btn.className = 'dg-btn-outline';
+    btn.style.marginTop = '10px';
+    btn.textContent = 'Retry order (payment already captured)';
+    btn.addEventListener('click', async function () {
+      btn.disabled = true;
+      try {
+        setCheckoutStatus('Recovering paid order…', false);
+        var recovered = await DgStorePayment.retryPendingPaidOrder();
+        cart = [];
+        persistCart();
+        updateCartBadge();
+        setCheckoutStatus('Order recovered successfully.', false);
+        btn.remove();
+        showSection('shopSection');
+        if (els.storeInvoiceSuccess) {
+          els.storeInvoiceSuccess.classList.add('show');
+          if (els.storeInvoiceSuccessText) {
+            var oid = (recovered && (recovered.orderId || recovered.id || recovered._id)) || '';
+            els.storeInvoiceSuccessText.textContent = oid
+              ? ('Order ' + oid + ' confirmed after recovery.')
+              : 'Your paid order was recovered successfully.';
+          }
+        }
+      } catch (err) {
+        setCheckoutStatus(err.message || 'Recovery failed', true);
+        btn.disabled = false;
+      }
+    });
+    els.checkoutStatus.insertAdjacentElement('afterend', btn);
+  }
 
   function addPrescriptionItemsToCart(items) {
     if (!Array.isArray(items)) {
@@ -1610,7 +1694,7 @@
       if (!isFinite(value) || value <= 0) value = 1;
       var unit = String(item.weightUnit || item.unit || 'unit');
       var med = {
-        storeId: String(item.storeId || 'all'),
+        storeId: normalizeCartStoreId(item),
         storeName: String(item.storeName || item.company || ''),
         name: String(item.name || 'Medicine'),
         imageUrl: String(item.imageUrl || '')
@@ -1633,6 +1717,12 @@
       var payload = JSON.parse(raw);
       var result = addPrescriptionItemsToCart(payload.items || []);
       if (payload.roomId) consultationContext.appointmentId = consultationContext.appointmentId || String(payload.roomId);
+      if (payload.prescriptionId) {
+        consultationContext.prescriptionId = consultationContext.prescriptionId || String(payload.prescriptionId);
+      }
+      if (payload.appointmentId) {
+        consultationContext.appointmentId = consultationContext.appointmentId || String(payload.appointmentId);
+      }
       if (result.added > 0) {
         renderCart();
         updateCartBadge();
@@ -1651,6 +1741,8 @@
     getFirebaseIdToken: getFirebaseIdToken,
     addPrescriptionItems: addPrescriptionItemsToCart,
     openCart: function () {
+      renderCart();
+      updateCartBadge();
       showSection('cartSection');
     },
     setConsultationContext: function (ctx) {
@@ -1722,4 +1814,9 @@
   loadStores();
   consumeSavedPrescriptionCart();
   updateCartBadge();
+  if (window.DgStorePayment && DgStorePayment.hasPendingPaidOrder && DgStorePayment.hasPendingPaidOrder()) {
+    showSection('checkoutSection');
+    setCheckoutStatus('A previous payment succeeded but the order was not saved. Tap Retry order.', true);
+    showPendingOrderRetry();
+  }
 })();

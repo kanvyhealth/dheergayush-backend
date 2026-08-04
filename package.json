@@ -32,6 +32,10 @@
     "catalog:images-all": "node scripts/downloadAllBrandImages.js --missing-only",
     "thumbs:prebuild": "node scripts/prebuildMedicineThumbs.js",
     "store:bootstrap": "node scripts/exportStoreBootstrap.js",
+    "catalog:cloudinary-sync": "node scripts/syncCatalogCloudinaryUrls.js --fast",
+    "catalog:soorya-sync": "node scripts/syncSooryaNaturals.js",
+    "catalog:aparna-junnu-sync": "node scripts/syncAparnaJunnu.js",
+    "catalog:dairy-reclassify": "node scripts/reclassifyDairyProducts.js",
     "build:brand": "python scripts/build-brand-assets.py",
     "build": "npm install && npm run thumbs:prebuild && npm run store:bootstrap"
   },
@@ -42,6 +46,7 @@
     "@ngrok/ngrok": "^1.5.1",
     "agora-token": "^2.0.5",
     "body-parser": "^2.2.0",
+    "cloudinary": "^2.10.0",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
