@@ -41,9 +41,23 @@
     return new Promise(function (resolve) { setTimeout(resolve, ms); });
   }
 
+  function fetchWithTimeout(url, options, timeoutMs) {
+    options = options || {};
+    var ms = timeoutMs || 8000;
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = null;
+    if (controller) {
+      timer = setTimeout(function () { controller.abort(); }, ms);
+      options = Object.assign({}, options, { signal: controller.signal });
+    }
+    return fetch(url, options).finally(function () {
+      if (timer) clearTimeout(timer);
+    });
+  }
+
   async function checkHealth(healthUrl) {
     try {
-      const res = await fetch(healthUrl || DEFAULT_HEALTH_URL, { cache: 'no-store' });
+      const res = await fetchWithTimeout(healthUrl || DEFAULT_HEALTH_URL, { cache: 'no-store' }, 8000);
       if (!res.ok) return false;
       const data = await res.json().catch(function () { return {}; });
       // Server is awake once health responds. Prefer storeReady so store pages
@@ -58,7 +72,7 @@
 
   async function fetchHealthStatus(healthUrl) {
     try {
-      const res = await fetch(healthUrl || DEFAULT_HEALTH_URL, { cache: 'no-store' });
+      const res = await fetchWithTimeout(healthUrl || DEFAULT_HEALTH_URL, { cache: 'no-store' }, 8000);
       if (!res.ok) return null;
       return await res.json().catch(function () { return null; });
     } catch (e) {
@@ -128,21 +142,24 @@
     if (options.skipOnLocalhost && /localhost|127\.0\.0\.1/.test(window.location.hostname)) {
       return true;
     }
-    showConnectingOverlay(options.message);
+    var useOverlay = options.showOverlay !== false;
+    if (useOverlay) showConnectingOverlay(options.message);
     var ok = await waitForServer(options);
     if (ok) {
-      hideConnectingOverlay();
+      if (useOverlay) hideConnectingOverlay();
       return true;
     }
-    showConnectingOverlay('Server is still starting. Tap retry or wait a moment.');
-    showRetryOnOverlay(function () {
-      showConnectingOverlay('Connecting to DHEERGAYUSH secure server…');
-      return waitForServer(options).then(function (ready) {
-        if (ready) hideConnectingOverlay();
-        else showConnectingOverlay('Server is still starting. Tap retry or wait a moment.');
-        return ready;
+    if (useOverlay) {
+      showConnectingOverlay('Server is still starting. Tap retry or wait a moment.');
+      showRetryOnOverlay(function () {
+        showConnectingOverlay('Connecting to DHEERGAYUSH secure server…');
+        return waitForServer(options).then(function (ready) {
+          if (ready) hideConnectingOverlay();
+          else showConnectingOverlay('Server is still starting. Tap retry or wait a moment.');
+          return ready;
+        });
       });
-    });
+    }
     return false;
   }
 
