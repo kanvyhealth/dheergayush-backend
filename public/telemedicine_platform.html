@@ -1298,30 +1298,152 @@
             <div class="auth-section">
                 <div class="auth-form" id="doctorRegForm">
                     <h3><span class="dg-section-icon"><i class="fas fa-user-md" aria-hidden="true"></i></span>Doctor Registration</h3>
-                    <p class="reg-subtitle">Doctor registration has moved to the dedicated doctor portal.</p>
-                    <p style="margin:16px 0;">
-                        <a class="btn btn-success" href="doctor-auth.html">Open doctor login &amp; registration</a>
-                    </p>
-                    <p class="required-hint">Admin approval is still required before you can take consultations.</p>
-                    <!-- Legacy fields kept hidden so any leftover scripts do not break -->
-                    <div style="display:none;" aria-hidden="true">
-                        <input type="text" id="doctorName">
-                        <input type="text" id="doctorSpec">
-                        <input type="email" id="doctorEmail">
-                        <input type="password" id="doctorPassword">
-                        <input type="text" id="doctorDegree">
-                        <input type="text" id="doctorLicense">
-                        <input type="text" id="doctorLocation">
-                        <input type="number" id="doctorFee">
-                        <textarea id="doctorBio"></textarea>
-                        <input type="number" id="doctorExperience">
-                        <input type="text" id="doctorUpiId">
-                        <input type="text" id="doctorAccountHolder">
-                        <input type="text" id="doctorBankName">
-                        <input type="text" id="doctorAccountNumber">
-                        <input type="text" id="doctorIfsc">
-                        <button type="button" id="doctorRegisterBtn" onclick="window.location.href='doctor-auth.html'">Register Doctor</button>
+                    <p class="reg-subtitle">Create your doctor account for the Dheergayush app and website. Admin approval is required before you can take consultations.</p>
+                    <p class="required-hint">Fields marked with * are required. Upload at least one certificate/document and your profile photo.</p>
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="doctorName" placeholder="Dr. John Smith" required>
                     </div>
+                    <div class="form-group">
+                        <label>Specialization *</label>
+                        <input type="text" id="doctorSpec" placeholder="e.g. Kayachikitsa, Balachikitsa" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email (same as Android app login) *</label>
+                        <input type="email" id="doctorEmail" placeholder="doctor@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password *</label>
+                        <input type="password" id="doctorPassword" placeholder="Min 6 characters" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Degree / Qualification</label>
+                        <input type="text" id="doctorDegree" placeholder="e.g. BAMS, MD Ayurveda">
+                    </div>
+                    <div class="form-group">
+                        <label>Doctor ID (License) *</label>
+                        <input type="text" id="doctorLicense" placeholder="KH01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Location *</label>
+                        <input type="text" id="doctorLocation" placeholder="City, State" required>
+                    </div>
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block; color: #444;">Languages Known *</label>
+                    <div class="doctor-languages" id="doctorLanguagesGroup">
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" class="form-checkbox doctor-lang-cb" value="English">
+                            <span class="ml-2">English</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" class="form-checkbox doctor-lang-cb" value="Hindi">
+                            <span class="ml-2">Hindi</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" class="form-checkbox doctor-lang-cb" value="Telugu">
+                            <span class="ml-2">Telugu</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" class="form-checkbox doctor-lang-cb" value="Kannada">
+                            <span class="ml-2">Kannada</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" class="form-checkbox doctor-lang-cb" value="Malayalam">
+                            <span class="ml-2">Malayalam</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" class="form-checkbox doctor-lang-cb" value="Tamil">
+                            <span class="ml-2">Tamil</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>Doctor's Time (1-hour slot) *</label>
+                        <div class="custom-time-picker-wrapper">
+                            <div id="doctorTimeDisplay" class="custom-time-display">
+                                <span class="time-placeholder">Select a time...</span>
+                                <span class="dropdown-arrow">&#9660;</span>
+                            </div>
+                            <div id="doctorTimePickerDropdown" class="custom-time-picker-dropdown">
+                                <div id="hourButtonsGrid" class="hour-buttons-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-inputfile form-group">
+                        <label for="doctorDocs" class="file-input-button"><i class="fas fa-file-lines dg-label-icon" aria-hidden="true"></i>Upload Documents (PDF, JPG, PNG):</label>
+                        <input type="file" id="doctorDocs" name="documents" multiple accept=".pdf,.jpg,.jpeg,.png" class="hidden">
+                        <ul id="fileList"></ul>
+                    </div>
+                    <div class="form-inputfile form-group">
+                        <label for="doctorPhoto" class="file-input-button"><i class="fas fa-image dg-label-icon" aria-hidden="true"></i>Upload Your Photo:</label>
+                        <input type="file" id="doctorPhoto" name="photo" accept=".jpg,.jpeg,.png" class="hidden">
+                        <ul id="photoList"></ul>
+                    </div>
+                    <div class="form-group">
+                        <label>Fee Amount (per video call) *</label>
+                        <input type="number" id="doctorFee" placeholder="e.g. 500" min="0" step="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Bio *</label>
+                        <textarea id="doctorBio" placeholder="Brief professional backgroundΓÇª" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Years of Experience *</label>
+                        <input type="number" id="doctorExperience" placeholder="e.g. 5" min="0" step="1" required>
+                    </div>
+                    <div class="form-group" id="doctorPayoutSection">
+                        <label style="font-weight: 600; margin-bottom: 8px; display: block; color: #444;">Consultation payout details *</label>
+                        <p class="reg-subtitle" style="margin-top:0;">Required for receiving consultation fees. Choose UPI or bank account.</p>
+                        <div style="display:flex;gap:16px;margin:10px 0;flex-wrap:wrap;">
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="doctorPaymentMode" value="upi" checked onchange="toggleDoctorRegPaymentMode('upi')">
+                                <span class="ml-2">UPI</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="doctorPaymentMode" value="bank" onchange="toggleDoctorRegPaymentMode('bank')">
+                                <span class="ml-2">Bank account</span>
+                            </label>
+                        </div>
+                        <div id="doctorUpiFields">
+                            <label for="doctorUpiId">UPI ID *</label>
+                            <input type="text" id="doctorUpiId" placeholder="yourname@bank" autocomplete="off">
+                        </div>
+                        <div id="doctorBankFields" style="display:none;">
+                            <div class="form-group" style="margin-top:8px;">
+                                <label for="doctorAccountHolder">Account holder name *</label>
+                                <input type="text" id="doctorAccountHolder" placeholder="Name as on bank account" autocomplete="off">
+                            </div>
+                            <div class="form-group">
+                                <label for="doctorBankName">Bank name *</label>
+                                <input type="text" id="doctorBankName" placeholder="e.g. SBI, HDFC" autocomplete="off">
+                            </div>
+                            <div class="form-group">
+                                <label for="doctorAccountNumber">Account number *</label>
+                                <input type="text" id="doctorAccountNumber" placeholder="Account number" autocomplete="off" inputmode="numeric">
+                            </div>
+                            <div class="form-group">
+                                <label for="doctorIfsc">IFSC *</label>
+                                <input type="text" id="doctorIfsc" placeholder="e.g. SBIN0001234" autocomplete="off" style="text-transform:uppercase;">
+                            </div>
+                        </div>
+                    </div>
+                     <div class="terms-box">
+                        <div class="terms-row">
+                            <input type="checkbox" id="doctorAgreePrivacy">
+                            <label for="doctorAgreePrivacy">
+                                I agree to the
+                                <a href="/privacy-policy">Privacy Policy</a>
+                            </label>
+                        </div>
+                        <div class="terms-row">
+                            <input type="checkbox" id="doctorAgreeTerms">
+                            <label for="doctorAgreeTerms">
+                                I agree to the
+                                <a href="/terms-and-conditions">Terms and Conditions</a>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="serverHealthBanner" class="server-health-banner" role="status"></div>
+                    <div id="doctorRegStatus" role="alert"></div>
+                    <button type="button" class="btn" id="doctorRegisterBtn" onclick="registerDoctor()">Register Doctor</button>
                 </div>
 
                 <div class="auth-form active" id="patientRegForm">
@@ -1661,16 +1783,35 @@ let deliveryStep = 0;
             const doctorForm = document.getElementById('doctorRegForm');
             const patientForm = document.getElementById('patientRegForm');
             const roleTabs = document.getElementById('regRoleTabs');
-            const urlRole = new URLSearchParams(window.location.search).get('role');
             const activeRole = role === 'doctor' ? 'doctor' : 'patient';
-            if (doctorForm) doctorForm.classList.toggle('active', activeRole === 'doctor');
-            if (patientForm) patientForm.classList.toggle('active', activeRole === 'patient');
-            if (roleTabs) {
-                roleTabs.style.display = (urlRole === 'doctor' || urlRole === 'patient') ? 'none' : '';
+
+            if (doctorForm) {
+                doctorForm.classList.toggle('active', activeRole === 'doctor');
+                doctorForm.setAttribute('aria-hidden', activeRole === 'doctor' ? 'false' : 'true');
+                doctorForm.style.display = activeRole === 'doctor' ? 'block' : 'none';
             }
+            if (patientForm) {
+                patientForm.classList.toggle('active', activeRole === 'patient');
+                patientForm.setAttribute('aria-hidden', activeRole === 'patient' ? 'false' : 'true');
+                patientForm.style.display = activeRole === 'patient' ? 'block' : 'none';
+            }
+            // Always keep role tabs visible so users can switch Customer <-> Doctor
+            if (roleTabs) roleTabs.style.display = '';
+
             document.querySelectorAll('.reg-role-tab').forEach(function (tab) {
-                tab.classList.toggle('active', tab.getAttribute('data-reg-role') === activeRole);
+                const isActive = tab.getAttribute('data-reg-role') === activeRole;
+                tab.classList.toggle('active', isActive);
+                tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
             });
+
+            // Keep URL/localStorage in sync with the visible form
+            localStorage.setItem('regRole', activeRole);
+            localStorage.setItem('userRole', activeRole);
+            try {
+                const url = new URL(window.location.href);
+                url.searchParams.set('role', activeRole);
+                window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+            } catch (e) { /* ignore */ }
         }
        function getDoctorStatus(timeSlot) {
 
@@ -2293,6 +2434,7 @@ function updateTimePickerSelection() {
         const fileList = document.getElementById('fileList');
         let doctorSelectedFiles = [];
 
+        if (doctorDocsInput) {
         doctorDocsInput.addEventListener('change', function(e) {
             const files = Array.from(e.target.files);
             
@@ -2312,8 +2454,10 @@ function updateTimePickerSelection() {
             // Clear the input value to allow re-selection of same files
             e.target.value = '';
         });
+        }
 
         function updateFileList() {
+            if (!fileList) return;
             fileList.innerHTML = '';
             
             doctorSelectedFiles.forEach((file, index) => {
