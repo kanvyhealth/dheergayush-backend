@@ -205,10 +205,10 @@
     if (/\b(masala|spice|spices|dhaniya|coriander|chilli|chili|turmeric|haldi|jeera|cumin|mustard|amchur|pepper|chintakupodi)\b/.test(nameCat)) {
       return 'Spices and Masalas';
     }
-    if (/\b(tea|juice|drink|beverage|squash|sharbat|sherbet|chai|health drink|malt)\b/.test(nameCat)) return 'Beverages and Drinks';
+    if (/\b(tea|juice|drink|beverage|squash|sharbat|sherbet|chai|health drink|malt|coffee|chicory|decoction)\b/.test(nameCat)) return 'Beverages and Drinks';
     if (/\b(sweet|sweets|candy|candies|halwa|laddu|ladoo|mithai|chocolate)\b/.test(nameCat)) return 'Sweets';
     if (/\b(chyawanprash|chyawanprasha|snack|cookies|biscuit|muesli|granola|vinegar|jam|protein bar)\b/.test(nameCat)) return 'Packaged Foods';
-    if (/\b(tea|juice|beverage|drink|squash)\b/.test(combined)) return 'Beverages and Drinks';
+    if (/\b(tea|juice|beverage|drink|squash|coffee|chicory|decoction)\b/.test(combined)) return 'Beverages and Drinks';
     if (/\b(chyawanprash|chyawanprasha|snack|cookies|biscuit|muesli|granola|vinegar)\b/.test(combined)) return 'Packaged Foods';
     if (normalizeText(category) === 'cooking essentials') return 'Spices and Masalas';
     return 'Packaged Foods';

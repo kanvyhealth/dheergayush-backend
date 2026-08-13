@@ -413,9 +413,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        const name = document.getElementById('name').value.trim();
-        const phone = document.getElementById('phone').value.trim();
-        const address = document.getElementById('address').value.trim();
+        const name = window.DgCheckoutValidate
+            ? DgCheckoutValidate.normalizeCustomerName(document.getElementById('name').value)
+            : document.getElementById('name').value.trim();
+        const phone = window.DgCheckoutValidate
+            ? (DgCheckoutValidate.validatePhone(document.getElementById('phone').value).value
+                || document.getElementById('phone').value.trim())
+            : document.getElementById('phone').value.trim();
+        const address = window.DgCheckoutValidate
+            ? DgCheckoutValidate.normalizeDeliveryAddress(document.getElementById('address').value)
+            : document.getElementById('address').value.replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
         const patientSymptoms = document.getElementById('patientSymptoms')
             ? document.getElementById('patientSymptoms').value.trim()
             : '';
@@ -595,18 +602,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             ? document.getElementById('patientSymptoms').value.trim()
             : '';
 
-        if (!/^[A-Za-z ]+$/.test(name)) {
-            alert('Full Name should contain only letters and spaces.');
+        var nameCheck = window.DgCheckoutValidate
+            ? DgCheckoutValidate.validateCustomerName(name)
+            : { ok: /^[A-Za-z][A-Za-z .'\-]*$/.test(name), value: name, message: 'Enter a valid name.' };
+        var phoneCheck = window.DgCheckoutValidate
+            ? DgCheckoutValidate.validatePhone(phone)
+            : { ok: /^\d{10}$/.test(phone), value: phone, message: 'Phone number must be exactly 10 digits.' };
+        var addressCheck = window.DgCheckoutValidate
+            ? DgCheckoutValidate.validateDeliveryAddress(address)
+            : { ok: address.replace(/[\r\n\t]+/g, ' ').trim().length >= 10, value: address.replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim(), message: 'Enter a complete address.' };
+        if (!nameCheck.ok) {
+            alert(nameCheck.message);
             return;
         }
-        if (!/^\d{10}$/.test(phone)) {
-            alert('Phone number must be exactly 10 digits.');
+        if (!phoneCheck.ok) {
+            alert(phoneCheck.message);
             return;
         }
-        if (!/^[A-Za-z0-9 ,\.\-#]{10,}$/.test(address)) {
-            alert('Address should be at least 10 characters.');
+        if (!addressCheck.ok) {
+            alert(addressCheck.message);
             return;
         }
+        document.getElementById('name').value = nameCheck.value;
+        document.getElementById('phone').value = phoneCheck.value;
+        document.getElementById('address').value = addressCheck.value;
 
         if (selectedReports.length === 0) {
             const proceed = confirm(

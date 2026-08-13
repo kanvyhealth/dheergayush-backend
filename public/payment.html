@@ -757,6 +757,7 @@ body {
 
   <script src="js/shared/dg-api.js"></script>
   <script src="js/shared/dg-auth.js"></script>
+  <script src="js/shared/dg-checkout-validate.js"></script>
   <script src="js/store/dg-razorpay-checkout.js"></script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
@@ -770,22 +771,28 @@ body {
       const phone = document.getElementById('phone').value.trim();
       const address = document.getElementById('address').value.trim();
 
-      const nameRegex = /^[A-Za-z ]+$/;
-      const phoneRegex = /^\d{10}$/;
-      const addressRegex = /^[A-Za-z0-9 ,\.\-#]{10,}$/; // At least 10 chars, allow letters, numbers, comma, period, dash, #
+      const nameCheck = window.DgCheckoutValidate
+        ? DgCheckoutValidate.validateCustomerName(name)
+        : { ok: /^[A-Za-z][A-Za-z .'\-]*$/.test(name), message: 'Enter a valid name.' };
+      const phoneCheck = window.DgCheckoutValidate
+        ? DgCheckoutValidate.validatePhone(phone)
+        : { ok: /^\d{10}$/.test(phone), message: 'Phone number must be exactly 10 digits.' };
+      const addressCheck = window.DgCheckoutValidate
+        ? DgCheckoutValidate.validateDeliveryAddress(address)
+        : { ok: address.replace(/[\r\n\t]+/g, ' ').trim().length >= 10, message: 'Enter a complete address.' };
 
-      if (!nameRegex.test(name)) {
-        alert('Full Name should contain only letters and spaces.');
+      if (!nameCheck.ok) {
+        alert(nameCheck.message);
         e.preventDefault();
         return false;
       }
-      if (!phoneRegex.test(phone)) {
-        alert('Phone number must be exactly 10 digits.');
+      if (!phoneCheck.ok) {
+        alert(phoneCheck.message);
         e.preventDefault();
         return false;
       }
-      if (!addressRegex.test(address)) {
-        alert('Address should be at least 10 characters and can contain letters, numbers, commas, periods, dashes, and #.');
+      if (!addressCheck.ok) {
+        alert(addressCheck.message);
         e.preventDefault();
         return false;
       }

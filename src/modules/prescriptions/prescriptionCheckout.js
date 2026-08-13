@@ -1,6 +1,6 @@
 const { Order, MedicineOrder } = require('../../core/data');
 const { validateOrderItemsAgainstCatalog } = require('../../core/firebase/catalog');
-const { buildSharedOrderId, buildFirestoreOrderPayload } = require('../store/webOrderSync');
+const { buildSharedOrderId, buildFirestoreOrderPayload, normalizeDeliveryAddress } = require('../store/webOrderSync');
 
 function mapPrescribedItemsForOrder(items = []) {
   return (items || []).map((item) => ({
@@ -46,7 +46,7 @@ async function createPrescriptionStoreOrder({
   const orderData = {
     customerName: customerName || 'Patient',
     customerPhone: customerPhone || '',
-    deliveryAddress: deliveryAddress || '',
+    deliveryAddress: normalizeDeliveryAddress(deliveryAddress) || '',
     items: validatedItems.items,
     subtotal,
     deliveryFee: 0,

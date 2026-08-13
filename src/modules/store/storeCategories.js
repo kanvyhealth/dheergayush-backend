@@ -306,6 +306,11 @@ const ORGANIC_FOOD_KEYWORDS = [
   'culinary',
   'beverage',
   'drink',
+  'coffee',
+  'filter coffee',
+  'instant coffee',
+  'chicory',
+  'decoction',
   'health drink',
   'nutrition powder',
   'protein powder',
@@ -469,7 +474,7 @@ function classifyStoreProduct(med) {
   if (hasBeautySignal && !hasMedicineSignal) return 'Personal and Beauty Care';
   if (hasFoodSignal && !hasMedicineSignal && !hasBeautySignal) return 'Organic Foods';
   if (hasBeautySignal) return 'Personal and Beauty Care';
-  if (hasFoodSignal && containsKeyword(combined, ['tea', 'juice', 'honey', 'chyawanprash', 'snack', 'food', 'rice', 'dal', 'millet', 'poha', 'salt', 'flour'])) {
+  if (hasFoodSignal && containsKeyword(combined, ['tea', 'juice', 'honey', 'chyawanprash', 'snack', 'food', 'rice', 'dal', 'millet', 'poha', 'salt', 'flour', 'coffee'])) {
     return 'Organic Foods';
   }
 
@@ -588,7 +593,8 @@ function classifyStoreSubcategory(med) {
     return 'Spices and Masalas';
   }
   if (containsKeyword(nameCat, [
-    'tea', 'juice', 'drink', 'beverage', 'squash', 'sharbat', 'sherbet', 'chai', 'health drink', 'malt'
+    'tea', 'juice', 'drink', 'beverage', 'squash', 'sharbat', 'sherbet', 'chai', 'health drink', 'malt',
+    'coffee', 'filter coffee', 'instant coffee', 'chicory', 'decoction'
   ])) {
     return 'Beverages and Drinks';
   }
@@ -608,7 +614,7 @@ function classifyStoreSubcategory(med) {
   }
   if (containsKeyword(combined, ['millet', 'millets'])) return 'Millets';
   if (containsKeyword(combined, ['dal', 'pulse', 'pulses'])) return 'Pulses';
-  if (containsKeyword(combined, ['tea', 'juice', 'beverage', 'drink', 'squash'])) return 'Beverages and Drinks';
+  if (containsKeyword(combined, ['tea', 'juice', 'beverage', 'drink', 'squash', 'coffee', 'chicory', 'decoction'])) return 'Beverages and Drinks';
   if (containsKeyword(combined, ['chyawanprash', 'chyawanprasha', 'snack', 'cookies', 'biscuit', 'muesli', 'granola', 'vinegar'])) {
     return 'Packaged Foods';
   }

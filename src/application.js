@@ -217,7 +217,8 @@ const { mirrorPrescribedCartToAppPrescription } = require('./modules/prescriptio
 const { linkAppointmentsToAuthUid } = require('./modules/patients/patientLinking');
 const {
   buildSharedOrderId,
-  buildFirestoreOrderPayload
+  buildFirestoreOrderPayload,
+  normalizeOrderContactFields
 } = require('./modules/store/webOrderSync');
 
 function getCorsOptions() {
@@ -2057,7 +2058,7 @@ app.use(express.static(path.join(ROOT_DIR, 'public')));
     syncPaymentForConsultationStatus, syncActiveCallForStatus, updateActiveCallForAppointment,
     DEFAULT_WORKING_DAYS, DEFAULT_WORKING_DAYS_INT, parseAvailableTimeToWorkingHours, workingDaysToAppFormat,
     mirrorDoctorToAuthUid, syncAllDoctorMirrors, ensureDoctorPublicId, linkAppointmentsToAuthUid,
-    buildSharedOrderId, buildFirestoreOrderPayload,
+    buildSharedOrderId, buildFirestoreOrderPayload, normalizeOrderContactFields,
     getCorsOptions, assertProductionSecurityConfig,
     isAllowedElibPdfHost, resolveAuthPortal, getRequestOrigin, safeSendEmailVerification,
     ensureAuthEmailVerified, doctorRegHttpError, completeDoctorAuthForExistingEmail,

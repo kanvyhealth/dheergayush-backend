@@ -4,6 +4,36 @@ function buildSharedOrderId() {
   return uuidv4().replace(/-/g, '').slice(0, 20);
 }
 
+function collapseSpaces(value) {
+  return String(value || '').replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function normalizeDeliveryAddress(value) {
+  if (value && typeof value === 'object') {
+    return [
+      value.line1 || value.addressLine1 || value.street || value.fullAddress || value.address,
+      value.line2 || value.addressLine2 || value.landmark,
+      value.city,
+      value.state,
+      value.pincode || value.pin || value.zip
+    ].map((part) => collapseSpaces(part)).filter(Boolean).join(', ');
+  }
+  return collapseSpaces(value);
+}
+
+function normalizeOrderContactFields(orderData) {
+  if (!orderData || typeof orderData !== 'object') return orderData;
+  orderData.customerName = collapseSpaces(orderData.customerName);
+  orderData.customerPhone = String(orderData.customerPhone || '').replace(/\D/g, '').slice(-10);
+  orderData.customerEmail = collapseSpaces(orderData.customerEmail);
+  orderData.deliveryAddress = normalizeDeliveryAddress(
+    orderData.deliveryAddress || orderData.deliveryAddressSnapshot
+  );
+  const addressId = String(orderData.deliveryAddressId || '').trim();
+  orderData.deliveryAddressId = addressId && addressId !== '__manual__' ? addressId : null;
+  return orderData;
+}
+
 function mapWebItemsToAppItems(items) {
   return (items || []).map((item) => ({
     medicineId: item.medicineId || item.id || '',
@@ -88,5 +118,7 @@ function buildFirestoreOrderPayload(orderData, orderId, options = {}) {
 module.exports = {
   buildSharedOrderId,
   buildFirestoreOrderPayload,
-  mapWebItemsToAppItems
+  mapWebItemsToAppItems,
+  normalizeDeliveryAddress,
+  normalizeOrderContactFields
 };

@@ -127,7 +127,10 @@
   }
 
   function packLabel(weight) {
-    return String(weight.value) + ' ' + (weight.unit || 'unit');
+    var label = String((weight && weight.pack_label) || '').trim();
+    if (label) return label;
+    var unit = String((weight && weight.unit) || 'unit').replace(/^gm$/i, 'g');
+    return String(weight && weight.value != null ? weight.value : '') + (unit ? ' ' + unit : '');
   }
 
   function formatPrice(amount) {

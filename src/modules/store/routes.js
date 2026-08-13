@@ -139,6 +139,8 @@ module.exports = function register(app, deps) {
                 paymentId: razorpayPaymentId,
                 signature: razorpaySignature
             });
+
+            orderData = normalizeOrderContactFields(orderData || {});
     
             if (!orderData.customerName || !orderData.customerPhone || !orderData.deliveryAddress) {
                 return res.status(400).json({

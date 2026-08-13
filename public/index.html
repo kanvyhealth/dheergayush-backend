@@ -2288,7 +2288,15 @@
             e.preventDefault();
             const name = document.getElementById('orderName').value.trim();
             const phone = document.getElementById('orderPhone').value.trim();
-            const address = document.getElementById('orderAddress').value.trim();
+            let address = document.getElementById('orderAddress').value.trim();
+            const addressCheck = window.DgCheckoutValidate
+                ? DgCheckoutValidate.validateDeliveryAddress(address)
+                : { ok: address.replace(/[\r\n\t]+/g, ' ').trim().length >= 10, value: address.replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim(), message: 'Enter a complete delivery address.' };
+            if (!addressCheck.ok) {
+                alert(addressCheck.message);
+                return;
+            }
+            address = addressCheck.value;
             let subtotal = cart.reduce((sum, item) => sum + item.pricePerUnit * item.quantity, 0);
             let deliveryFee = subtotal > 1000 ? 0 : 150;
             let total = subtotal + deliveryFee;
@@ -2333,6 +2341,7 @@
             }
         };
     </script>
+    <script src="js/shared/dg-checkout-validate.js"></script>
     <script src="js/store/dg-catalog-merge.js"></script>
     <script src="js/store/dg-razorpay-checkout.js"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>

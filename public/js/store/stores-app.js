@@ -208,14 +208,17 @@
   var lastInvoicePayload = null;
 
   function formatAddressLine(address) {
-    if (!address || typeof address !== 'object') return '';
+    if (window.DgCheckoutValidate && DgCheckoutValidate.formatAddressParts) {
+      return DgCheckoutValidate.formatAddressParts(address);
+    }
+    if (!address || typeof address !== 'object') return String(address || '').trim();
     var parts = [
-      address.line1 || address.address,
-      address.line2,
+      address.line1 || address.addressLine1 || address.street || address.fullAddress || address.address,
+      address.line2 || address.addressLine2 || address.landmark,
       address.city,
       address.state,
-      address.pincode
-    ].map(function (p) { return String(p || '').trim(); }).filter(Boolean);
+      address.pincode || address.pin || address.zip
+    ].map(function (p) { return String(p || '').replace(/[\r\n\t]+/g, ' ').trim(); }).filter(Boolean);
     return parts.join(', ');
   }
 
@@ -285,7 +288,7 @@
     ).trim();
     appUserContext.addresses = Array.isArray(payload.addresses)
       ? payload.addresses.filter(function (a) {
-          return a && typeof a === 'object' && String(a.line1 || a.address || '').trim();
+          return a && typeof a === 'object' && formatAddressLine(a);
         })
       : [];
 
@@ -703,6 +706,16 @@
     els.productGrid.querySelectorAll('.product-card').forEach(syncCardAction);
   }
 
+  function formatPackPrice(weight) {
+    var w = weight || {};
+    var label = String(w.pack_label || '').trim();
+    if (!label) {
+      var unit = String(w.unit || '').replace(/^gm$/i, 'g');
+      label = (w.value != null ? w.value : '') + (unit ? ' ' + unit : '');
+    }
+    return String(label).trim() + ' — ₹' + Number(w.price || 0);
+  }
+
   function productCardHtml(item, globalIdx) {
     var med = item;
     var minP = minPrice(med);
@@ -710,7 +723,7 @@
     var weightOptions = weights.map(function (w, i) {
       var medId = w.medicineId || med._id;
       return '<option value="' + globalIdx + '|' + medId + '|' + w.value + '|' + w.unit + '|' + w.price + '"' +
-        (i === 0 ? ' selected' : '') + '>' + w.value + ' ' + w.unit + ' — ₹' + w.price + '</option>';
+        (i === 0 ? ' selected' : '') + '>' + formatPackPrice(w) + '</option>';
     }).join('');
     var packBlock;
     if (weights.length > 1) {
@@ -722,7 +735,7 @@
       packBlock = '<div class="product-pack">' +
         '<label class="pack-label">Pack size</label>' +
         '<input type="hidden" class="product-weight" value="' + globalIdx + '|' + (weights[0].medicineId || med._id) + '|' + weights[0].value + '|' + weights[0].unit + '|' + weights[0].price + '">' +
-        '<div class="pack-single">' + weights[0].value + ' ' + weights[0].unit + ' — ₹' + weights[0].price + '</div>' +
+        '<div class="pack-single">' + formatPackPrice(weights[0]) + '</div>' +
         '</div>';
     } else {
       packBlock = '<div class="product-pack product-pack--empty" aria-hidden="true">' +
@@ -1483,11 +1496,27 @@
     var deliveryAddressId = (els.deliveryAddressId && els.deliveryAddressId.value) ||
       appUserContext.selectedAddressId ||
       '';
+    if (deliveryAddressId === '__manual__') deliveryAddressId = '';
     var appUid = (els.appUserUid && els.appUserUid.value) || appUserContext.uid || '';
-    if (!/^[A-Za-z ]+$/.test(name)) { alert('Name: letters only.'); return; }
-    if (!/^\d{10}$/.test(phone)) { alert('Phone: 10 digits.'); return; }
+    var nameCheck = window.DgCheckoutValidate
+      ? DgCheckoutValidate.validateCustomerName(name)
+      : { ok: /^[A-Za-z][A-Za-z .'\-]*$/.test(name), value: name, message: 'Enter a valid name.' };
+    var phoneCheck = window.DgCheckoutValidate
+      ? DgCheckoutValidate.validatePhone(phone)
+      : { ok: /^\d{10}$/.test(phone.replace(/\D/g, '').slice(-10)), value: phone.replace(/\D/g, '').slice(-10), message: 'Phone: 10 digits.' };
+    var addressCheck = window.DgCheckoutValidate
+      ? DgCheckoutValidate.validateDeliveryAddress(address)
+      : { ok: address.replace(/[\r\n\t]+/g, ' ').trim().length >= 10, value: address.replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim(), message: 'Enter a complete delivery address.' };
+    if (!nameCheck.ok) { alert(nameCheck.message); return; }
+    if (!phoneCheck.ok) { alert(phoneCheck.message); return; }
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('Invalid email.'); return; }
-    if (!/^[A-Za-z0-9 ,\.\-#]{10,}$/.test(address)) { alert('Address: min 10 characters.'); return; }
+    if (!addressCheck.ok) { alert(addressCheck.message); return; }
+    name = nameCheck.value;
+    phone = phoneCheck.value;
+    address = addressCheck.value;
+    document.getElementById('customerName').value = name;
+    document.getElementById('customerPhone').value = phone;
+    document.getElementById('deliveryAddress').value = address;
     if (!window.DgRazorpayCheckout || !window.DgStorePayment) {
       try {
         setCheckoutStatus('Loading payment libraries…', false);

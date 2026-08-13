@@ -3992,6 +3992,161 @@
     ]
   },
   {
+    "_id": "araku-coffee",
+    "name": "Araku Coffee",
+    "logo": "/logos/logo-horizontal.png",
+    "description": "Araku Coffee — filter, instant, and decoction coffee from the Araku Valley.",
+    "medicines": [
+      {
+        "_id": "ac-0001",
+        "name": "Filter Coffee 60% Arabica 40% Chicory",
+        "imageFile": "ac-0001.jpg",
+        "description": "Araku filter coffee — 60% Arabica coffee blended with 40% chicory.",
+        "category": "Organic Foods",
+        "brand": "Araku Coffee",
+        "company": "Araku Coffee",
+        "weights": [
+          {
+            "value": 200,
+            "unit": "g",
+            "price": 300,
+            "pack_label": "200 g",
+            "variant_id": ""
+          }
+        ],
+        "subCategory": "Beverages and Drinks",
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0251/6942/8589/products/image_ce1477d0-0c12-43a3-be49-24c4653129c6.jpg",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "ac-0002",
+        "name": "Filter Coffee 80% Arabica 20% Chicory",
+        "imageFile": "ac-0002.jpg",
+        "description": "Araku filter coffee — 80% Arabica coffee blended with 20% chicory.",
+        "category": "Organic Foods",
+        "brand": "Araku Coffee",
+        "company": "Araku Coffee",
+        "weights": [
+          {
+            "value": 200,
+            "unit": "g",
+            "price": 400,
+            "pack_label": "200 g",
+            "variant_id": ""
+          }
+        ],
+        "subCategory": "Beverages and Drinks",
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0251/6942/8589/products/image_84d5e743-de57-4baf-beaf-7b3a79510955.jpg",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "ac-0003",
+        "name": "Filter Coffee 100% Arabica Pure Coffee",
+        "imageFile": "ac-0003.jpg",
+        "description": "Araku filter coffee — 100% pure Arabica, no chicory.",
+        "category": "Organic Foods",
+        "brand": "Araku Coffee",
+        "company": "Araku Coffee",
+        "weights": [
+          {
+            "value": 200,
+            "unit": "g",
+            "price": 600,
+            "pack_label": "200 g",
+            "variant_id": ""
+          }
+        ],
+        "subCategory": "Beverages and Drinks",
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0251/6942/8589/products/image_f42e8250-93df-4afe-ad1b-ba830adff148.jpg",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "ac-0004",
+        "name": "Instant Coffee 70% Coffee 30% Chicory",
+        "imageFile": "ac-0004.jpg",
+        "description": "Araku instant coffee — 70% coffee blended with 30% chicory.",
+        "category": "Organic Foods",
+        "brand": "Araku Coffee",
+        "company": "Araku Coffee",
+        "weights": [
+          {
+            "value": 50,
+            "unit": "g",
+            "price": 160,
+            "pack_label": "50 g",
+            "variant_id": ""
+          }
+        ],
+        "subCategory": "Beverages and Drinks",
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0251/6942/8589/files/FullSizeRender_e6700fa3-c815-4172-a05e-156a868dfbe0.jpg",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "ac-0005",
+        "name": "Super Strong Instant Coffee 53% Coffee 47% Chicory",
+        "imageFile": "ac-0005.jpg",
+        "description": "Araku super strong instant coffee — 53% coffee blended with 47% chicory. Pack of 5 × 200g.",
+        "category": "Organic Foods",
+        "brand": "Araku Coffee",
+        "company": "Araku Coffee",
+        "weights": [
+          {
+            "value": 1000,
+            "unit": "g",
+            "price": 950,
+            "pack_label": "1 kg (5 × 200 g)",
+            "variant_id": ""
+          }
+        ],
+        "subCategory": "Beverages and Drinks",
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0251/6942/8589/files/FullSizeRender_48a202f5-470d-495e-a1ed-0bfc3eaef34e.jpg",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "ac-0006",
+        "name": "Instant Coffee 2 Rupees Sachet 70% Coffee 30% Chicory",
+        "imageFile": "ac-0006.jpg",
+        "description": "Araku instant coffee sachet — 70% coffee blended with 30% chicory.",
+        "category": "Organic Foods",
+        "brand": "Araku Coffee",
+        "company": "Araku Coffee",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "sachet",
+            "price": 2,
+            "pack_label": "1 sachet",
+            "variant_id": ""
+          }
+        ],
+        "subCategory": "Beverages and Drinks",
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0251/6942/8589/products/image_ae122275-f5b9-4b73-a303-a54c6493fb7d.jpg",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "ac-0007",
+        "name": "Filter Coffee Decoction 80% Coffee 20% Chicory",
+        "imageFile": "ac-0007.jpg",
+        "description": "Araku filter coffee decoction — 80% coffee blended with 20% chicory.",
+        "category": "Organic Foods",
+        "brand": "Araku Coffee",
+        "company": "Araku Coffee",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "pack",
+            "price": 10,
+            "pack_label": "1 decoction pack",
+            "variant_id": ""
+          }
+        ],
+        "subCategory": "Beverages and Drinks",
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0251/6942/8589/files/B1A9B21C-6667-42AA-AF55-5FDEABDDE488.jpg",
+        "cloudinaryOnly": true
+      }
+    ]
+  },
+  {
     "_id": "ffd0414146c8a65a8b635f06",
     "name": "Baidyanath",
     "logo": "https://res.cloudinary.com/hra1hmsw/image/upload/v1785755638/dheergayush/logos/logo-horizontal.png",
@@ -70862,17 +71017,17 @@
         "_id": "pn-star-anise",
         "name": "Star Anise",
         "imageFile": "pn-star-anise.png",
-        "description": "Star Anise from Pernati Naturals.",
+        "description": "Star Anise (Chakri Phool) from Pernati Naturals — whole aromatic spice.",
         "category": "Organic Foods",
         "brand": "Pernati Naturals",
         "company": "Pernati Naturals",
         "weights": [
           {
-            "value": 1,
-            "unit": "kg",
-            "price": 230,
-            "pack_label": "1kg Pack",
-            "variant_id": "PN-STAR-ANISE-1KG"
+            "value": 100,
+            "unit": "g",
+            "price": 199,
+            "pack_label": "100 g",
+            "variant_id": "PN-STAR-ANISE-100G"
           }
         ],
         "subCategory": "Spices and Masalas",
