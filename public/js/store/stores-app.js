@@ -3,7 +3,7 @@
   var PAGE_SIZE = 24;
   var EAGER_IMAGE_COUNT = 4;
   var PRELOAD_IMAGE_COUNT = 4;
-  var STORE_CACHE_PREFIX = 'dg-store-page-v6:';
+  var STORE_CACHE_PREFIX = 'dg-store-page-v7:';
   var STORE_CACHE_TTL_MS = 5 * 60 * 1000;
   var stores = [];
   var products = [];
@@ -429,8 +429,23 @@
     return window.DgCatalogMerge ? DgCatalogMerge.displayStoreLabel(med) : (med.storeName || med.company || '');
   }
 
+  function listThumbUrl(url, width) {
+    var u = String(url || '').trim();
+    if (!u) return '';
+    var w = width || 400;
+    if (/res\.cloudinary\.com/i.test(u)) {
+      if (/\/image\/fetch\//i.test(u) && !/\/fetch\/[^/]*w_\d+/i.test(u)) {
+        return u.replace(/\/image\/fetch\/(?:f_auto,q_auto\/)?/, '/image/fetch/w_' + w + ',c_limit,f_auto,q_auto/');
+      }
+      if (/\/upload\//i.test(u) && !/\/upload\/w_\d+/i.test(u)) {
+        return u.replace('/upload/', '/upload/w_' + w + ',f_auto,q_auto/');
+      }
+    }
+    return u;
+  }
+
   function productImageHtml(med, cardIdx) {
-    var url = med.imageUrl || getMedicineImageUrl(med);
+    var url = listThumbUrl(med.imageUrl || getMedicineImageUrl(med), 400);
     var icon = window.DgStoreCategories
       ? DgStoreCategories.departmentIconClass(med.category)
       : 'fa-mortar-pestle';
@@ -440,15 +455,17 @@
       var loadAttrs = eager
         ? 'loading="eager" fetchpriority="high" decoding="async"'
         : 'loading="lazy" fetchpriority="low" decoding="async"';
-      return '<img src="' + escapeHtml(url) + '" alt="" class="product-img" width="220" height="220" ' + loadAttrs + ' ' +
-        'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' + fallback;
+      var srcSmall = listThumbUrl(med.imageUrl || getMedicineImageUrl(med), 220);
+      return '<img src="' + escapeHtml(url) + '" srcset="' + escapeHtml(srcSmall) + ' 220w, ' +
+        escapeHtml(url) + ' 400w" sizes="(max-width: 640px) 45vw, 220px" alt="" class="product-img" width="220" height="220" ' +
+        loadAttrs + ' onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' + fallback;
     }
     return '<div class="product-img-fallback" style="display:flex"><i class="fas fa-pills"></i></div>';
   }
 
   function preloadProductImages(items) {
     (items || []).slice(0, PRELOAD_IMAGE_COUNT).forEach(function (med) {
-      var url = med.imageUrl || getMedicineImageUrl(med);
+      var url = listThumbUrl(med.imageUrl || getMedicineImageUrl(med), 400);
       if (!url || document.querySelector('link[rel="preload"][href="' + url + '"]')) return;
       var link = document.createElement('link');
       link.rel = 'preload';
@@ -1098,7 +1115,7 @@
           fetchProductsPage();
         }
       });
-    }, { rootMargin: '200px' });
+    }, { rootMargin: '120px' });
     observer.observe(els.loadSentinel);
   }
 

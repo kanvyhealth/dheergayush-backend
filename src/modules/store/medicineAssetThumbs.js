@@ -154,10 +154,16 @@ function createMedicineThumbHandler({ sourceDir, cacheDir }) {
 function toListImageUrl(imageUrl, width = DEFAULT_W) {
   if (!imageUrl) return null;
   let url = String(imageUrl).trim();
+  const w = parseWidth(width);
   // Cloudinary: optional list-size transform; PDP uses full imageUrl unchanged.
-  if (/res\.cloudinary\.com/i.test(url) && /\/upload\//i.test(url) && !/\/upload\/w_\d+/i.test(url)) {
-    const w = parseWidth(width);
-    return url.replace('/upload/', `/upload/w_${w},f_auto,q_auto/`);
+  if (/res\.cloudinary\.com/i.test(url)) {
+    if (/\/image\/fetch\//i.test(url) && !/\/fetch\/[^/]*w_\d+/i.test(url)) {
+      return url.replace(/\/image\/fetch\/(?:f_auto,q_auto\/)?/, `/image/fetch/w_${w},c_limit,f_auto,q_auto/`);
+    }
+    if (/\/upload\//i.test(url) && !/\/upload\/w_\d+/i.test(url)) {
+      return url.replace('/upload/', `/upload/w_${w},f_auto,q_auto/`);
+    }
+    return url;
   }
   // Absolute same-site asset URLs → relative so thumbs work on any host.
   const absAsset = url.match(/^https?:\/\/[^/]+(\/medicine-assets\/.+)$/i);
@@ -168,7 +174,6 @@ function toListImageUrl(imageUrl, width = DEFAULT_W) {
   try {
     file = decodeURIComponent(file);
   } catch (_) { /* keep */ }
-  const w = parseWidth(width);
   return `/medicine-thumbs/${w}/${encodeURIComponent(file)}`;
 }
 

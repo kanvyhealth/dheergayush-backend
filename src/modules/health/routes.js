@@ -4,20 +4,17 @@
 module.exports = function register(app, deps) {
   with (deps) {
     app.get('/api/health', async (req, res) => {
-      const { verifyFirestoreRead, hasServiceAccount } = require('../../core/firebase');
+      const { hasServiceAccount, isFirebaseReady } = require('../../core/firebase');
       let dbStatus = 'disconnected';
       let firestoreOk = false;
       let firestoreError = null;
-    
-      if (isConnected() && hasServiceAccount()) {
-        try {
-          await verifyFirestoreRead();
-          dbStatus = 'connected';
-          firestoreOk = true;
-        } catch (err) {
-          dbStatus = 'error';
-          firestoreError = err.message;
-        }
+
+      // Do not hit Firestore on every Render health poll — that delays deploys.
+      if (isFirebaseReady()) {
+        dbStatus = 'connected';
+        firestoreOk = true;
+      } else if (isConnected() && hasServiceAccount()) {
+        dbStatus = 'connecting';
       } else if (isConnected()) {
         dbStatus = 'no_credentials';
         firestoreError =
@@ -58,16 +55,12 @@ module.exports = function register(app, deps) {
 
     /** Store-only readiness — does not require Agora video infra. */
     app.get('/api/health/store', async (req, res) => {
-      const { verifyFirestoreRead, hasServiceAccount } = require('../../core/firebase');
-      let firestoreOk = false;
+      const { hasServiceAccount, isFirebaseReady } = require('../../core/firebase');
+      let firestoreOk = isFirebaseReady();
       let firestoreError = null;
-      if (isConnected() && hasServiceAccount()) {
-        try {
-          await verifyFirestoreRead();
-          firestoreOk = true;
-        } catch (err) {
-          firestoreError = err.message;
-        }
+      if (!firestoreOk && isConnected() && !hasServiceAccount()) {
+        firestoreError =
+          'Firebase initialized without a service account. Set FIREBASE_SERVICE_ACCOUNT_JSON on Render.';
       }
       const razorpayConfigured = isRazorpayConfigured();
       const razorpayAuth = global.__razorpayAuth === true;

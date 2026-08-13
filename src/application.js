@@ -2118,6 +2118,22 @@ async function validateRazorpayOnStartup() {
   global.__razorpayAuthError = result.ok ? null : result.error;
 }
 
+async function warmBackendServices() {
+  await connectDatabase();
+  // Catalog first so /api/medicines is ready; doctor bookkeeping can wait.
+  await warmCatalogCache();
+  await validateRazorpayOnStartup();
+  const mirroredDoctors = await syncAllDoctorMirrors();
+  if (mirroredDoctors > 0) {
+    console.log('Mirrored ' + mirroredDoctors + ' website doctor profile(s) to doctors/{authUid}');
+  }
+  const approvedDoctors = await listDoctors({ _webRegstatus: 'approved' });
+  for (const doctor of approvedDoctors) {
+    await ensureDoctorPublicId(doctor);
+  }
+  console.log('Firebase catalog ready (medicines, doctors, users)');
+}
+
 async function startServer(app) {
   const http = require('http');
   const server = http.createServer(app);
@@ -2132,30 +2148,26 @@ async function startServer(app) {
     throw err;
   });
 
-  try {
-    await connectDatabase();
-    const mirroredDoctors = await syncAllDoctorMirrors();
-    if (mirroredDoctors > 0) {
-      console.log('Mirrored ' + mirroredDoctors + ' website doctor profile(s) to doctors/{authUid}');
-    }
-    const approvedDoctors = await listDoctors({ _webRegstatus: 'approved' });
-    for (const doctor of approvedDoctors) {
-      await ensureDoctorPublicId(doctor);
-    }
-        console.log('Firebase catalog ready (medicines, doctors, users)');
-        await warmCatalogCache();
-        await validateRazorpayOnStartup();
-  } catch (err) {
-    console.error('Firebase startup sync skipped:', err.message);
-    console.warn('Static website pages will still run; API/Firestore routes may return 503 until credentials are set.');
-  }
-
   initRealtime(server);
 
-  server.listen(PORT, HOST, async () => {
-    console.log('Server running at http://localhost:' + PORT);
-    console.log('Health: http://localhost:' + PORT + '/api/health');
-    await startNgrokIfConfigured(PORT);
+  // Listen immediately so Render health checks and /stores.html work while
+  // Firebase + the 4k-product catalog warm in the background.
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(PORT, HOST, () => {
+      console.log('Server running at http://localhost:' + PORT);
+      console.log('Health: http://localhost:' + PORT + '/api/health');
+      resolve();
+    });
+  });
+
+  startNgrokIfConfigured(PORT).catch(() => {});
+
+  setImmediate(() => {
+    warmBackendServices().catch((err) => {
+      console.error('Firebase startup sync skipped:', err.message);
+      console.warn('Static website pages will still run; API/Firestore routes may return 503 until credentials are set.');
+    });
   });
 
   return server;

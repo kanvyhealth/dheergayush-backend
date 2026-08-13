@@ -38,7 +38,7 @@
     "catalog:aparna-junnu-sync": "node scripts/syncAparnaJunnu.js",
     "catalog:dairy-reclassify": "node scripts/reclassifyDairyProducts.js",
     "build:brand": "python scripts/build-brand-assets.py",
-    "build": "npm install && npm run thumbs:prebuild && npm run store:bootstrap"
+    "build": "npm install && npm run store:bootstrap"
   },
   "keywords": [],
   "author": "",

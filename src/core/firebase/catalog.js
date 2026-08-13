@@ -422,7 +422,7 @@ async function loadCatalogCache(force = false) {
 async function warmCatalogCache() {
   try {
     const cache = await loadCatalogCache(true);
-    await loadFirestoreCatalogOverrides(cache.imageMap || {});
+    loadFirestoreCatalogOverrides(cache.imageMap || {}).catch(() => {});
     const withImages = cache.medicines.filter((m) => m.imageUrl).length;
     const raw = cache.rawCount || cache.count;
     console.log(`📦 Store catalog cached: ${cache.count} unique products (${raw} raw), ${cache.summary.length} brands, ${withImages} with images`);
