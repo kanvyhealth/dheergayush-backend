@@ -1,4 +1,4 @@
-﻿/* Patient portal & health dashboard */
+/* Patient portal & health dashboard */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
 
 body.patient-portal {
@@ -78,7 +78,6 @@ body.patient-portal .card {
 }
 
 body.patient-portal .card.hidden {
-  display: none;
   opacity: 0;
   pointer-events: none;
   z-index: -1;
@@ -180,223 +179,351 @@ body.patient-portal .form-group label {
 /* Dashboard */
 .dg-patient-dashboard {
   width: 100%;
+  opacity: 0;
+  visibility: hidden;
   display: none;
+  transition: opacity 0.4s ease;
 }
 
 .dg-patient-dashboard.visible {
+  opacity: 1;
+  visibility: visible;
   display: block;
 }
 
 .dg-pat-shell {
   width: 100%;
-  max-width: 560px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 12px 16px 32px;
+  padding: 0 8px 32px;
 }
 
 .dg-pat-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 8px 0 16px;
+  flex-wrap: wrap;
+  padding: 12px 0 16px;
+  margin-bottom: 8px;
+  background: rgba(250, 250, 250, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(60, 60, 60, 0.08);
 }
 
-.dg-pat-hello {
-  margin: 0;
-  font-size: 0.75rem;
-  color: #6b6b6b;
+.dg-pat-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1 1 220px;
+}
+
+.dg-pat-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f26727, #ff8a50);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
 }
 
 .dg-pat-brand-text h1 {
   margin: 0;
-  font-family: inherit;
-  font-size: 1.25rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
   font-weight: 700;
   line-height: 1.2;
-  color: #2a2a2a;
+}
+
+.dg-pat-brand-text p {
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  color: var(--dg-text-muted, #575757);
 }
 
 .dg-pat-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
-  flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .dg-pat-btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 8px 14px;
-  border-radius: 999px;
-  border: 0;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: none;
   font-family: inherit;
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
-}
-
-.dg-pat-btn--primary {
-  background: #f26727;
-  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+  touch-action: manipulation;
 }
 
 .dg-pat-btn--ghost {
-  background: transparent;
-  color: #555;
+  background: #fff;
+  color: #3c3c3c;
+  border: 1px solid rgba(60, 60, 60, 0.12);
 }
 
-.dg-dash-tabs {
+.dg-pat-btn--primary {
+  background: linear-gradient(135deg, #f26727, #ff8a50);
+  color: #fff;
+}
+
+.dg-pat-btn--danger {
+  background: #fff;
+  color: #b91c1c;
+  border: 1px solid rgba(185, 28, 28, 0.2);
+}
+
+.dg-dash-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 4px;
-  margin: 0 0 14px;
-  padding: 4px;
-  background: #ececec;
-  border-radius: 12px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
-.dg-dash-tab {
-  border: 0;
-  background: transparent;
-  color: #444;
-  border-radius: 9px;
-  padding: 8px 4px;
-  font-weight: 600;
-  font-size: 0.78rem;
-  cursor: pointer;
+.dg-dash-stat {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 14px;
+  padding: 16px 10px;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(60, 60, 60, 0.06);
   min-width: 0;
 }
 
-.dg-dash-tab.active {
-  background: #fff;
+.dg-dash-stat strong {
+  display: block;
+  font-size: 1.5rem;
   color: #f26727;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  line-height: 1.2;
 }
 
-.dg-dash-tab .dg-tab-count {
-  display: none;
+.dg-dash-stat span {
+  font-size: 0.82rem;
+  color: var(--dg-text-muted, #575757);
+}
+
+.dg-dash-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+}
+
+.dg-dash-tab {
+  border: 1px solid #f26727;
+  background: #fff;
+  color: #f26727;
+  border-radius: 999px;
+  padding: 9px 18px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.dg-dash-tab.active {
+  background: #f26727;
+  color: #fff;
 }
 
 .dg-dash-panel { display: none; }
 .dg-dash-panel.active { display: block; }
 
-.dg-dash-list.active {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+#tab-appointments.active,
+#tab-consultations.active,
+#tab-prescriptions.active,
+#tab-orders.active {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  align-items: stretch;
+}
+
+#tab-appointments.active:has(.dg-dash-empty),
+#tab-consultations.active:has(.dg-dash-empty),
+#tab-prescriptions.active:has(.dg-dash-empty),
+#tab-orders.active:has(.dg-dash-empty) {
+  display: block;
 }
 
 .dg-record-card {
   background: #fff;
-  border-radius: 12px;
-  padding: 12px 14px;
-  border: 1px solid #ececec;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(60, 60, 60, 0.06);
+  text-align: left;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-
-.dg-record-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .dg-record-card h3 {
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #2a2a2a;
-  font-family: inherit;
+  margin: 0 0 12px;
+  text-align: left;
+  color: #f26727;
+  font-size: 1.1rem;
 }
 
-.dg-chip {
-  font-size: 0.68rem;
+.dg-record-card p {
+  margin: 6px 0;
+  color: #444;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.dg-record-card p strong { color: #333; }
+
+.dg-record-card .room-id {
   font-weight: 700;
-  padding: 2px 8px;
+  color: #b91c1c;
+  background: #fff3cd;
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.dg-record-card .timer {
+  position: static;
+  display: inline-block;
+  align-self: flex-start;
+  margin: 0 0 10px;
+  background: #f8d7da;
+  color: #721c24;
+  padding: 4px 10px;
   border-radius: 999px;
-  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
-.dg-chip--ok { background: #e8f8ee; color: #166534; }
-.dg-chip--warn { background: #fff6e0; color: #92400e; }
-.dg-chip--muted { background: #f3f3f3; color: #555; }
-.dg-chip--danger { background: #fdecec; color: #991b1b; }
-.dg-chip--info { background: #eaf4ff; color: #075985; }
-
-.dg-record-sub {
-  margin: 0;
-  font-size: 0.8rem;
-  color: #666;
-}
+.dg-record-card.expired { border-color: rgba(185, 28, 28, 0.35); }
 
 .dg-record-actions {
-  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 12px;
 }
 
-.dg-action-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 7px 12px;
-  border: 0;
-  border-radius: 8px;
+.dg-action-btn,
+.dg-record-card .dg-btn,
+.dg-record-card .dg-btn-primary,
+.dg-record-card .dg-btn-secondary {
+  width: 100%;
+  margin-top: 8px;
+  padding: 11px 14px;
+  border: none;
+  border-radius: 10px;
   font-weight: 600;
-  font-size: 0.8rem;
-  font-family: inherit;
+  font-size: 0.9rem;
   cursor: pointer;
+  touch-action: manipulation;
+  text-align: center;
   text-decoration: none;
-  background: #f26727;
+  box-sizing: border-box;
+  display: inline-block;
+  font-family: inherit;
+}
+
+.dg-action-btn--call {
+  background: linear-gradient(135deg, #2d6a4f, #40916c);
   color: #fff;
 }
 
-.dg-action-btn--call { background: #2d6a4f; color: #fff; }
-.dg-action-btn--followup { background: #16a34a; color: #fff; }
-.dg-action-btn--ghost {
-  background: #fff;
-  color: #444;
-  border: 1px solid #ddd;
+.dg-record-card .dg-btn-primary {
+  background: linear-gradient(135deg, #f26727, #ff8a50);
+  color: #fff !important;
+  border-radius: 10px;
 }
-.dg-action-btn--primary { background: #f26727; color: #fff; }
+
+.dg-record-card .dg-btn-secondary {
+  background: #fff;
+  color: #3c3c3c;
+  border: 1px solid rgba(60, 60, 60, 0.14);
+}
+
+.dg-record-actions .dg-btn,
+.dg-record-actions .dg-btn-primary,
+.dg-record-actions .dg-btn-secondary,
+.dg-record-actions .dg-action-btn {
+  width: auto;
+  flex: 1 1 160px;
+  margin-top: 0;
+}
+
+.dg-action-btn--followup {
+  background: #16a34a;
+  color: #fff;
+  margin-top: 8px;
+}
+
+.dg-action-btn--expired {
+  background: #6c757d;
+  color: #fff;
+  cursor: default;
+  opacity: 0.85;
+}
 
 .dg-dash-empty {
   text-align: center;
-  color: #666;
-  padding: 36px 12px;
-  margin: 0;
-  background: #fff;
-  border-radius: 12px;
+  color: var(--dg-text-muted, #575757);
+  padding: 32px 16px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 14px;
 }
 
 .dg-portal-toast {
-  margin: 0 0 10px;
+  position: static;
+  z-index: 40;
+  margin-bottom: 16px;
 }
 
-body.patient-portal.dashboard-view .dg-home-link,
-body.patient-portal.dashboard-view #dg-site-footer,
-body.patient-portal.dashboard-view .dg-doctor-fab {
-  display: none !important;
+body.patient-portal.dashboard-view .dg-home-link {
+  display: none;
 }
 
-/* Beat theme + responsive.css so the dashboard stays a simple app screen */
-body.patient-portal.dashboard-view.dg-page,
-body.patient-portal.dashboard-view {
-  background: #f4f4f2 !important;
-  background-attachment: scroll !important;
-  align-items: stretch !important;
-  justify-content: flex-start !important;
-  padding: max(8px, env(safe-area-inset-top)) 0 max(16px, env(safe-area-inset-bottom)) !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-}
+@media (max-width: 768px) {
+  body.patient-portal.dashboard-view {
+    padding-top: max(12px, env(safe-area-inset-top));
+  }
 
-body.patient-portal.dashboard-view .patient-portal-shell {
-  max-width: 100% !important;
-  width: 100% !important;
-  min-height: 0 !important;
-  align-items: stretch !important;
-  justify-content: flex-start !important;
-  padding: 0 !important;
+  .dg-dash-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dg-pat-topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dg-pat-actions {
+    justify-content: stretch;
+  }
+
+  .dg-pat-actions .dg-pat-btn {
+    flex: 1;
+    justify-content: center;
+  }
 }

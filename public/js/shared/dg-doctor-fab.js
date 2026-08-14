@@ -11,7 +11,6 @@
     if (document.getElementById('consultationIcon')) return true;
     var path = (window.location.pathname || '').toLowerCase();
     if (path.indexOf('video-call') !== -1) return true;
-    if (path.indexOf('patient') !== -1) return true;
     if (path.indexOf('telemedicine_platform') !== -1) {
       var role = new URLSearchParams(window.location.search).get('role');
       if (role === 'doctor') return true;

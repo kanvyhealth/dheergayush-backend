@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>My dashboard — DHEERGAYUSH</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Sign In — DHEERGAYUSH</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/dheergayush-theme.css">
     <link rel="stylesheet" href="css/dheergayush-forms.css">
     <link rel="stylesheet" href="css/dg-patient-dashboard.css">
+    <link rel="stylesheet" href="css/dg-responsive.css">
+    <link rel="stylesheet" href="css/dg-site-footer.css">
 </head>
 <body class="dg-page auth-page patient-portal dg-role-pending">
-    <a href="/" id="backToHomeBtn" class="dg-home-link">Home</a>
+    <a href="/" id="backToHomeBtn" class="dg-home-link"><i class="fas fa-house" aria-hidden="true"></i> Home</a>
 
     <div class="patient-portal-shell">
         <div class="card visible" id="loginCard">
             <h2>Sign In</h2>
-            <p class="portal-login-sub">New here? <a href="telemedicine_platform.html?role=patient">Create an account</a></p>
+            <p class="portal-login-sub">Patient login lives here. Doctors use <a href="doctor-auth.html">doctor-auth.html</a>. New patients register via <a href="landingpage.html?mode=register">Get started</a> / telemedicine registration.</p>
             <form id="patientLoginForm">
                 <div class="form-group">
                     <label for="patientEmail">Email</label>
@@ -26,47 +28,81 @@
                     <label for="patientPassword">Password</label>
                     <input type="password" id="patientPassword" name="patientPassword" required minlength="6" placeholder="Password">
                 </div>
-                <button type="submit" class="portal-btn portal-btn--primary">Sign In</button>
-                <button type="button" id="patientForgotPasswordBtn" class="portal-btn portal-btn--ghost">Forgot Password?</button>
+                <p style="font-size:0.85rem;color:#555;margin:0 0 16px;">New patient? <a href="telemedicine_platform.html?role=patient" style="color:#f26727;font-weight:600;">Register here</a></p>
+                <button type="submit" class="portal-btn portal-btn--primary">
+                    <i class="fas fa-right-to-bracket" aria-hidden="true"></i> Sign In
+                </button>
+                <button type="button" id="patientForgotPasswordBtn" class="portal-btn portal-btn--ghost" style="margin-top:10px;">
+                    <i class="fas fa-key" aria-hidden="true"></i> Forgot Password?
+                </button>
                 <div id="message" class="portal-message"></div>
             </form>
+        </div>
+
+        <div class="card hidden" id="mainOptionsCard">
+            <h2 id="welcomeTitle">Welcome!</h2>
+            <p class="portal-login-sub" id="welcomeSub">Manage your consultations, prescriptions, and orders.</p>
+            <button type="button" class="portal-btn portal-btn--primary" id="yourAppointmentsBtn">
+                <i class="fas fa-heart-pulse" aria-hidden="true"></i> My Health Dashboard
+            </button>
+            <button type="button" class="portal-btn portal-btn--ghost" id="newAppointmentBtn">
+                <i class="fas fa-calendar-plus" aria-hidden="true"></i> New Appointment
+            </button>
+            <button type="button" class="portal-btn portal-btn--ghost" id="menuLogoutBtn" style="color:#b91c1c;border-color:rgba(185,28,28,0.25);">
+                <i class="fas fa-right-from-bracket" aria-hidden="true"></i> Logout
+            </button>
         </div>
 
         <div id="appointmentsSection" class="dg-patient-dashboard">
             <div class="dg-pat-shell">
                 <header class="dg-pat-topbar">
-                    <div class="dg-pat-brand-text">
-                        <p class="dg-pat-hello">Hello</p>
-                        <h1 id="patientDashGreeting">Patient</h1>
+                    <div class="dg-pat-brand">
+                        <div class="dg-pat-avatar" id="patientAvatar">P</div>
+                        <div class="dg-pat-brand-text">
+                            <h1>My Health Dashboard</h1>
+                            <p id="patientDashGreeting">Your consultations &amp; records</p>
+                        </div>
                     </div>
                     <div class="dg-pat-actions">
-                        <button type="button" class="dg-pat-btn dg-pat-btn--primary" id="dashNewAppointmentBtn">Book</button>
-                        <button type="button" class="dg-pat-btn dg-pat-btn--ghost" id="patientLogoutBtn">Logout</button>
+                        <button type="button" class="dg-pat-btn dg-pat-btn--ghost" id="backToMenuBtn">
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i> Menu
+                        </button>
+                        <button type="button" class="dg-pat-btn dg-pat-btn--primary" id="dashNewAppointmentBtn">
+                            <i class="fas fa-plus" aria-hidden="true"></i> New Appointment
+                        </button>
+                        <button type="button" class="dg-pat-btn dg-pat-btn--danger" id="patientLogoutBtn">
+                            <i class="fas fa-right-from-bracket" aria-hidden="true"></i> Logout
+                        </button>
                     </div>
                 </header>
 
                 <div id="dashboardMessage" class="dg-portal-toast" role="alert"></div>
 
+                <div class="dg-dash-stats" id="patientDashStats"></div>
                 <div class="dg-dash-tabs" role="tablist">
-                    <button type="button" class="dg-dash-tab active" data-tab="appointments">Visits</button>
-                    <button type="button" class="dg-dash-tab" data-tab="consultations">Past</button>
-                    <button type="button" class="dg-dash-tab" data-tab="prescriptions">Meds</button>
+                    <button type="button" class="dg-dash-tab active" data-tab="appointments">Appointments</button>
+                    <button type="button" class="dg-dash-tab" data-tab="consultations">Consultations</button>
+                    <button type="button" class="dg-dash-tab" data-tab="prescriptions">Prescriptions</button>
                     <button type="button" class="dg-dash-tab" data-tab="orders">Orders</button>
                 </div>
-                <div class="dg-dash-panel active dg-dash-list" id="tab-appointments" data-panel="appointments"></div>
-                <div class="dg-dash-panel dg-dash-list" id="tab-consultations" data-panel="consultations"></div>
-                <div class="dg-dash-panel dg-dash-list" id="tab-prescriptions" data-panel="prescriptions"></div>
-                <div class="dg-dash-panel dg-dash-list" id="tab-orders" data-panel="orders"></div>
+                <div class="dg-dash-panel active" id="tab-appointments" data-panel="appointments"></div>
+                <div class="dg-dash-panel" id="tab-consultations" data-panel="consultations"></div>
+                <div class="dg-dash-panel" id="tab-prescriptions" data-panel="prescriptions"></div>
+                <div class="dg-dash-panel" id="tab-orders" data-panel="orders"></div>
+                <p id="noAppointmentsMessage" class="dg-dash-empty" style="display:none;">No records found in any tab yet.</p>
             </div>
         </div>
     </div>
 
-    <div id="patientAvatar" hidden>P</div>
+    <div id="dg-site-footer"></div>
 
     <script src="js/shared/dg-auth.js"></script>
     <script src="js/shared/dg-api.js"></script>
     <script src="js/doctor/dg-doctor-status.js"></script>
+    <script src="js/shared/dg-responsive-nav.js"></script>
     <script src="js/shared/dg-site-contact.js"></script>
+    <script src="js/shared/dg-site-footer.js"></script>
+    <script src="js/shared/dg-doctor-fab.js"></script>
     <script src="patient.js"></script>
 </body>
 </html>
