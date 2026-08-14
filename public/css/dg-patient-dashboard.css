@@ -1,4 +1,4 @@
-/* Patient portal & health dashboard */
+﻿/* Patient portal & health dashboard */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
 
 body.patient-portal {
@@ -78,6 +78,7 @@ body.patient-portal .card {
 }
 
 body.patient-portal .card.hidden {
+  display: none;
   opacity: 0;
   pointer-events: none;
   z-index: -1;
@@ -179,82 +180,45 @@ body.patient-portal .form-group label {
 /* Dashboard */
 .dg-patient-dashboard {
   width: 100%;
-  opacity: 0;
-  visibility: hidden;
   display: none;
-  transition: opacity 0.4s ease;
 }
 
 .dg-patient-dashboard.visible {
-  opacity: 1;
-  visibility: visible;
   display: block;
 }
 
 .dg-pat-shell {
   width: 100%;
-  padding: 0 4px 32px;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 12px 16px 32px;
 }
 
 .dg-pat-topbar {
-  position: sticky;
-  top: 0;
-  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  flex-wrap: nowrap;
-  padding: 12px 0 16px;
-  margin-bottom: 8px;
-  background: rgba(250, 250, 250, 0.92);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(60, 60, 60, 0.08);
+  padding: 8px 0 16px;
 }
 
-.dg-pat-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-  flex: 1;
-}
-
-.dg-pat-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #f26727, #ff8a50);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.1rem;
-  flex-shrink: 0;
+.dg-pat-hello {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #6b6b6b;
 }
 
 .dg-pat-brand-text h1 {
   margin: 0;
-  font-family: 'Playfair Display', serif;
-  font-size: 1.15rem;
+  font-family: inherit;
+  font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.2;
-}
-
-.dg-pat-brand-text p {
-  margin: 2px 0 0;
-  font-size: 0.78rem;
-  color: var(--dg-text-muted, #575757);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 42vw;
+  color: #2a2a2a;
 }
 
 .dg-pat-actions {
   display: flex;
-  align-items: center;
   gap: 8px;
   flex-shrink: 0;
 }
@@ -262,313 +226,177 @@ body.patient-portal .form-group label {
 .dg-pat-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 9px 14px;
-  border-radius: 10px;
-  border: none;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 0;
   font-family: inherit;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   font-weight: 600;
   cursor: pointer;
-  text-decoration: none;
-  white-space: nowrap;
-  touch-action: manipulation;
-  box-sizing: border-box;
-}
-
-.dg-pat-btn--ghost {
-  background: #fff;
-  color: #3c3c3c;
-  border: 1px solid rgba(60, 60, 60, 0.12);
 }
 
 .dg-pat-btn--primary {
-  background: linear-gradient(135deg, #f26727, #ff8a50);
-  color: #fff;
-}
-
-.dg-pat-btn--danger {
-  background: #fff;
-  color: #b91c1c;
-  border: 1px solid rgba(185, 28, 28, 0.2);
-}
-
-.dg-dash-stats {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.dg-dash-stat {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 14px;
-  padding: 14px 10px;
-  text-align: center;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(60, 60, 60, 0.06);
-  cursor: pointer;
-  width: 100%;
-  font-family: inherit;
-}
-
-.dg-dash-stat:focus-visible {
-  outline: 2px solid #f26727;
-  outline-offset: 2px;
-}
-
-.dg-dash-stat strong {
-  display: block;
-  font-size: 1.4rem;
-  color: #f26727;
-  line-height: 1.2;
-}
-
-.dg-dash-stat span {
-  font-size: 0.78rem;
-  color: var(--dg-text-muted, #575757);
-}
-
-.dg-dash-tabs {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 8px;
-  margin: 0 0 20px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding-bottom: 2px;
-}
-
-.dg-dash-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-.dg-dash-tab {
-  border: 1px solid #f26727;
-  background: #fff;
-  color: #f26727;
-  border-radius: 999px;
-  padding: 8px 16px;
-  font-weight: 600;
-  font-size: 0.86rem;
-  cursor: pointer;
-  touch-action: manipulation;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.dg-dash-tab.active {
   background: #f26727;
   color: #fff;
 }
 
+.dg-pat-btn--ghost {
+  background: transparent;
+  color: #555;
+}
+
+.dg-dash-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0 0 14px;
+  padding: 4px;
+  background: #ececec;
+  border-radius: 12px;
+}
+
+.dg-dash-tab {
+  border: 0;
+  background: transparent;
+  color: #444;
+  border-radius: 9px;
+  padding: 8px 4px;
+  font-weight: 600;
+  font-size: 0.78rem;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.dg-dash-tab.active {
+  background: #fff;
+  color: #f26727;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
 .dg-dash-tab .dg-tab-count {
-  display: inline-block;
-  min-width: 1.2em;
-  margin-left: 6px;
-  font-weight: 700;
+  display: none;
 }
 
 .dg-dash-panel { display: none; }
 .dg-dash-panel.active { display: block; }
 
-.dg-dash-grid.active {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-  align-items: stretch;
-}
-
-.dg-dash-grid.active:has(.dg-dash-empty) {
-  display: block;
+.dg-dash-list.active {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .dg-record-card {
   background: #fff;
-  border-radius: 16px;
-  padding: 16px 16px 14px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(60, 60, 60, 0.06);
-  text-align: left;
+  border-radius: 12px;
+  padding: 12px 14px;
+  border: 1px solid #ececec;
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  gap: 4px;
 }
 
 .dg-record-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 8px;
 }
 
 .dg-record-card h3 {
   margin: 0;
-  text-align: left;
-  color: #3c3c3c;
-  font-size: 1.02rem;
-  line-height: 1.3;
-  font-family: inherit;
+  font-size: 0.95rem;
   font-weight: 600;
-  overflow-wrap: anywhere;
+  color: #2a2a2a;
+  font-family: inherit;
 }
 
 .dg-chip {
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-  max-width: 46%;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  line-height: 1.3;
-  text-align: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
 }
 
-.dg-chip--ok { background: #dcfce7; color: #166534; }
-.dg-chip--warn { background: #fef3c7; color: #92400e; }
-.dg-chip--muted { background: #f3f4f6; color: #4b5563; }
-.dg-chip--danger { background: #fee2e2; color: #991b1b; }
-.dg-chip--info { background: #e0f2fe; color: #075985; }
+.dg-chip--ok { background: #e8f8ee; color: #166534; }
+.dg-chip--warn { background: #fff6e0; color: #92400e; }
+.dg-chip--muted { background: #f3f3f3; color: #555; }
+.dg-chip--danger { background: #fdecec; color: #991b1b; }
+.dg-chip--info { background: #eaf4ff; color: #075985; }
 
-.dg-meta-row {
-  display: grid;
-  grid-template-columns: 92px 1fr;
-  gap: 8px;
-  padding: 5px 0;
-  border-bottom: 1px solid rgba(60, 60, 60, 0.06);
-  font-size: 0.86rem;
-  align-items: start;
-}
-
-.dg-meta-row:last-of-type {
-  border-bottom: none;
-}
-
-.dg-meta-row span {
-  color: var(--dg-text-muted, #575757);
-}
-
-.dg-meta-row strong {
-  color: #333;
-  font-weight: 600;
-  overflow-wrap: anywhere;
+.dg-record-sub {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #666;
 }
 
 .dg-record-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: auto;
-  padding-top: 12px;
-}
-
-.dg-record-card.expired {
-  border-color: rgba(185, 28, 28, 0.28);
+  margin-top: 6px;
 }
 
 .dg-action-btn {
-  flex: 1 1 140px;
-  margin-top: 0;
-  padding: 11px 14px;
-  border: none;
-  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 8px;
   font-weight: 600;
-  font-size: 0.88rem;
-  cursor: pointer;
-  touch-action: manipulation;
-  text-align: center;
-  text-decoration: none;
+  font-size: 0.8rem;
   font-family: inherit;
-  box-sizing: border-box;
-}
-
-.dg-action-btn--call {
-  background: linear-gradient(135deg, #2d6a4f, #40916c);
+  cursor: pointer;
+  text-decoration: none;
+  background: #f26727;
   color: #fff;
 }
 
-.dg-action-btn--followup {
-  background: #16a34a;
-  color: #fff;
-}
-
-.dg-action-btn--expired {
-  background: #6c757d;
-  color: #fff;
-  cursor: default;
-  opacity: 0.85;
-}
-
+.dg-action-btn--call { background: #2d6a4f; color: #fff; }
+.dg-action-btn--followup { background: #16a34a; color: #fff; }
 .dg-action-btn--ghost {
   background: #fff;
-  color: #3c3c3c;
-  border: 1px solid rgba(60, 60, 60, 0.14);
+  color: #444;
+  border: 1px solid #ddd;
 }
-
-.dg-action-btn--primary {
-  background: linear-gradient(135deg, #f26727, #ff8a50);
-  color: #fff;
-}
+.dg-action-btn--primary { background: #f26727; color: #fff; }
 
 .dg-dash-empty {
   text-align: center;
-  color: var(--dg-text-muted, #575757);
-  padding: 32px 16px;
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: 14px;
+  color: #666;
+  padding: 36px 12px;
   margin: 0;
+  background: #fff;
+  border-radius: 12px;
 }
 
 .dg-portal-toast {
-  position: sticky;
-  top: 64px;
-  z-index: 40;
-  margin-bottom: 16px;
+  margin: 0 0 10px;
 }
 
-.portal-login-hint {
-  font-size: 0.82rem;
-  color: #555;
-  margin: 0 0 16px;
-  line-height: 1.45;
+body.patient-portal.dashboard-view .dg-home-link,
+body.patient-portal.dashboard-view #dg-site-footer,
+body.patient-portal.dashboard-view .dg-doctor-fab {
+  display: none !important;
 }
 
-body.patient-portal.dashboard-view .dg-home-link {
-  display: none;
+/* Beat theme + responsive.css so the dashboard stays a simple app screen */
+body.patient-portal.dashboard-view.dg-page,
+body.patient-portal.dashboard-view {
+  background: #f4f4f2 !important;
+  background-attachment: scroll !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  padding: max(8px, env(safe-area-inset-top)) 0 max(16px, env(safe-area-inset-bottom)) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
 }
 
-@media (max-width: 768px) {
-  body.patient-portal.dashboard-view {
-    padding-top: max(12px, env(safe-area-inset-top));
-  }
-
-  .dg-pat-topbar {
-    flex-wrap: wrap;
-  }
-
-  .dg-pat-brand-text p {
-    max-width: none;
-  }
-
-  .dg-pat-actions {
-    width: 100%;
-  }
-
-  .dg-pat-actions .dg-pat-btn {
-    flex: 1;
-    justify-content: center;
-  }
-
-  .dg-dash-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .dg-record-card:hover {
-    transform: none;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  }
+body.patient-portal.dashboard-view .patient-portal-shell {
+  max-width: 100% !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  padding: 0 !important;
 }

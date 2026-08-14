@@ -6,25 +6,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const loginCard = document.getElementById('loginCard');
-    const mainOptionsCard = document.getElementById('mainOptionsCard');
     const appointmentsSection = document.getElementById('appointmentsSection');
     const patientLoginForm = document.getElementById('patientLoginForm');
     const patientForgotPasswordBtn = document.getElementById('patientForgotPasswordBtn');
     const loginMessageDiv = document.getElementById('message');
     const dashboardMessageDiv = document.getElementById('dashboardMessage');
-    const yourAppointmentsBtn = document.getElementById('yourAppointmentsBtn');
-    const newAppointmentBtn = document.getElementById('newAppointmentBtn');
     const dashNewAppointmentBtn = document.getElementById('dashNewAppointmentBtn');
-    const backToMenuBtn = document.getElementById('backToMenuBtn');
-    const menuLogoutBtn = document.getElementById('menuLogoutBtn');
     const patientLogoutBtn = document.getElementById('patientLogoutBtn');
-    const noAppointmentsMessage = document.getElementById('noAppointmentsMessage');
-    const welcomeTitle = document.getElementById('welcomeTitle');
-    const welcomeSub = document.getElementById('welcomeSub');
     const patientAvatar = document.getElementById('patientAvatar');
     const patientDashGreeting = document.getElementById('patientDashGreeting');
-
-    const transitionDuration = 500;
     let dashboardTabsReady = false;
 
     function escapeHtml(value) {
@@ -66,17 +56,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return 'muted';
     }
 
-    function metaRow(label, valueHtml) {
-        if (!valueHtml || valueHtml === '—') return '';
-        return '<div class="dg-meta-row"><span>' + escapeHtml(label) + '</span><strong>' + valueHtml + '</strong></div>';
-    }
-
-    function switchDashTab(tabName) {
-        const tab = document.querySelector('.dg-dash-tab[data-tab="' + tabName + '"]');
-        if (!tab) return;
-        tab.click();
-    }
-
     function setPortalLayout(mode) {
         document.body.classList.toggle('dashboard-view', mode === 'dashboard');
         document.body.classList.toggle('auth-login-view', mode === 'login');
@@ -90,10 +69,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     function updateWelcomeUi() {
         const name = getDisplayName();
         const initial = (name.charAt(0) || 'P').toUpperCase();
-        if (welcomeTitle) welcomeTitle.textContent = 'Welcome, ' + name + '!';
-        if (welcomeSub) welcomeSub.textContent = 'Book consultations or open your health dashboard.';
         if (patientAvatar) patientAvatar.textContent = initial;
-        if (patientDashGreeting) patientDashGreeting.textContent = 'Signed in as ' + name;
+        if (patientDashGreeting) patientDashGreeting.textContent = name;
     }
 
     function showMessage(msg, type, scope) {
@@ -140,16 +117,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return true;
         }
         return false;
-    }
-
-    function showPatientMenu() {
-        loginCard.classList.remove('visible');
-        loginCard.classList.add('hidden');
-        mainOptionsCard.classList.remove('hidden');
-        mainOptionsCard.classList.add('visible');
-        appointmentsSection.classList.remove('visible');
-        setPortalLayout('menu');
-        updateWelcomeUi();
     }
 
     function logout() {
@@ -257,31 +224,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         dashboardTabsReady = true;
     }
 
-    function renderDashStats(statsEl, data, appointmentCount) {
-        if (!statsEl) return;
-        const consultations = data.consultations || [];
-        const prescriptions = data.prescriptions || [];
-        const orders = data.orders || [];
-        statsEl.innerHTML = `
-            <button type="button" class="dg-dash-stat" data-jump="appointments"><strong>${appointmentCount || 0}</strong><span>Appointments</span></button>
-            <button type="button" class="dg-dash-stat" data-jump="consultations"><strong>${consultations.length}</strong><span>Consultations</span></button>
-            <button type="button" class="dg-dash-stat" data-jump="prescriptions"><strong>${prescriptions.length}</strong><span>Prescriptions</span></button>
-            <button type="button" class="dg-dash-stat" data-jump="orders"><strong>${orders.length}</strong><span>Orders</span></button>
-        `;
-        statsEl.querySelectorAll('[data-jump]').forEach((btn) => {
-            btn.addEventListener('click', () => switchDashTab(btn.getAttribute('data-jump')));
-        });
-        document.querySelectorAll('.dg-dash-tab').forEach((tab) => {
-            const counts = {
-                appointments: appointmentCount || 0,
-                consultations: consultations.length,
-                prescriptions: prescriptions.length,
-                orders: orders.length
-            };
-            const key = tab.dataset.tab;
-            const label = key.charAt(0).toUpperCase() + key.slice(1);
-            tab.innerHTML = label + ' <span class="dg-tab-count">' + (counts[key] || 0) + '</span>';
-        });
+    function renderDashStats() {
+        /* Tab labels are set in HTML. */
     }
 
     function doctorHasActiveAccess(doctorName, accessPlans) {
@@ -418,11 +362,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const hasAnyPlan = (accessPlans || []).length > 0;
             const hasActive = (accessPlans || []).some((p) => p.active);
             if (!hasAnyPlan) {
-                panel.innerHTML = '<p class="dg-dash-empty">No appointments yet. Book a consultation to get started.</p>';
+                panel.innerHTML = '<p class="dg-dash-empty">No upcoming visits. Tap Book to start.</p>';
             } else if (!hasActive) {
-                panel.innerHTML = '<p class="dg-dash-empty">Your 15-day follow-up window has ended. Book a new consultation to continue with your doctor.</p>';
+                panel.innerHTML = '<p class="dg-dash-empty">Your follow-up window has ended. Book again to continue.</p>';
             } else {
-                panel.innerHTML = '<p class="dg-dash-empty">No live appointment right now. You still have free follow-up access from Consultations.</p>';
+                panel.innerHTML = '<p class="dg-dash-empty">No live visit right now. Check History for a free follow-up.</p>';
             }
             return;
         }
@@ -432,7 +376,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const doctorName = appointment.selectedDoctorName || appointment.doctorName || '';
             const hasAccess = doctorHasActiveAccess(doctorName, accessPlans);
             const daysRemaining = hasAccess ? getAccessDaysRemaining(doctorName, accessPlans) : 0;
-            const freeRemaining = hasAccess ? getFreeConsultationsRemaining(doctorName, accessPlans) : 0;
             const canFollowUp = hasAccess && canStartFreeFollowUp(doctorName, accessPlans);
             const isExpired = !hasAccess;
             if (isExpired) card.classList.add('expired');
@@ -440,29 +383,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             const chip = hasAccess
                 ? `<span class="dg-chip dg-chip--ok">${daysRemaining} day${daysRemaining === 1 ? '' : 's'} left</span>`
                 : '<span class="dg-chip dg-chip--danger">Plan ended</span>';
-            const followNote = hasAccess
-                ? (canFollowUp
-                    ? metaRow('Follow-up', escapeHtml(freeRemaining + ' free call' + (freeRemaining === 1 ? '' : 's') + ' remaining'))
-                    : metaRow('Follow-up', 'All free calls used'))
-                : '';
-            const actions = isExpired
-                ? (canFollowUp
-                    ? `<div class="dg-record-actions"><button type="button" class="dg-action-btn dg-action-btn--followup" data-doctor-name="${safeDoctor}">Start free follow-up</button></div>`
-                    : '<div class="dg-record-actions"><button type="button" class="dg-action-btn dg-action-btn--expired" disabled>Consultation ended</button></div>')
-                : `<div class="dg-record-actions">
-                    <button type="button" class="dg-action-btn dg-action-btn--call" data-room-name="${escapeHtml(appointment.roomName || '')}" data-doctor-name="${safeDoctor}">Join video call</button>
-                    ${canFollowUp ? `<button type="button" class="dg-action-btn dg-action-btn--followup" data-doctor-name="${safeDoctor}">Free follow-up</button>` : ''}
-                   </div>`;
+            const sub = [formatDate(appointment.createdAt), formatMoney(appointment.selectedDoctorFee || appointment.amount)]
+                .filter(Boolean).join(' · ');
+            let action = '';
+            if (!isExpired) {
+                action = `<button type="button" class="dg-action-btn dg-action-btn--call" data-room-name="${escapeHtml(appointment.roomName || '')}" data-doctor-name="${safeDoctor}">Join</button>`;
+            } else if (canFollowUp) {
+                action = `<button type="button" class="dg-action-btn dg-action-btn--followup" data-doctor-name="${safeDoctor}">Follow-up</button>`;
+            }
             card.innerHTML = `
                 <div class="dg-record-head">
-                    <h3>${safeDoctor || 'Appointment'}</h3>
+                    <h3>${safeDoctor || 'Visit'}</h3>
                     ${chip}
                 </div>
-                ${metaRow('Date', escapeHtml(formatDate(appointment.createdAt)))}
-                ${metaRow('Fee', escapeHtml(formatMoney(appointment.selectedDoctorFee || appointment.amount)))}
-                ${metaRow('Slot', escapeHtml(appointment.doctorAvailableTime || '—'))}
-                ${followNote}
-                ${actions}
+                <p class="dg-record-sub">${escapeHtml(sub)}</p>
+                <div class="dg-record-actions">${action}</div>
             `;
             panel.appendChild(card);
         });
@@ -484,8 +419,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <h3>${escapeHtml(row.doctorName || 'Consultation')}</h3>
                     <span class="dg-chip dg-chip--${chipKind(row.status)}">${escapeHtml(status)}</span>
                 </div>
-                ${metaRow('Date', escapeHtml(formatDate(row.createdAt, true)))}
-                ${metaRow('Fee', escapeHtml(formatMoney(row.amount)))}
+                <p class="dg-record-sub">${escapeHtml(formatDate(row.createdAt, true) + ' · ' + formatMoney(row.amount))}</p>
+                <div class="dg-record-actions"></div>
             `;
             panel.appendChild(card);
         });
@@ -508,12 +443,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <h3>${escapeHtml(itemSummary || 'Prescription')}</h3>
                     <span class="dg-chip dg-chip--${chipKind(rx.status)}">${escapeHtml(delivery)}</span>
                 </div>
-                ${metaRow('Total', escapeHtml(formatMoney(rx.total)))}
-                ${metaRow('Date', escapeHtml(formatDate(rx.createdAt)))}
-                ${rx.orderId ? metaRow('Order', escapeHtml(rx.orderId)) : ''}
+                <p class="dg-record-sub">${escapeHtml(formatMoney(rx.total) + ' · ' + formatDate(rx.createdAt))}</p>
                 <div class="dg-record-actions">
-                  <button type="button" class="dg-action-btn dg-action-btn--primary" data-order-rx>Order from store</button>
-                  ${rx.orderId ? `<a class="dg-action-btn dg-action-btn--ghost" href="/store-invoice.html?orderId=${encodeURIComponent(rx.orderId)}" target="_blank" rel="noopener">View order</a>` : ''}
+                  <button type="button" class="dg-action-btn dg-action-btn--primary" data-order-rx>Order</button>
                 </div>
             `;
             const orderBtn = card.querySelector('[data-order-rx]');
@@ -563,9 +495,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const card = document.createElement('div');
             card.className = 'dg-record-card';
             const itemNames = items.slice(0, 4).map((it) => it.name || it.medicineName || 'Item').join(', ');
-            const ship = order.shipment && (order.shipment.trackingNumber || order.shipment.courier || order.shipment.status)
-                ? [order.shipment.status, order.shipment.courier, order.shipment.trackingNumber].filter(Boolean).join(' · ')
-                : 'Not shipped yet';
             const trackLink = order.shipment && order.shipment.trackingUrl
                 ? ' <a href="' + escapeHtml(order.shipment.trackingUrl) + '" target="_blank" rel="noopener">Track</a>'
                 : '';
@@ -576,15 +505,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <h3>${escapeHtml(itemNames || 'Store order')}</h3>
                     <span class="dg-chip dg-chip--${chipKind(order.orderStatus || order.paymentStatus)}">${escapeHtml(orderStatus)}</span>
                 </div>
-                ${metaRow('Items', escapeHtml(String(order.itemCount || items.length || 0)))}
-                ${metaRow('Total', escapeHtml(formatMoney(order.totalAmount)))}
-                ${metaRow('Payment', escapeHtml(prettyStatus(order.paymentStatus)))}
-                ${metaRow('Date', escapeHtml(formatDate(order.orderDate, true)))}
-                ${metaRow('Shipment', escapeHtml(ship) + trackLink)}
+                <p class="dg-record-sub">${escapeHtml(formatMoney(order.totalAmount) + ' · ' + formatDate(order.orderDate))}${trackLink ? trackLink : ''}</p>
                 <div class="dg-record-actions">
-                  <a class="dg-action-btn dg-action-btn--ghost" href="/store-invoice.html?orderId=${encodeURIComponent(order._id || order.id || '')}" target="_blank" rel="noopener">Invoice</a>
-                  <a class="dg-action-btn dg-action-btn--ghost" href="/store">Reorder</a>
-                  ${canCancel ? `<button type="button" class="dg-action-btn dg-action-btn--ghost" data-cancel-order="${escapeHtml(order._id || order.id || '')}">Cancel</button>` : ''}
+                  ${canCancel
+                    ? `<button type="button" class="dg-action-btn dg-action-btn--ghost" data-cancel-order="${escapeHtml(order._id || order.id || '')}">Cancel</button>`
+                    : `<a class="dg-action-btn dg-action-btn--ghost" href="/store-invoice.html?orderId=${encodeURIComponent(order._id || order.id || '')}" target="_blank" rel="noopener">Invoice</a>`}
                 </div>
             `;
             const cancelBtn = card.querySelector('[data-cancel-order]');
@@ -626,14 +551,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         loginCard.classList.remove('visible');
         loginCard.classList.add('hidden');
-        mainOptionsCard.classList.remove('visible');
-        mainOptionsCard.classList.add('hidden');
         setPortalLayout('dashboard');
         initDashboardTabs();
         updateWelcomeUi();
-
-        noAppointmentsMessage.style.display = 'none';
-        showMessage('Loading your health dashboard…', 'info', 'dashboard');
+        appointmentsSection.classList.add('visible');
 
         const patientPhoneNumber = localStorage.getItem('patientPhoneNumber');
         if (!patientPhoneNumber) {
@@ -662,7 +583,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             appointments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-            renderDashStats(document.getElementById('patientDashStats'), dashboard, appointments.length);
+            renderDashStats(null, dashboard, appointments.length);
             renderAppointmentsPanel(
                 document.getElementById('tab-appointments'),
                 appointments,
@@ -681,11 +602,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 dashboard.orders || []
             );
 
-            if (noAppointmentsMessage) {
-                noAppointmentsMessage.hidden = true;
-                noAppointmentsMessage.style.display = 'none';
-            }
-
             if (dashboardMessageDiv) {
                 dashboardMessageDiv.style.display = 'none';
                 dashboardMessageDiv.textContent = '';
@@ -702,16 +618,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.location.href = 'book-appointment.html';
     }
 
-    if (yourAppointmentsBtn) yourAppointmentsBtn.addEventListener('click', () => openDashboard());
-    if (newAppointmentBtn) newAppointmentBtn.addEventListener('click', goNewAppointment);
     if (dashNewAppointmentBtn) dashNewAppointmentBtn.addEventListener('click', goNewAppointment);
-
-    if (backToMenuBtn && backToMenuBtn.tagName === 'BUTTON') {
-        backToMenuBtn.addEventListener('click', () => {
-            window.location.href = '/';
-        });
-    }
-
-    if (menuLogoutBtn) menuLogoutBtn.addEventListener('click', logout);
     if (patientLogoutBtn) patientLogoutBtn.addEventListener('click', logout);
 });
