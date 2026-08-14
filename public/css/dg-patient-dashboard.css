@@ -204,7 +204,7 @@ body.patient-portal .form-group label {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   padding: 12px 0 16px;
   margin-bottom: 8px;
   background: rgba(250, 250, 250, 0.92);
@@ -217,6 +217,7 @@ body.patient-portal .form-group label {
   align-items: center;
   gap: 12px;
   min-width: 0;
+  flex: 1;
 }
 
 .dg-pat-avatar {
@@ -245,13 +246,17 @@ body.patient-portal .form-group label {
   margin: 2px 0 0;
   font-size: 0.78rem;
   color: var(--dg-text-muted, #575757);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 42vw;
 }
 
 .dg-pat-actions {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .dg-pat-btn {
@@ -268,6 +273,7 @@ body.patient-portal .form-group label {
   text-decoration: none;
   white-space: nowrap;
   touch-action: manipulation;
+  box-sizing: border-box;
 }
 
 .dg-pat-btn--ghost {
@@ -289,7 +295,7 @@ body.patient-portal .form-group label {
 
 .dg-dash-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 20px;
 }
@@ -297,29 +303,45 @@ body.patient-portal .form-group label {
 .dg-dash-stat {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 14px;
-  padding: 16px;
+  padding: 14px 10px;
   text-align: center;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(60, 60, 60, 0.06);
+  cursor: pointer;
+  width: 100%;
+  font-family: inherit;
+}
+
+.dg-dash-stat:focus-visible {
+  outline: 2px solid #f26727;
+  outline-offset: 2px;
 }
 
 .dg-dash-stat strong {
   display: block;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   color: #f26727;
   line-height: 1.2;
 }
 
 .dg-dash-stat span {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: var(--dg-text-muted, #575757);
 }
 
 .dg-dash-tabs {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
   margin: 0 0 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.dg-dash-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .dg-dash-tab {
@@ -327,11 +349,13 @@ body.patient-portal .form-group label {
   background: #fff;
   color: #f26727;
   border-radius: 999px;
-  padding: 9px 18px;
+  padding: 8px 16px;
   font-weight: 600;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   cursor: pointer;
   touch-action: manipulation;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .dg-dash-tab.active {
@@ -339,81 +363,127 @@ body.patient-portal .form-group label {
   color: #fff;
 }
 
+.dg-dash-tab .dg-tab-count {
+  display: inline-block;
+  min-width: 1.2em;
+  margin-left: 6px;
+  font-weight: 700;
+}
+
 .dg-dash-panel { display: none; }
 .dg-dash-panel.active { display: block; }
 
-#tab-appointments.active {
+.dg-dash-grid.active {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-  align-items: start;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.dg-dash-grid.active:has(.dg-dash-empty) {
+  display: block;
 }
 
 .dg-record-card {
   background: #fff;
   border-radius: 16px;
-  padding: 20px;
+  padding: 16px 16px 14px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(60, 60, 60, 0.06);
   text-align: left;
-  position: relative;
-  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
-.dg-record-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+.dg-record-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .dg-record-card h3 {
-  margin: 0 0 14px;
-  text-align: center;
-  color: #f26727;
-  font-size: 1.1rem;
+  margin: 0;
+  text-align: left;
+  color: #3c3c3c;
+  font-size: 1.02rem;
+  line-height: 1.3;
+  font-family: inherit;
+  font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
-.dg-record-card p {
-  margin: 6px 0;
-  color: #444;
-  font-size: 0.9rem;
-  line-height: 1.45;
-}
-
-.dg-record-card p strong { color: #333; }
-
-.dg-record-card .room-id {
-  font-weight: 700;
-  color: #b91c1c;
-  background: #fff3cd;
-  padding: 4px 10px;
-  border-radius: 6px;
-  display: inline-block;
-}
-
-.dg-record-card .timer {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: #f8d7da;
-  color: #721c24;
+.dg-chip {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  max-width: 46%;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
 }
 
-.dg-record-card.expired { border-color: rgba(185, 28, 28, 0.35); }
+.dg-chip--ok { background: #dcfce7; color: #166534; }
+.dg-chip--warn { background: #fef3c7; color: #92400e; }
+.dg-chip--muted { background: #f3f4f6; color: #4b5563; }
+.dg-chip--danger { background: #fee2e2; color: #991b1b; }
+.dg-chip--info { background: #e0f2fe; color: #075985; }
+
+.dg-meta-row {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(60, 60, 60, 0.06);
+  font-size: 0.86rem;
+  align-items: start;
+}
+
+.dg-meta-row:last-of-type {
+  border-bottom: none;
+}
+
+.dg-meta-row span {
+  color: var(--dg-text-muted, #575757);
+}
+
+.dg-meta-row strong {
+  color: #333;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.dg-record-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.dg-record-card.expired {
+  border-color: rgba(185, 28, 28, 0.28);
+}
 
 .dg-action-btn {
-  width: 100%;
-  margin-top: 14px;
+  flex: 1 1 140px;
+  margin-top: 0;
   padding: 11px 14px;
   border: none;
   border-radius: 10px;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   cursor: pointer;
   touch-action: manipulation;
+  text-align: center;
+  text-decoration: none;
+  font-family: inherit;
+  box-sizing: border-box;
 }
 
 .dg-action-btn--call {
@@ -424,7 +494,6 @@ body.patient-portal .form-group label {
 .dg-action-btn--followup {
   background: #16a34a;
   color: #fff;
-  margin-top: 8px;
 }
 
 .dg-action-btn--expired {
@@ -434,12 +503,24 @@ body.patient-portal .form-group label {
   opacity: 0.85;
 }
 
+.dg-action-btn--ghost {
+  background: #fff;
+  color: #3c3c3c;
+  border: 1px solid rgba(60, 60, 60, 0.14);
+}
+
+.dg-action-btn--primary {
+  background: linear-gradient(135deg, #f26727, #ff8a50);
+  color: #fff;
+}
+
 .dg-dash-empty {
   text-align: center;
   color: var(--dg-text-muted, #575757);
   padding: 32px 16px;
   background: rgba(255, 255, 255, 0.7);
   border-radius: 14px;
+  margin: 0;
 }
 
 .dg-portal-toast {
@@ -449,22 +530,45 @@ body.patient-portal .form-group label {
   margin-bottom: 16px;
 }
 
+.portal-login-hint {
+  font-size: 0.82rem;
+  color: #555;
+  margin: 0 0 16px;
+  line-height: 1.45;
+}
+
+body.patient-portal.dashboard-view .dg-home-link {
+  display: none;
+}
+
 @media (max-width: 768px) {
   body.patient-portal.dashboard-view {
-    padding-top: max(56px, env(safe-area-inset-top));
+    padding-top: max(12px, env(safe-area-inset-top));
   }
 
   .dg-pat-topbar {
-    flex-direction: column;
-    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .dg-pat-brand-text p {
+    max-width: none;
   }
 
   .dg-pat-actions {
-    justify-content: stretch;
+    width: 100%;
   }
 
   .dg-pat-actions .dg-pat-btn {
     flex: 1;
     justify-content: center;
+  }
+
+  .dg-dash-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dg-record-card:hover {
+    transform: none;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   }
 }
