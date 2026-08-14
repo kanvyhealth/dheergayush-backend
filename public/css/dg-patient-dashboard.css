@@ -27,10 +27,12 @@ body.patient-portal.dashboard-view {
   padding-top: max(16px, env(safe-area-inset-top));
 }
 
-body.patient-portal .dg-home-link {
+body.patient-portal #backToHomeBtn.dg-home-link {
   position: fixed;
   top: max(12px, env(safe-area-inset-top));
   left: max(12px, env(safe-area-inset-left));
+  right: auto;
+  width: auto;
   z-index: 120;
 }
 
@@ -500,8 +502,12 @@ body.patient-portal .form-group label {
   margin-bottom: 16px;
 }
 
-body.patient-portal.dashboard-view .dg-home-link {
-  display: none;
+body.patient-portal.dashboard-view #backToHomeBtn.dg-home-link {
+  display: none !important;
+}
+
+#noAppointmentsMessage {
+  display: none !important;
 }
 
 @media (max-width: 768px) {
