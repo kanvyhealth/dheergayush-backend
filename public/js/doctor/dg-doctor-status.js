@@ -61,7 +61,7 @@
     if (!uid) return null;
     const stored = doctor.profileUrl || doctor.photo;
     const base = '/api/media/doctor-photo/' + encodeURIComponent(String(uid));
-    if (stored && /^https?:\/\//i.test(String(stored))) {
+    if (stored) {
       return base + '?url=' + encodeURIComponent(String(stored));
     }
     return base;
@@ -69,9 +69,11 @@
 
   function getDoctorPhoto(doctor) {
     if (!doctor) return null;
+    const storedUrl = getPhotoUrl(doctor.profileUrl || doctor.photo);
+    if (storedUrl && storedUrl.indexOf('/uploads/') === 0) return storedUrl;
     const proxy = getDoctorPhotoProxyUrl(doctor);
     if (proxy) return proxy;
-    return getPhotoUrl(doctor.profileUrl || doctor.photo);
+    return storedUrl;
   }
 
   function getDoctorTimeSlot(doctor) {
@@ -151,12 +153,14 @@
     const name = (doctor && doctor.name) || 'Doctor';
     const initial = name.charAt(0).toUpperCase();
     const url = getDoctorPhoto(doctor);
+    const storedUrl = getPhotoUrl(doctor && (doctor.profileUrl || doctor.photo)) || '';
     const fallbackStyle = `width:${px}px;height:${px}px;border-radius:50%;background:linear-gradient(135deg,#F26727,#3C3C3C);display:flex;align-items:center;justify-content:center;color:#fff;font-size:${Math.max(18, Math.round(px / 3))}px;font-weight:700;`;
     if (!url) {
       return `<div class="dg-doctor-avatar-fallback" style="${fallbackStyle}">${escapeHtml(initial)}</div>`;
     }
+    const fallbackSrc = storedUrl && storedUrl !== url ? storedUrl : '';
     return `<div class="dg-doctor-avatar-wrap" style="width:${px}px;height:${px}px;">` +
-      `<img src="${escapeHtml(url)}" alt="${escapeHtml(name)}" class="dg-doctor-avatar-img" style="width:${px}px;height:${px}px;border-radius:50%;object-fit:cover;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">` +
+      `<img src="${escapeHtml(url)}" alt="${escapeHtml(name)}" class="dg-doctor-avatar-img" data-fallback="${escapeHtml(fallbackSrc)}" style="width:${px}px;height:${px}px;border-radius:50%;object-fit:cover;display:block;" onerror="var f=this.getAttribute('data-fallback');if(f&&this.src.indexOf(f)===-1){this.removeAttribute('data-fallback');this.src=f;}else{this.style.display='none';this.nextElementSibling.style.display='flex';}">` +
       `<div class="dg-doctor-avatar-fallback" style="${fallbackStyle}display:none;">${escapeHtml(initial)}</div>` +
       `</div>`;
   }

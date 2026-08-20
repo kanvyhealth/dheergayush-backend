@@ -940,7 +940,16 @@
         }
 
         .form-inputfile input[type="file"] {
-            display: none;
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+            opacity: 0;
         }
 
         /* File list styles */
@@ -1369,12 +1378,12 @@
                     </div>
                     <div class="form-inputfile form-group">
                         <label for="doctorDocs" class="file-input-button"><i class="fas fa-file-lines dg-label-icon" aria-hidden="true"></i>Upload Documents (PDF, JPG, PNG):</label>
-                        <input type="file" id="doctorDocs" name="documents" multiple accept=".pdf,.jpg,.jpeg,.png" class="hidden">
+                        <input type="file" id="doctorDocs" name="documents" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,image/*,application/pdf" class="hidden">
                         <ul id="fileList"></ul>
                     </div>
                     <div class="form-inputfile form-group">
                         <label for="doctorPhoto" class="file-input-button"><i class="fas fa-image dg-label-icon" aria-hidden="true"></i>Upload Your Photo:</label>
-                        <input type="file" id="doctorPhoto" name="photo" accept=".jpg,.jpeg,.png" class="hidden">
+                        <input type="file" id="doctorPhoto" name="photo" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp,image/*" class="hidden">
                         <ul id="photoList"></ul>
                     </div>
                     <div class="form-group">
@@ -2429,6 +2438,18 @@ function updateTimePickerSelection() {
             observer.observe(section);
         });
 
+        function cloneSelectedFile(file) {
+            if (!file) return null;
+            try {
+                return new File([file], file.name, {
+                    type: file.type || 'application/octet-stream',
+                    lastModified: file.lastModified
+                });
+            } catch (err) {
+                return file;
+            }
+        }
+
         // File upload handling
         const doctorDocsInput = document.getElementById('doctorDocs');
         const fileList = document.getElementById('fileList');
@@ -2436,7 +2457,7 @@ function updateTimePickerSelection() {
 
         if (doctorDocsInput) {
         doctorDocsInput.addEventListener('change', function(e) {
-            const files = Array.from(e.target.files);
+            const files = Array.from(e.target.files || []).map(cloneSelectedFile).filter(Boolean);
             
             // Check if adding new files would exceed the limit
             if (doctorSelectedFiles.length + files.length > 5) {
@@ -2600,7 +2621,9 @@ function updateTimePickerSelection() {
             }
             selectedLanguages.forEach(lang => formData.append('languages', lang));
             doctorSelectedFiles.forEach(file => formData.append('documents', file));
-            formData.append('photo', doctorSelectedPhoto);
+            const photoInput = document.getElementById('doctorPhoto');
+            const photoToSend = doctorSelectedPhoto || (photoInput && photoInput.files && photoInput.files[0]) || null;
+            if (photoToSend) formData.append('photo', photoToSend);
 
             if (registerBtn) {
                 registerBtn.disabled = true;
@@ -2917,10 +2940,14 @@ let doctorSelectedPhoto = null;
 
 if (doctorPhotoInput) {
     doctorPhotoInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
+        const file = e.target.files && e.target.files[0];
         if (!file) return;
-        // Only allow one photo
-        doctorSelectedPhoto = file;
+        if (!/^image\//i.test(file.type) && !/\.(jpe?g|png|webp|gif)$/i.test(file.name)) {
+            alert('Please choose a JPG, PNG, or WEBP photo.');
+            e.target.value = '';
+            return;
+        }
+        doctorSelectedPhoto = cloneSelectedFile(file);
         updatePhotoList();
         e.target.value = '';
     });

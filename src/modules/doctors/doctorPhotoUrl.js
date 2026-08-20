@@ -1,7 +1,12 @@
 /**
  * Resolve doctor profile photos from Firebase Storage (refresh expired download URLs).
  */
+const fs = require('fs');
+const path = require('path');
 const { ensureStorage, storagePathFromUrl } = require('../../core/firebase/storage');
+
+const UPLOADS_DIR = path.join(__dirname, '..', '..', '..', 'uploads');
+const LOCAL_UPLOAD_RE = /(?:^|\/)uploads\/([^/?#]+)/i;
 
 const IMAGE_EXT = /\.(jpe?g|png|webp|gif)$/i;
 
@@ -48,6 +53,40 @@ function doctorUid(doctor) {
 
 function storedPhoto(doctor) {
   return String(doctor?.profileUrl || doctor?.photo || '').trim();
+}
+
+function publicUploadUrl(stored) {
+  const v = String(stored || '').replace(/\\/g, '/').trim();
+  if (!v) return null;
+  const match = v.match(LOCAL_UPLOAD_RE);
+  if (!match) {
+    if (v.startsWith('/uploads/')) return v;
+    if (v.startsWith('uploads/')) return '/' + v;
+    return null;
+  }
+  return '/uploads/' + match[1];
+}
+
+function localUploadFilePath(stored) {
+  const publicUrl = publicUploadUrl(stored);
+  if (!publicUrl) return null;
+  const name = path.basename(publicUrl);
+  if (!name || name.includes('..')) return null;
+  const full = path.join(UPLOADS_DIR, name);
+  try {
+    if (fs.existsSync(full)) return full;
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+function contentTypeForPath(filePath) {
+  const ext = path.extname(filePath || '').toLowerCase();
+  if (ext === '.png') return 'image/png';
+  if (ext === '.webp') return 'image/webp';
+  if (ext === '.gif') return 'image/gif';
+  return 'image/jpeg';
 }
 
 /** Candidate storage paths for a doctor profile image. */
@@ -102,31 +141,48 @@ async function findDoctorPhotoFile(doctorOrUid, storedHint) {
   return null;
 }
 
+function fallbackPhotoUrl(stored) {
+  const value = String(stored || '').trim();
+  if (!value) return null;
+  if (/^https?:\/\//i.test(value)) return value;
+  return publicUploadUrl(value);
+}
+
 /** Fresh signed URL for a doctor profile photo, or null. */
 async function resolveDoctorPhoto(doctor) {
+  const stored = storedPhoto(doctor);
   const file = await findDoctorPhotoFile(doctor);
   if (!file) {
-    const stored = storedPhoto(doctor);
-    return /^https?:\/\//i.test(stored) ? stored : null;
+    return fallbackPhotoUrl(stored);
   }
   try {
     return await signedUrlForFile(file);
   } catch (err) {
     console.warn('resolveDoctorPhoto signed URL:', err.message);
-    return storedPhoto(doctor) || null;
+    return fallbackPhotoUrl(stored);
   }
 }
 
-/** Stream doctor photo for /api/doctors/:uid/photo */
+/** Stream doctor photo for /api/media/doctor-photo/:uid */
 async function streamDoctorPhoto(uid, storedHint) {
   const file = await findDoctorPhotoFile(uid, storedHint);
-  if (!file) return null;
+  if (file) {
+    const [metadata] = await file.getMetadata().catch(() => [{}]);
+    return {
+      stream: file.createReadStream(),
+      contentType: metadata.contentType || 'image/jpeg'
+    };
+  }
 
-  const [metadata] = await file.getMetadata().catch(() => [{}]);
-  return {
-    stream: file.createReadStream(),
-    contentType: metadata.contentType || 'image/jpeg'
-  };
+  const localPath = localUploadFilePath(storedHint);
+  if (localPath) {
+    return {
+      stream: fs.createReadStream(localPath),
+      contentType: contentTypeForPath(localPath)
+    };
+  }
+
+  return null;
 }
 
 async function enrichDoctorPhotos(doctors) {

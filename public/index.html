@@ -884,13 +884,14 @@
             background: linear-gradient(135deg, #ffffff 0%, #f26727 25%, #fafafa 50%, #3c3c3c 100%);
         }
 
-        /* Side ads — desktop only */
+        /* Side ads — homepage only, sit below navbar, hidden once the hero scrolls away */
         .side-ad-link {
             position: fixed;
             top: 50%;
             transform: translateY(-50%);
-            z-index: 1200;
+            z-index: 1050;
             display: none;
+            pointer-events: none;
         }
 
         #leftAdLink {
@@ -904,6 +905,7 @@
 
         .side-ad-link.is-visible {
             display: block;
+            pointer-events: auto;
         }
 
         #leftAdImage {
@@ -1723,8 +1725,10 @@
         var left = document.getElementById('leftAdLink');
         var right = document.getElementById('rightAdLink');
         var video = document.getElementById('rightAdVideo');
+        var hero = document.getElementById('home');
         if (!left || !right) return;
-        if (isDesktop) {
+        var inHero = !hero || hero.getBoundingClientRect().bottom > 96;
+        if (isDesktop && inHero) {
             left.classList.add('is-visible');
             right.classList.add('is-visible');
             if (video) {
@@ -1738,8 +1742,19 @@
             }
         }
     }
+    var sideAdTick = false;
+    function onSideAdViewportChange() {
+        if (sideAdTick) return;
+        sideAdTick = true;
+        requestAnimationFrame(function() {
+            sideAdTick = false;
+            showSideAdsIfDesktop();
+        });
+    }
     showSideAdsIfDesktop();
-    window.addEventListener('resize', showSideAdsIfDesktop);
+    window.addEventListener('resize', onSideAdViewportChange);
+    window.addEventListener('scroll', onSideAdViewportChange, { passive: true });
+    document.addEventListener('DOMContentLoaded', showSideAdsIfDesktop);
     </script>
     <!-- Navigation -->
     <nav class="navbar" id="navbar">
@@ -2101,13 +2116,13 @@
         }
 
         function homeDoctorPhotoUrl(d) {
+            var stored = String(d.profileUrl || d.photo || '').replace(/\\/g, '/').trim();
+            if (stored.indexOf('uploads/') === 0) stored = '/' + stored;
+            if (stored.indexOf('/uploads/') === 0) return stored;
             var uid = d.uid || d._id || d.id;
-            if (!uid) return d.profileUrl || d.photo || '';
+            if (!uid) return stored;
             var base = '/api/media/doctor-photo/' + encodeURIComponent(String(uid));
-            var stored = d.profileUrl || d.photo || '';
-            if (stored && /^https?:\/\//i.test(String(stored))) {
-                return base + '?url=' + encodeURIComponent(String(stored));
-            }
+            if (stored) return base + '?url=' + encodeURIComponent(stored);
             return base;
         }
 
@@ -2117,8 +2132,10 @@
             var safeName = escapeHtml(d.name);
             var safeSpec = escapeHtml(spec);
             var bio = escapeHtml(d.about || d.bio || d.location || 'Certified Ayurvedic practitioner');
+            var storedPhoto = String(d.profileUrl || d.photo || '').replace(/\\/g, '/').trim();
+            if (storedPhoto.indexOf('uploads/') === 0) storedPhoto = '/' + storedPhoto;
             var avatar = photo
-                ? '<img src="' + escapeHtml(photo) + '" alt="' + safeName + '" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">'
+                ? '<img src="' + escapeHtml(photo) + '" alt="' + safeName + '" loading="lazy" data-fallback="' + escapeHtml(storedPhoto && storedPhoto !== photo ? storedPhoto : '') + '" onerror="var f=this.getAttribute(\'data-fallback\');if(f&&this.src.indexOf(f)===-1){this.removeAttribute(\'data-fallback\');this.src=f;}else{this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';}">'
                   + '<span class="dg-doctor-avatar-icon" style="display:none;"><i class="fas fa-user-md" aria-hidden="true"></i></span>'
                 : '<span class="dg-doctor-avatar-icon"><i class="fas fa-user-md" aria-hidden="true"></i></span>';
             var stars = '<div class="dg-stars" aria-label="5 out of 5 stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>';

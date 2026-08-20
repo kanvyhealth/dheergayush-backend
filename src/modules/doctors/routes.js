@@ -354,13 +354,21 @@ module.exports = function register(app, deps) {
             if (!uid) return res.status(400).end();
             const hint = typeof req.query.url === 'string' ? req.query.url : '';
             const result = await streamDoctorPhoto(uid, hint);
-            if (!result) return res.status(404).end();
-            res.setHeader('Content-Type', result.contentType || 'image/jpeg');
-            res.setHeader('Cache-Control', 'public, max-age=3600');
-            result.stream.on('error', () => {
-                if (!res.headersSent) res.status(500).end();
-            });
-            result.stream.pipe(res);
+            if (result) {
+                res.setHeader('Content-Type', result.contentType || 'image/jpeg');
+                res.setHeader('Cache-Control', 'public, max-age=3600');
+                result.stream.on('error', () => {
+                    if (!res.headersSent) res.status(500).end();
+                });
+                return result.stream.pipe(res);
+            }
+            if (hint.startsWith('/uploads/') || hint.startsWith('uploads/')) {
+                return res.redirect(hint.startsWith('/') ? hint : '/' + hint);
+            }
+            if (/^https?:\/\//i.test(hint)) {
+                return res.redirect(hint);
+            }
+            return res.status(404).end();
         } catch (err) {
             console.error('doctor-photo stream failed:', err.message);
             if (!res.headersSent) res.status(500).end();
