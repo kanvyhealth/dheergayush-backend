@@ -31,6 +31,8 @@
   var totalProducts = 0;
   var hasMore = true;
   var loading = false;
+  var productsRequestId = 0;
+  var productsAbort = null;
   var searchTimer = null;
   var observer = null;
   var cartToastTimer = null;
@@ -524,9 +526,27 @@
     return '/store';
   }
 
+  function nextProductsRequest() {
+    productsRequestId += 1;
+    if (productsAbort) {
+      try { productsAbort.abort(); } catch (_) { /* ignore */ }
+    }
+    productsAbort = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    loading = false;
+    return productsRequestId;
+  }
+
+  function isCurrentProductsRequest(requestId) {
+    return requestId === productsRequestId;
+  }
+
   function syncStoreUrl(replace) {
     var path = storePathFor(currentCategory, currentSubcategory);
-    var search = window.location.search || '';
+    var params = new URLSearchParams(window.location.search || '');
+    params.delete('category');
+    params.delete('subcategory');
+    var search = params.toString();
+    search = search ? ('?' + search) : '';
     var next = path + search;
     var current = window.location.pathname + (window.location.search || '');
     if (current === next) return;
@@ -875,6 +895,10 @@
     opts = opts || {};
     var items = data.items || data;
     if (Array.isArray(data.items)) {
+      if (Number(data.page) === 1) {
+        products = [];
+        if (els.productGrid) els.productGrid.innerHTML = '';
+      }
       totalProducts = data.total || items.length;
       hasMore = data.page < data.pages;
       currentPage = data.page;
@@ -912,27 +936,36 @@
   }
 
   async function fetchProductsPage(force) {
-    if (loading || (!force && !hasMore)) return;
+    if (!force && (loading || !hasMore)) return;
+    var requestId = productsRequestId;
     loading = true;
     setLoadingState(true);
     try {
       if (legacyMode) {
+        if (!isCurrentProductsRequest(requestId)) return;
         appendLegacyPage();
         return;
       }
-      var res = await fetch('/api/medicines?' + apiQuery());
+      var fetchOpts = productsAbort ? { signal: productsAbort.signal } : {};
+      var res = await fetch('/api/medicines?' + apiQuery(), fetchOpts);
+      if (!isCurrentProductsRequest(requestId)) return;
       if (!res.ok) throw new Error('fail');
       var data = await res.json();
+      if (!isCurrentProductsRequest(requestId)) return;
       applyProductsPage(data);
     } catch (e) {
+      if (e && e.name === 'AbortError') return;
+      if (!isCurrentProductsRequest(requestId)) return;
       if (legacyMode && products.length) {
         appendLegacyPage();
       } else if (currentPage <= 1) {
         await loadLegacyFallback();
       }
     } finally {
-      loading = false;
-      setLoadingState(false);
+      if (isCurrentProductsRequest(requestId)) {
+        loading = false;
+        setLoadingState(false);
+      }
     }
   }
 
@@ -1047,13 +1080,16 @@
 
   async function softRefreshFirstPage() {
     if (legacyMode || loading) return;
+    var requestId = productsRequestId;
     try {
       var prevPage = currentPage;
       currentPage = 1;
       var res = await fetch('/api/medicines?' + apiQuery());
+      if (!isCurrentProductsRequest(requestId)) return;
       currentPage = prevPage;
       if (!res.ok) return;
       var data = await res.json();
+      if (!isCurrentProductsRequest(requestId)) return;
       var nextFp = pageFingerprint(data);
       var currentFp = pageFingerprint({
         items: products.slice(0, (data.items || []).length),
@@ -1090,6 +1126,7 @@
   }
 
   function resetAndLoadProducts() {
+    nextProductsRequest();
     currentPage = 0;
     products = [];
     legacyMode = false;
@@ -1328,6 +1365,7 @@
   }
 
   async function loadStores() {
+    var requestId = nextProductsRequest();
     try {
       currentPage = 1;
       products = [];
@@ -1336,12 +1374,13 @@
       var renderedCached = renderCachedStore(readStoreCache());
       if (!renderedCached && els.productGrid) els.productGrid.innerHTML = '';
 
-      var fetchOpts = {};
+      var fetchOpts = productsAbort ? { signal: productsAbort.signal } : {};
       var usedBootstrap = false;
 
       // Instant first paint from static bootstrap (default unfiltered view only).
       if (!renderedCached && isDefaultStoreView()) {
         var bootstrap = await loadStoreBootstrap();
+        if (!isCurrentProductsRequest(requestId)) return;
         if (bootstrap && bootstrap.page1 && Array.isArray(bootstrap.page1.items)) {
           if (bootstrap.summary) {
             stores = mapStoreSummary(bootstrap.summary);
@@ -1363,7 +1402,7 @@
       var productsPromise = (renderedCached || usedBootstrap)
         ? null
         : fetch('/api/medicines?' + apiQuery(), fetchOpts);
-      var summaryPromise = fetch('/api/stores/summary', fetchOpts).then(function (summaryRes) {
+      var summaryPromise = fetch('/api/stores/summary').then(function (summaryRes) {
         return summaryRes.ok ? summaryRes.json() : null;
       }).then(function (summary) {
         if (summary) {
@@ -1393,17 +1432,23 @@
 
       loading = true;
       setLoadingState(true);
-      // Paint products as soon as medicines return — do not wait on brand summary.
       var productsRes = await productsPromise;
+      if (!isCurrentProductsRequest(requestId)) return;
       if (!productsRes.ok) throw new Error('products fail');
-      applyProductsPage(await productsRes.json());
+      var productsData = await productsRes.json();
+      if (!isCurrentProductsRequest(requestId)) return;
+      applyProductsPage(productsData);
       prefetchNextPage();
       await summaryPromise;
     } catch (e) {
+      if (e && e.name === 'AbortError') return;
+      if (!isCurrentProductsRequest(requestId)) return;
       await loadLegacyFallback();
     } finally {
-      loading = false;
-      setLoadingState(false);
+      if (isCurrentProductsRequest(requestId)) {
+        loading = false;
+        setLoadingState(false);
+      }
     }
   }
 
