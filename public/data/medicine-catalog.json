@@ -35840,6 +35840,711 @@
     ]
   },
   {
+    "_id": "dr-jrks",
+    "name": "Dr. JRK's",
+    "logo": "https://res.cloudinary.com/hra1hmsw/image/upload/v1785755638/dheergayush/logos/logo-horizontal.png",
+    "description": "Dr. JRK's Research and Pharmaceuticals — proprietary Siddha and Ayurvedic formulations (Pioneer chemist price list, May 2026).",
+    "medicines": [
+      {
+        "_id": "a541407b8c842e8708522fb8",
+        "name": "Akshun Lotion For Pain Relief",
+        "imageFile": "a541407b8c842e8708522fb8.jpg",
+        "description": "Akshun lotion for pain relief — Dr. JRK's proprietary formulation.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 100,
+            "unit": "ml",
+            "price": 210,
+            "pack_label": "100 ml",
+            "variant_id": "JRK-004"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/AKshun_Banners_1.jpg",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "7c43ade33dee73dbbc6322ae",
+        "name": "Akshun Ultra Gel",
+        "imageFile": "7c43ade33dee73dbbc6322ae.jpg",
+        "description": "Akshun Ultra gel — Dr. JRK's pain-relief gel.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 25,
+            "unit": "g",
+            "price": 130,
+            "pack_label": "25 g",
+            "variant_id": "JRK-041"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/Akshunultragel2.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "79d270a425baae00720927b8",
+        "name": "Anagen Grow",
+        "imageFile": "79d270a425baae00720927b8.jpg",
+        "description": "Anagen Grow — Dr. JRK's hair vitalizer formulation.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 100,
+            "unit": "ml",
+            "price": 255,
+            "pack_label": "100 ml",
+            "variant_id": "JRK-005"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/Anagen_grow_JRK_Images_1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "faf0413a9d9b19e5169667b3",
+        "name": "Astocalm Plus Tablets",
+        "imageFile": "faf0413a9d9b19e5169667b3.jpg",
+        "description": "Astocalm Plus tablets — Dr. JRK's proprietary formulation.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 60,
+            "unit": "tablets",
+            "price": 414,
+            "pack_label": "60 tablets",
+            "variant_id": "JRK-003"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/Astocalm_tablets_1000_X_1000_White_bg.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "827d16675f36e235c21caafb",
+        "name": "Bekay Tablets",
+        "imageFile": "827d16675f36e235c21caafb.jpg",
+        "description": "Bekay tablets — Dr. JRK's proprietary formulation.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 60,
+            "unit": "tablets",
+            "price": 504,
+            "pack_label": "60 tablets",
+            "variant_id": "JRK-006"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/Bekaytablets1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "ad5a94776b8542ace56e92fd",
+        "name": "Caratol E Tablets",
+        "imageFile": "ad5a94776b8542ace56e92fd.jpg",
+        "description": "Caratol E tablets — Dr. JRK's proprietary formulation.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 60,
+            "unit": "tablets",
+            "price": 696,
+            "pack_label": "60 tablets",
+            "variant_id": "JRK-007"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/Caratol-etablets1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "a2d74a17997137d01118027e",
+        "name": "Dolowhite Emulsion",
+        "imageFile": "a2d74a17997137d01118027e.jpg",
+        "description": "Dolowhite emulsion — Dr. JRK's proprietary formulation.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 50,
+            "unit": "ml",
+            "price": 180,
+            "pack_label": "50 ml",
+            "variant_id": "JRK-011"
+          },
+          {
+            "value": 100,
+            "unit": "ml",
+            "price": 300,
+            "pack_label": "100 ml",
+            "variant_id": "JRK-010"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/DoloWhite_Banner_1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "d3e05f6193549633d79c8c50",
+        "name": "Dr. JRKS 777 Oil",
+        "imageFile": "d3e05f6193549633d79c8c50.jpg",
+        "description": "Dr. JRKS 777 oil — Wrightia tinctoria oil for psoriasis care.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 100,
+            "unit": "ml",
+            "price": 300,
+            "pack_label": "100 ml",
+            "variant_id": "JRK-012"
+          },
+          {
+            "value": 200,
+            "unit": "ml",
+            "price": 525,
+            "pack_label": "200 ml",
+            "variant_id": "JRK-014"
+          },
+          {
+            "value": 500,
+            "unit": "ml",
+            "price": 1285,
+            "pack_label": "500 ml",
+            "variant_id": "JRK-015"
+          },
+          {
+            "value": 1000,
+            "unit": "ml",
+            "price": 2490,
+            "pack_label": "1000 ml",
+            "variant_id": "JRK-013"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/777_oil_1_17c65674-1253-410a-ae3d-042f6ae305b3.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "da63e74f410a6e9377c7bfe8",
+        "name": "Hista Block Tablets",
+        "imageFile": "da63e74f410a6e9377c7bfe8.jpg",
+        "description": "Hista Block tablets — Dr. JRK's proprietary formulation.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 60,
+            "unit": "tablets",
+            "price": 696,
+            "pack_label": "60 tablets",
+            "variant_id": "JRK-017"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/HistablockTabletBanner_1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "1964baa8b5bbb4c7de59b3ab",
+        "name": "JRKs 1-3-2 Psoriasis Kit",
+        "imageFile": "1964baa8b5bbb4c7de59b3ab.jpg",
+        "description": "JRKs 1-3-2 psoriasis sales kit — Dr. JRK's proprietary Siddha formulation.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kit",
+            "price": 990,
+            "pack_label": "1 kit",
+            "variant_id": "JRK-001"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/132_kit__JRK.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "04d8b9975b906c93d3ff3073",
+        "name": "JRKS Acnefite",
+        "imageFile": "04d8b9975b906c93d3ff3073.jpg",
+        "description": "JRKS Acnefite — Dr. JRK's acne-care cream.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 25,
+            "unit": "g",
+            "price": 180,
+            "pack_label": "25 g",
+            "variant_id": "JRK-018"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/acnefite.jpg",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "13557ed3d795f1a0f315c206",
+        "name": "JRKS AF Anti Fungal Cream",
+        "imageFile": "13557ed3d795f1a0f315c206.jpg",
+        "description": "JRKS AF anti-fungal cream — Dr. JRK's proprietary formulation.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 25,
+            "unit": "g",
+            "price": 165,
+            "pack_label": "25 g",
+            "variant_id": "JRK-019"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/JRK_sAF-Antifungalcream_Banners_1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "a5d067939a777750bf47abb2",
+        "name": "JRKS Aipro Tablets",
+        "imageFile": "a5d067939a777750bf47abb2.jpg",
+        "description": "JRKS Aipro tablets — phyto-active support for inflammation and psoriasis.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 60,
+            "unit": "tablets",
+            "price": 696,
+            "pack_label": "60 tablets",
+            "variant_id": "JRK-002"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/AiProtablets1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "0fffe0cebebcb586def8ec53",
+        "name": "JRKS Anti Coff",
+        "imageFile": "0fffe0cebebcb586def8ec53.jpg",
+        "description": "JRKS Anti Coff — herbal cough syrup.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 100,
+            "unit": "ml",
+            "price": 135,
+            "pack_label": "100 ml",
+            "variant_id": "JRK-020"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/Anicoff_Banner_1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "ccb208b8c44a19abf9932f08",
+        "name": "JRKS D-Co-D Tablets",
+        "imageFile": "ccb208b8c44a19abf9932f08.jpg",
+        "description": "JRKS D-Co-D tablets — Dr. JRK's proprietary formulation.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 60,
+            "unit": "tablets",
+            "price": 444,
+            "pack_label": "60 tablets",
+            "variant_id": "JRK-009"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/D-CO-DTablets.jpg",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "e71fb582e4bbda043b7ab463",
+        "name": "JRKS Dano Active AD Oil",
+        "imageFile": "e71fb582e4bbda043b7ab463.jpg",
+        "description": "JRKS Dano Active AD oil — anti-dandruff hair oil.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 100,
+            "unit": "ml",
+            "price": 280,
+            "pack_label": "100 ml",
+            "variant_id": "JRK-008"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/DanoActiveADoil1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "bf480f847f66e68b39257573",
+        "name": "JRKS Evefresh Skinbrite Cream",
+        "imageFile": "bf480f847f66e68b39257573.jpg",
+        "description": "JRKS Evefresh Skinbrite cream — Dr. JRK's skin-care cream.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 25,
+            "unit": "g",
+            "price": 175,
+            "pack_label": "25 g",
+            "variant_id": "JRK-016"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/EvefreshSkinbrite1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "0236d7cf50303e512515ae43",
+        "name": "JRKS Ferro Bekay Tonic",
+        "imageFile": "0236d7cf50303e512515ae43.jpg",
+        "description": "JRKS Ferro Bekay tonic — Dr. JRK's proprietary herbal tonic.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 200,
+            "unit": "ml",
+            "price": 170,
+            "pack_label": "200 ml",
+            "variant_id": "JRK-040"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/Ferro_beaky_tonic_website_images_1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "a2927b2bdd9c8902f4b77b07",
+        "name": "JRKS Heal Fast Gel",
+        "imageFile": "a2927b2bdd9c8902f4b77b07.jpg",
+        "description": "JRKS Heal Fast gel — Dr. JRK's proprietary formulation.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 25,
+            "unit": "g",
+            "price": 160,
+            "pack_label": "25 g",
+            "variant_id": "JRK-021"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/8Artboard4.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "7e6ba4120c3f48a657be931b",
+        "name": "JRKS Immdis Immunity Drops",
+        "imageFile": "7e6ba4120c3f48a657be931b.jpg",
+        "description": "JRKS Immdis immunity drops — Dr. JRK's proprietary formulation.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 30,
+            "unit": "ml",
+            "price": 285,
+            "pack_label": "30 ml",
+            "variant_id": "JRK-035"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/ImmDis1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "094cd5e206d43c8df7700177",
+        "name": "JRKS Immuno BS Herbal Tonic",
+        "imageFile": "094cd5e206d43c8df7700177.jpg",
+        "description": "JRKS Immuno BS herbal tonic — Dr. JRK's immunity tonic.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 100,
+            "unit": "ml",
+            "price": 140,
+            "pack_label": "100 ml",
+            "variant_id": "JRK-022"
+          },
+          {
+            "value": 200,
+            "unit": "ml",
+            "price": 240,
+            "pack_label": "200 ml",
+            "variant_id": "JRK-023"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/ImminoBs_Banner_1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "d8cb0f401aa9fdb13c9741aa",
+        "name": "JRKS Kesh Raksha Hair Vitalizer Oil",
+        "imageFile": "d8cb0f401aa9fdb13c9741aa.jpg",
+        "description": "JRKS Kesh Raksha hair vitalizer oil — Dr. JRK's hair-care oil.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 100,
+            "unit": "ml",
+            "price": 270,
+            "pack_label": "100 ml",
+            "variant_id": "JRK-024"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/KeshRakshaHVoil1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "b8d65ebdaeea5dc76f3e0266",
+        "name": "JRKS Lumina AD Herbal Shampoo",
+        "imageFile": "b8d65ebdaeea5dc76f3e0266.jpg",
+        "description": "JRKS Lumina AD herbal shampoo — scalp-care shampoo.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 100,
+            "unit": "ml",
+            "price": 265,
+            "pack_label": "100 ml",
+            "variant_id": "JRK-029"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/Artboard1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "47b4de317b9780bcff49803d",
+        "name": "JRKS Psorolin Derma Skin Care Soap",
+        "imageFile": "47b4de317b9780bcff49803d.jpg",
+        "description": "JRKS Psorolin Derma skin-care soap — psoriasis-care bathing bar.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 75,
+            "unit": "g",
+            "price": 120,
+            "pack_label": "75 g",
+            "variant_id": "JRK-032"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/PDSS1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "66ba6bf58672535190b14ce3",
+        "name": "JRKS Psorolin Derma Skin Care Soap 2 In 1 Pack",
+        "imageFile": "66ba6bf58672535190b14ce3.jpg",
+        "description": "JRKS Psorolin Derma skin-care soap 2-in-1 kit pack.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 1,
+            "unit": "kit",
+            "price": 200,
+            "pack_label": "2 in 1 kit",
+            "variant_id": "JRK-042"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/PDSS1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "65acbb0fca6088483689681e",
+        "name": "Lippu Oil",
+        "imageFile": "65acbb0fca6088483689681e.jpg",
+        "description": "Lippu oil — herbal oil for dry skin and itching.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 50,
+            "unit": "ml",
+            "price": 155,
+            "pack_label": "50 ml",
+            "variant_id": "JRK-026"
+          },
+          {
+            "value": 100,
+            "unit": "ml",
+            "price": 285,
+            "pack_label": "100 ml",
+            "variant_id": "JRK-025"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/Banner_1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "32e7247d9af2aaa15678a6a2",
+        "name": "Lippu Ointment",
+        "imageFile": "32e7247d9af2aaa15678a6a2.jpg",
+        "description": "Lippu ointment — herbal ointment for dry skin and itching.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 35,
+            "unit": "g",
+            "price": 160,
+            "pack_label": "35 g",
+            "variant_id": "JRK-027"
+          },
+          {
+            "value": 75,
+            "unit": "g",
+            "price": 275,
+            "pack_label": "75 g",
+            "variant_id": "JRK-028"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/Banner_1_e1143413-0ec0-4cae-9a7f-f40eddb55522.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "4fb975f8f436eaf805fced69",
+        "name": "Psorolin B Ointment",
+        "imageFile": "4fb975f8f436eaf805fced69.jpg",
+        "description": "Psorolin B ointment — for inflammation associated with psoriasis.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 35,
+            "unit": "g",
+            "price": 180,
+            "pack_label": "35 g",
+            "variant_id": "JRK-030"
+          },
+          {
+            "value": 75,
+            "unit": "g",
+            "price": 325,
+            "pack_label": "75 g",
+            "variant_id": "JRK-031"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/PsorolinBointment1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "85782e1b569ccb8bdbd596f0",
+        "name": "Psorolin Oil",
+        "imageFile": "85782e1b569ccb8bdbd596f0.jpg",
+        "description": "Psorolin oil — Wrightia tinctoria blend for psoriasis scaling.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 100,
+            "unit": "ml",
+            "price": 235,
+            "pack_label": "100 ml",
+            "variant_id": "JRK-033"
+          },
+          {
+            "value": 200,
+            "unit": "ml",
+            "price": 420,
+            "pack_label": "200 ml",
+            "variant_id": "JRK-034"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/Psorolinoil1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "69cd0600ef46f4208ccaf708",
+        "name": "Tolenorm Oil",
+        "imageFile": "69cd0600ef46f4208ccaf708.jpg",
+        "description": "Tolenorm oil — herbal oil for hypopigmentation care.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 50,
+            "unit": "ml",
+            "price": 230,
+            "pack_label": "50 ml",
+            "variant_id": "JRK-037"
+          },
+          {
+            "value": 100,
+            "unit": "ml",
+            "price": 350,
+            "pack_label": "100 ml",
+            "variant_id": "JRK-036"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/Tolenormoil1.png",
+        "cloudinaryOnly": true
+      },
+      {
+        "_id": "9a76476201db9d0e30c14585",
+        "name": "Tolenorm Ointment",
+        "imageFile": "9a76476201db9d0e30c14585.jpg",
+        "description": "Tolenorm ointment — herbal ointment for hypopigmentation care.",
+        "category": "Ayurvedic Medicines",
+        "brand": "Dr. JRK's",
+        "company": "Dr. JRK's",
+        "weights": [
+          {
+            "value": 35,
+            "unit": "g",
+            "price": 240,
+            "pack_label": "35 g",
+            "variant_id": "JRK-038"
+          },
+          {
+            "value": 75,
+            "unit": "g",
+            "price": 350,
+            "pack_label": "75 g",
+            "variant_id": "JRK-039"
+          }
+        ],
+        "imageUrl": "https://res.cloudinary.com/hra1hmsw/image/fetch/f_auto,q_auto/https://cdn.shopify.com/s/files/1/0794/9864/1693/files/Toleormointment1.png",
+        "cloudinaryOnly": true
+      }
+    ]
+  },
+  {
     "_id": "ed7b107d9e078090f839ed6c",
     "name": "Gufic",
     "logo": "https://res.cloudinary.com/hra1hmsw/image/upload/v1785755638/dheergayush/logos/logo-horizontal.png",

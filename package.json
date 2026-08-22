@@ -36,6 +36,7 @@
     "catalog:soorya-sync": "node scripts/syncSooryaNaturals.js",
     "catalog:araku-sync": "node scripts/syncArakuCoffee.js",
     "catalog:aparna-junnu-sync": "node scripts/syncAparnaJunnu.js",
+    "catalog:jrks-sync": "node scripts/syncDrJrksFromPriceList.js",
     "catalog:dairy-reclassify": "node scripts/reclassifyDairyProducts.js",
     "build:brand": "python scripts/build-brand-assets.py",
     "build": "npm install && npm run store:bootstrap"
