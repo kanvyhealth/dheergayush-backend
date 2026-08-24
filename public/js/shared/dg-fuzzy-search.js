@@ -96,12 +96,23 @@
     var q = String(query || '').trim();
     var minScore = (options && options.minScore) || DEFAULT_MIN_SCORE;
     if (!q) return list.slice();
+    var qNorm = normalizeText(q);
     return list
       .map(function (medicine) {
-        return { medicine: medicine, score: scoreMedicine(medicine, q) };
+        var name = normalizeText(medicine && medicine.name);
+        var brand = normalizeText((medicine && (medicine.company || medicine.brand || medicine.storeName)) || '');
+        var score = scoreMedicine(medicine, q);
+        if (name.indexOf(qNorm) >= 0 || brand.indexOf(qNorm) >= 0) score = Math.max(score, 0.96);
+        return { medicine: medicine, score: score };
       })
       .filter(function (row) { return row.score >= minScore; })
-      .sort(function (a, b) { return b.score - a.score; })
+      .sort(function (a, b) {
+        if (b.score !== a.score) return b.score - a.score;
+        var nameCmp = String(a.medicine.name || '').localeCompare(String(b.medicine.name || ''));
+        if (nameCmp) return nameCmp;
+        return String(a.medicine.company || a.medicine.brand || '')
+          .localeCompare(String(b.medicine.company || b.medicine.brand || ''));
+      })
       .map(function (row) { return row.medicine; });
   }
 

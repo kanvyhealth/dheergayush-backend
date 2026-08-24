@@ -16,6 +16,11 @@ const {
 
 const { buildAyurvedicSeedMedicines } = require('../../modules/store/ayurvedicCatalogSeed');
 const { loadMedicineCatalogJson } = require('../../modules/store/medicineCatalogJson');
+const {
+  readStoreBootstrap,
+  readStoreCatalogReady,
+  matchBootstrapPage
+} = require('../../modules/store/storeBootstrapFile');
 const { filterExcludedMedicines } = require('../../modules/store/excludedBrands');
 const { isValidAyurvedicProduct } = require('../../modules/store/excludedProducts');
 const { buildSearchIndex, searchMedicines } = require('../../modules/store/catalogSearch');
@@ -24,6 +29,7 @@ const {
   STORE_DEPARTMENTS,
   STORE_SUBCATEGORIES,
   ORGANIC_FOOD_SUBCATEGORIES,
+  AYURVEDIC_MEDICINE_SUBCATEGORIES,
   normalizeStoreCategoryKey,
   classifyStoreProduct,
   classifyStoreSubcategory,
@@ -43,14 +49,14 @@ const EXCLUDED_CATEGORIES = new Set([
 
 function isStoreProduct(med) {
   if (!isValidAyurvedicProduct(med)) return false;
-  const cat = normalizeStoreCategoryKey(med.category);
-  if (EXCLUDED_CATEGORIES.has(cat)) return false;
-  if (cat.includes('hidden')) return false;
   const reviewStatus = String(med.inventoryReviewStatus || 'ready').toLowerCase();
   if (reviewStatus === 'needs_review' || reviewStatus === 'rejected') return false;
   if (med.storeVisible === false) return false;
-  const department = classifyStoreProduct(med);
-  return STORE_DEPARTMENTS.includes(department);
+  if (STORE_DEPARTMENTS.includes(med.category)) return true;
+  const cat = normalizeStoreCategoryKey(med.category);
+  if (EXCLUDED_CATEGORIES.has(cat)) return false;
+  if (cat.includes('hidden')) return false;
+  return STORE_DEPARTMENTS.includes(classifyStoreProduct(med));
 }
 
 /** @deprecated use isStoreProduct */
@@ -268,13 +274,20 @@ function formatMedicineForStore(med, imageMap) {
   const reviewStatus = String(doc.inventoryReviewStatus || 'ready').toLowerCase();
   const price = Number(doc.price_inr ?? doc.price ?? 0) || 0;
   const storeVisible = reviewStatus === 'ready' && reviewStatus !== 'rejected';
+  const category = STORE_DEPARTMENTS.includes(doc.category)
+    ? doc.category
+    : classifyStoreProduct(doc);
+  const allowedSubs = STORE_SUBCATEGORIES[category] || [];
+  const subCategory = allowedSubs.includes(doc.subCategory)
+    ? doc.subCategory
+    : classifyStoreSubcategory({ ...doc, category });
   const formatted = {
     _id: id,
     id,
     name: doc.name,
     description: doc.description || `${company} — ${doc.name}`.trim(),
-    category: classifyStoreProduct(doc),
-    subCategory: classifyStoreSubcategory(doc),
+    category,
+    subCategory,
     company,
     brand: doc.brand || company,
     imageFile,
@@ -342,12 +355,71 @@ function buildStoresSummary(stores) {
   }));
 }
 
+function ensureSearchIndex(cache) {
+  if (!cache) return null;
+  if (!cache.searchIndex) {
+    cache.searchIndex = buildSearchIndex(cache.medicines || []);
+  }
+  return cache.searchIndex;
+}
+
+function hydrateCatalogFromReady(ready) {
+  const medicines = ready.medicines;
+  const stores = buildStoresFromMedicines(medicines);
+  const loadedAt = Date.now();
+  const cache = {
+    medicines,
+    stores,
+    summary: Array.isArray(ready.summary) && ready.summary.length
+      ? ready.summary
+      : buildStoresSummary(stores),
+    searchIndex: null,
+    taxonomy: ready.taxonomy || buildTaxonomyFromMedicines(medicines),
+    page1: ready.page1 || null,
+    imageMap: {},
+    loadedAt,
+    count: medicines.length,
+    rawCount: medicines.length,
+    fromSnapshot: true
+  };
+  if (!cache.page1) {
+    const list = filterMedicines(medicines, {});
+    const limit = 24;
+    cache.page1 = {
+      items: list.slice(0, limit).map(toListMedicine),
+      total: list.length,
+      page: 1,
+      limit,
+      pages: Math.ceil(list.length / limit) || 1,
+      cachedAt: loadedAt
+    };
+  }
+  return cache;
+}
+
+function ensureCatalogCacheLoading() {
+  if (!catalogCache && !catalogPromise) {
+    loadCatalogCache().catch(() => {});
+  }
+}
+
 async function loadCatalogCache(force = false) {
   const now = Date.now();
   if (!force && catalogCache && now < catalogExpiry) return catalogCache;
   if (catalogPromise && !force) return catalogPromise;
 
+  if (!force) {
+    const ready = readStoreCatalogReady();
+    if (ready) {
+      catalogCache = hydrateCatalogFromReady(ready);
+      catalogExpiry = Date.now() + CACHE_TTL_MS;
+      loadFirestoreCatalogOverrides(catalogCache.imageMap || {}).catch(() => {});
+      return catalogCache;
+    }
+  }
+
   catalogPromise = (async () => {
+    const started = Date.now();
     warmImageIndex();
     const jsonMeds = loadMedicineCatalogJson();
     const jsonFormatted = jsonMeds.map((m) => formatMedicineForStore(m, {}));
@@ -387,13 +459,14 @@ async function loadCatalogCache(force = false) {
       medicines,
       stores,
       summary: buildStoresSummary(stores),
-      searchIndex: buildSearchIndex(medicines),
+      searchIndex: null,
       taxonomy: buildTaxonomyFromMedicines(medicines),
       page1: null,
       imageMap,
       loadedAt: Date.now(),
       count: medicines.length,
-      rawCount
+      rawCount,
+      fromSnapshot: false
     };
     // Precompute default unfiltered page-1 for instant /api/medicines hits.
     {
@@ -410,6 +483,7 @@ async function loadCatalogCache(force = false) {
     }
     catalogExpiry = Date.now() + CACHE_TTL_MS;
     catalogPromise = null;
+    console.log(`Store catalog ready: ${catalogCache.count} products in ${Date.now() - started}ms`);
     // Warm Firestore overrides in the background so the first /api/medicines
     // request does not block on a cold Medicine.find().
     loadFirestoreCatalogOverrides(imageMap).catch(() => {});
@@ -419,13 +493,14 @@ async function loadCatalogCache(force = false) {
   return catalogPromise;
 }
 
-async function warmCatalogCache() {
+async function warmCatalogCache(opts = {}) {
   try {
-    const cache = await loadCatalogCache(true);
+    const cache = await loadCatalogCache(!!opts.forceRebuild);
     loadFirestoreCatalogOverrides(cache.imageMap || {}).catch(() => {});
     const withImages = cache.medicines.filter((m) => m.imageUrl).length;
     const raw = cache.rawCount || cache.count;
-    console.log(`📦 Store catalog cached: ${cache.count} unique products (${raw} raw), ${cache.summary.length} brands, ${withImages} with images`);
+    const via = cache.fromSnapshot ? 'snapshot' : 'rebuild';
+    console.log(`📦 Store catalog cached (${via}): ${cache.count} unique products (${raw} raw), ${cache.summary.length} brands, ${withImages} with images`);
     return cache;
   } catch (err) {
     console.warn('⚠️  Store catalog warm-up failed:', err.message);
@@ -434,7 +509,7 @@ async function warmCatalogCache() {
 }
 
 function filterMedicines(medicines, { company, category, subcategory, q, searchIndex } = {}) {
-  let list = medicines.filter(isStoreProduct);
+  let list = medicines;
   if (company && company !== 'all') {
     const brand = normalizeBrand(company);
     list = list.filter((m) => normalizeBrand(m.company) === brand || m.company.toLowerCase() === company.toLowerCase());
@@ -446,7 +521,7 @@ function filterMedicines(medicines, { company, category, subcategory, q, searchI
     list = list.filter((m) => productMatchesSubcategory(m, subcategory));
   }
   if (q) {
-    list = searchMedicines(list, q, { index: searchIndex });
+    list = searchMedicines(list, q, { index: searchIndex || ensureSearchIndex(catalogCache) });
   }
   return list;
 }
@@ -472,7 +547,6 @@ function toListMedicine(m) {
 }
 
 async function getMedicinesPaginated(opts = {}) {
-  const cache = await loadCatalogCache();
   const page = Math.max(1, parseInt(opts.page, 10) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(opts.limit, 10) || 48));
   const unfiltered = (!opts.company || opts.company === 'all')
@@ -480,6 +554,23 @@ async function getMedicinesPaginated(opts = {}) {
     && (!opts.subcategory || opts.subcategory === 'all')
     && !opts.q;
 
+  if (catalogCache) {
+    const cache = catalogCache;
+    if (unfiltered && page === 1 && cache.page1 && cache.page1.limit === limit) {
+      return {
+        ...cache.page1,
+        cachedAt: cache.loadedAt
+      };
+    }
+  } else {
+    const bootPage = matchBootstrapPage({ ...opts, page, limit });
+    if (bootPage) {
+      ensureCatalogCacheLoading();
+      return bootPage;
+    }
+  }
+
+  const cache = await loadCatalogCache();
   if (unfiltered && page === 1 && cache.page1 && cache.page1.limit === limit) {
     return {
       ...cache.page1,
@@ -491,7 +582,7 @@ async function getMedicinesPaginated(opts = {}) {
   const medicines = await getCatalogMedicinesWithOverrides({ allowStale: true });
   const list = filterMedicines(medicines, {
     ...opts,
-    searchIndex: cache.searchIndex
+    searchIndex: qIndex(cache, opts.q)
   });
   const total = list.length;
   const start = (page - 1) * limit;
@@ -511,6 +602,10 @@ async function getMedicinesPaginated(opts = {}) {
   }
 
   return result;
+}
+
+function qIndex(cache, q) {
+  return q ? ensureSearchIndex(cache) : cache.searchIndex;
 }
 
 function findCatalogMedicineById(medicines, medicineId) {
@@ -747,6 +842,12 @@ async function validateOrderItemsAgainstCatalog(items = []) {
 }
 
 async function getStoresSummaryFromFirebase() {
+  if (catalogCache) return catalogCache.summary;
+  const boot = readStoreBootstrap();
+  if (boot && Array.isArray(boot.summary) && boot.summary.length) {
+    ensureCatalogCacheLoading();
+    return boot.summary;
+  }
   const cache = await loadCatalogCache();
   return cache.summary;
 }
@@ -787,7 +888,7 @@ function buildTaxonomyFromMedicines(medicines) {
       slug: toStoreSlug(subName),
       count: subCounts[name][subName] || 0,
       href: storePathFor(name, subName)
-    })).filter((s) => s.count > 0);
+    })).filter((s) => s.count > 0 || name === 'Ayurvedic Medicines');
     return {
       name,
       slug: toStoreSlug(name),
@@ -800,11 +901,18 @@ function buildTaxonomyFromMedicines(medicines) {
   return {
     departments,
     organicFoodSubcategories: ORGANIC_FOOD_SUBCATEGORIES,
+    ayurvedicMedicineSubcategories: AYURVEDIC_MEDICINE_SUBCATEGORIES,
     total: list.length
   };
 }
 
 async function getStoreTaxonomy() {
+  if (catalogCache && catalogCache.taxonomy) return catalogCache.taxonomy;
+  const boot = readStoreBootstrap();
+  if (boot && boot.taxonomy) {
+    ensureCatalogCacheLoading();
+    return boot.taxonomy;
+  }
   const cache = await loadCatalogCache();
   if (cache.taxonomy) return cache.taxonomy;
   cache.taxonomy = buildTaxonomyFromMedicines(cache.medicines);

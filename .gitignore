@@ -13,6 +13,7 @@ public/data/*-cloudinary-report.json
 public/data/*-merge-report.json
 public/data/missing-product-images.*
 public/data/brand-image-match-unmatched.json
+public/data/store-catalog-ready.json
 public/data/medicine-catalog.json.bak
 public/data/medicine-catalog_old.json
 public/data/medicine-catalog_2.json

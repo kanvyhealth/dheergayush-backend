@@ -17,6 +17,28 @@
     'Other Dairy'
   ];
 
+  var AYURVEDIC_MEDICINE_SUBCATEGORIES = [
+    'Ark',
+    'Asava & Arishta',
+    'Kadha',
+    'Avaleha Pak',
+    'Ayurvedic Proprietary',
+    'Bhasma',
+    'Churna',
+    'Ghrit & Gruthalu',
+    'Guggulu',
+    'Kupi Pakwa Rasayan',
+    'Lauh Mandoor',
+    'Tail',
+    'Others',
+    'Parpati',
+    'Pishti',
+    'Ras Rasayan',
+    'Shodhit Dravya Satva',
+    'Swarna Yukthi Aushadhi',
+    'Vati Gutika'
+  ];
+
   var ORGANIC_FOOD_SUBCATEGORIES = [
     'Honey',
     'Ghees and Oils',
@@ -35,6 +57,7 @@
   ];
 
   var STORE_SUBCATEGORIES = {
+    'Ayurvedic Medicines': AYURVEDIC_MEDICINE_SUBCATEGORIES,
     'Organic Foods': ORGANIC_FOOD_SUBCATEGORIES,
     'Dairy Products': DAIRY_SUBCATEGORIES
   };
@@ -115,6 +138,63 @@
     sweet: 'Sweets'
   };
 
+  var AYURVEDIC_SUBCATEGORY_ALIASES = {
+    ark: 'Ark',
+    arka: 'Ark',
+    asava: 'Asava & Arishta',
+    asavam: 'Asava & Arishta',
+    arishta: 'Asava & Arishta',
+    arishtam: 'Asava & Arishta',
+    'asava arishta': 'Asava & Arishta',
+    'asava and arishta': 'Asava & Arishta',
+    kadha: 'Kadha',
+    kwath: 'Kadha',
+    kashayam: 'Kadha',
+    kashaya: 'Kadha',
+    avaleha: 'Avaleha Pak',
+    'avaleha pak': 'Avaleha Pak',
+    lehyam: 'Avaleha Pak',
+    proprietary: 'Ayurvedic Proprietary',
+    'ayurvedic proprietary': 'Ayurvedic Proprietary',
+    'ayurvedic propreitary': 'Ayurvedic Proprietary',
+    patent: 'Ayurvedic Proprietary',
+    bhasma: 'Bhasma',
+    churna: 'Churna',
+    choorna: 'Churna',
+    churnam: 'Churna',
+    choornam: 'Churna',
+    ghrit: 'Ghrit & Gruthalu',
+    ghrita: 'Ghrit & Gruthalu',
+    gruthalu: 'Ghrit & Gruthalu',
+    'ghrit and gruthalu': 'Ghrit & Gruthalu',
+    guggulu: 'Guggulu',
+    guggul: 'Guggulu',
+    'kupi pakwa rasayan': 'Kupi Pakwa Rasayan',
+    kupipakwa: 'Kupi Pakwa Rasayan',
+    'lauh mandoor': 'Lauh Mandoor',
+    lauh: 'Lauh Mandoor',
+    mandoor: 'Lauh Mandoor',
+    mandur: 'Lauh Mandoor',
+    tail: 'Tail',
+    taila: 'Tail',
+    tailam: 'Tail',
+    thailam: 'Tail',
+    others: 'Others',
+    parpati: 'Parpati',
+    pishti: 'Pishti',
+    'ras rasayan': 'Ras Rasayan',
+    rasayan: 'Ras Rasayan',
+    'shodhit dravya satva': 'Shodhit Dravya Satva',
+    shodhit: 'Shodhit Dravya Satva',
+    satva: 'Shodhit Dravya Satva',
+    'swarna yukthi aushadhi': 'Swarna Yukthi Aushadhi',
+    swarna: 'Swarna Yukthi Aushadhi',
+    'vati gutika': 'Vati Gutika',
+    vati: 'Vati Gutika',
+    gutika: 'Vati Gutika',
+    gulika: 'Vati Gutika'
+  };
+
   function normalizeText(str) {
     return String(str || '')
       .toLowerCase()
@@ -150,15 +230,26 @@
     return normalizeDepartmentKey(med && med.category) === normalizeDepartmentKey(department);
   }
 
+  function matchSubcategoryInList(raw, list, aliases) {
+    var key = normalizeText(raw);
+    if (!key) return null;
+    if (aliases && aliases[key]) return aliases[key];
+    for (var i = 0; i < list.length; i++) {
+      if (normalizeText(list[i]) === key) return list[i];
+    }
+    return null;
+  }
+
   function normalizeSubcategoryLabel(raw) {
     var key = normalizeText(raw);
     if (!key) return null;
+    if (AYURVEDIC_SUBCATEGORY_ALIASES[key]) return AYURVEDIC_SUBCATEGORY_ALIASES[key];
     if (SUBCATEGORY_ALIASES[key]) return SUBCATEGORY_ALIASES[key];
-    for (var i = 0; i < ORGANIC_FOOD_SUBCATEGORIES.length; i++) {
-      if (normalizeText(ORGANIC_FOOD_SUBCATEGORIES[i]) === key) return ORGANIC_FOOD_SUBCATEGORIES[i];
-    }
-    for (var j = 0; j < DAIRY_SUBCATEGORIES.length; j++) {
-      if (normalizeText(DAIRY_SUBCATEGORIES[j]) === key) return DAIRY_SUBCATEGORIES[j];
+    var lists = [AYURVEDIC_MEDICINE_SUBCATEGORIES, ORGANIC_FOOD_SUBCATEGORIES, DAIRY_SUBCATEGORIES];
+    var li;
+    for (li = 0; li < lists.length; li++) {
+      var hit = matchSubcategoryInList(key, lists[li], null);
+      if (hit) return hit;
     }
     for (var alias in SUBCATEGORY_ALIASES) {
       if (!Object.prototype.hasOwnProperty.call(SUBCATEGORY_ALIASES, alias)) continue;
@@ -167,16 +258,68 @@
     return null;
   }
 
+  function departmentHasSubcategoryNav(name) {
+    return name === 'Organic Foods' || name === 'Ayurvedic Medicines';
+  }
+
   function normalizeSubcategoryKey(raw) {
     var label = normalizeSubcategoryLabel(raw) || String(raw || '').trim();
     return normalizeText(label);
   }
 
+  function classifyAyurvedicSubcategory(med) {
+    var nameCat = String((med && med.category) || '') + ' ' + String((med && med.name) || '');
+    var n = ' ' + normalizeText(nameCat) + ' ';
+    var compact = n.replace(/\s+/g, '');
+    if (/\bparpati\b/.test(n) || compact.indexOf('parpati') >= 0) return 'Parpati';
+    if (/\bpishti\b/.test(n) || /\bpisht\b/.test(n) || compact.indexOf('pishti') >= 0) return 'Pishti';
+    if (compact.indexOf('bhasma') >= 0) return 'Bhasma';
+    if (/kupipakwa|kupi pakwa|rasa sindoor|rasasindoor|makaradhwaj|makardhwaj/.test(n)
+      || /kupipakwa|rasasindoor|makaradhwaj|makardhwaj/.test(compact)) {
+      return 'Kupi Pakwa Rasayan';
+    }
+    if (/\bshodhit\b|\bsatva\b|\bsatwa\b/.test(n) || compact.indexOf('shodhit') >= 0) return 'Shodhit Dravya Satva';
+    if (/\barka\b|\barkam\b|\bark\b/.test(n)) return 'Ark';
+    if (/asava|asavam|arishta|arishtam|arista/.test(compact)) return 'Asava & Arishta';
+    if (/\bkadha\b|\bkwath\b|\bkwatha\b|\bkashayam\b|\bkashaya\b/.test(n) || /kashayam|kashaya/.test(compact)) return 'Kadha';
+    if (/avaleha|lehyam|leham|lehya|chyawanprash|chyavanprash|chyavanaprasam|prasam/.test(compact)) return 'Avaleha Pak';
+    if (compact.indexOf('guggul') >= 0) return 'Guggulu';
+    if (/ghrita|ghritam|ghritham|\bghrit\b|gruthalu|gritha|grutha/.test(n) || /ghrita|ghritam|ghritham|gruthalu/.test(compact)) {
+      return 'Ghrit & Gruthalu';
+    }
+    if (/mandoor|mandur|mandoora|\blauha\b|\blauh\b/.test(n) || /mandoor|mandur|lauha/.test(compact)) return 'Lauh Mandoor';
+    if (/tailam|thailam|taila|thaila|\btail\b|\boil\b|kuzhambu/.test(n) || /tailam|thailam|taila|thaila|kuzhambu/.test(compact)) {
+      return 'Tail';
+    }
+    if (/churna|choorna|churnam|choornam|chooran/.test(compact)) return 'Churna';
+    if (/vatakam|gutika|gulika|ghanvati|\bvati\b|\bguti\b/.test(n) || /vatakam|gutika|gulika|ghanvati/.test(compact) || /vati$/.test(compact)) {
+      return 'Vati Gutika';
+    }
+    if (/rasayanam|rasayana|rasayan|\bras\b|\brasa\b/.test(n) || compact.indexOf('rasayan') >= 0) return 'Ras Rasayan';
+    if (/swarna|suvarna/.test(compact)) return 'Swarna Yukthi Aushadhi';
+    if (/proprietary|patent|\btablet\b|\bcapsule\b|\bsyrup\b|\bointment\b|\bcream\b|\bgranules\b|\bdrops\b/.test(n)
+      || /tablet|capsule|syrup|ointment|granule/.test(compact)) {
+      return 'Ayurvedic Proprietary';
+    }
+    return 'Others';
+  }
+
   function classifyStoreSubcategory(med) {
-    var explicit = normalizeSubcategoryLabel(med && (med.subCategory || med.subcategory));
-    if (explicit) return explicit;
     var category = String((med && med.category) || '').trim();
-    if (normalizeDepartmentKey(category) === 'dairy products') {
+    var deptKey = normalizeDepartmentKey(category);
+    if (deptKey === 'ayurvedic medicines') {
+      var explicitAyur = matchSubcategoryInList(
+        med && (med.subCategory || med.subcategory),
+        AYURVEDIC_MEDICINE_SUBCATEGORIES,
+        AYURVEDIC_SUBCATEGORY_ALIASES
+      );
+      if (explicitAyur) return explicitAyur;
+      return classifyAyurvedicSubcategory(med);
+    }
+    var explicit = normalizeSubcategoryLabel(med && (med.subCategory || med.subcategory));
+    if (explicit && deptKey === 'organic foods' && ORGANIC_FOOD_SUBCATEGORIES.indexOf(explicit) >= 0) return explicit;
+    if (explicit && deptKey === 'dairy products' && DAIRY_SUBCATEGORIES.indexOf(explicit) >= 0) return explicit;
+    if (deptKey === 'dairy products') {
       var n = String((med && med.name) || '').toLowerCase();
       if (/junnu/.test(n)) return 'Junnu';
       if (/ghee/.test(n)) return 'Ghee';
@@ -185,7 +328,9 @@
       return 'Other Dairy';
     }
     var fromCat = normalizeSubcategoryLabel(category);
-    if (fromCat && category !== 'Organic Foods' && category !== 'Cooking Essentials') return fromCat;
+    if (fromCat && category !== 'Organic Foods' && category !== 'Cooking Essentials' && ORGANIC_FOOD_SUBCATEGORIES.indexOf(fromCat) >= 0) {
+      return fromCat;
+    }
     var name = String((med && med.name) || '').trim();
     var description = String((med && med.description) || '').trim();
     var nameCat = (category + ' ' + name).toLowerCase();
@@ -216,7 +361,10 @@
 
   function productMatchesSubcategory(med, subcategory) {
     if (!subcategory || subcategory === 'all') return true;
-    return normalizeSubcategoryKey(classifyStoreSubcategory(med)) === normalizeSubcategoryKey(subcategory);
+    var want = normalizeSubcategoryKey(subcategory);
+    var explicit = normalizeSubcategoryKey(med && (med.subCategory || med.subcategory));
+    if (explicit && explicit === want) return true;
+    return normalizeSubcategoryKey(classifyStoreSubcategory(med)) === want;
   }
 
   function departmentFromSlug(slug) {
@@ -311,6 +459,7 @@
     STORE_DEPARTMENTS: STORE_DEPARTMENTS,
     ORGANIC_FOOD_SUBCATEGORIES: ORGANIC_FOOD_SUBCATEGORIES,
     DAIRY_SUBCATEGORIES: DAIRY_SUBCATEGORIES,
+    AYURVEDIC_MEDICINE_SUBCATEGORIES: AYURVEDIC_MEDICINE_SUBCATEGORIES,
     STORE_SUBCATEGORIES: STORE_SUBCATEGORIES,
     FEATURED_STORE_BRANDS: FEATURED_STORE_BRANDS,
     normalizeDepartment: normalizeDepartment,
@@ -319,6 +468,7 @@
     classifyStoreSubcategory: classifyStoreSubcategory,
     productMatchesSubcategory: productMatchesSubcategory,
     normalizeSubcategoryLabel: normalizeSubcategoryLabel,
+    departmentHasSubcategoryNav: departmentHasSubcategoryNav,
     departmentIconClass: departmentIconClass,
     getStoreMenuLabel: getStoreMenuLabel,
     sortStoresWithFeatured: sortStoresWithFeatured,

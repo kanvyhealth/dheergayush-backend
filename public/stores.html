@@ -6,7 +6,7 @@
     <title>Ayurvedic Store — DHEERGAYUSH</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" href="/data/store-bootstrap.json" as="fetch" crossorigin>
+    <link rel="preload" href="/data/store-bootstrap.json?v=store-fast-1" as="fetch" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"></noscript>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
@@ -241,7 +241,11 @@
             border-left: 2px solid rgba(242, 103, 39, 0.25);
             margin: 0 0 6px 10px;
         }
-        .filter-group.is-open .filter-sublist { display: block; }
+        .filter-group.is-open .filter-sublist {
+            display: block;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
         .filter-sublink {
             display: flex;
             justify-content: space-between;
@@ -1008,13 +1012,13 @@
     </div>
 
     <script src="/js/store/medicine-images.js"></script>
-    <script src="/js/store/dg-store-categories.js"></script>
+    <script src="/js/store/dg-store-categories.js?v=store-fast-1"></script>
     <script src="/js/store/dg-catalog-merge.js"></script>
     <script src="/js/shared/dg-fuzzy-search.js"></script>
     <script src="/js/shared/dg-auth.js"></script>
     <script src="/js/shared/dg-checkout-validate.js"></script>
     <!-- Checkout/payment/invoice scripts load on demand via stores-app ensureCheckoutLibs() -->
-    <script src="/js/store/stores-app.js"></script>
+    <script src="/js/store/stores-app.js?v=store-fast-1"></script>
     <script src="/js/shared/dg-responsive-nav.js"></script>
 </body>
 </html>

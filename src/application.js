@@ -2119,9 +2119,21 @@ async function validateRazorpayOnStartup() {
 }
 
 async function warmBackendServices() {
-  await connectDatabase();
-  // Catalog first so /api/medicines is ready; doctor bookkeeping can wait.
-  await warmCatalogCache();
+  // Catalog is JSON-backed and must not wait on Firebase credentials.
+  const catalogWarm = warmCatalogCache().catch((err) => {
+    console.warn('Store catalog warm-up failed:', err.message);
+    return null;
+  });
+
+  try {
+    await connectDatabase();
+  } catch (err) {
+    console.error('Firebase startup sync skipped:', err.message);
+    await catalogWarm;
+    return;
+  }
+
+  await catalogWarm;
   await validateRazorpayOnStartup();
   const mirroredDoctors = await syncAllDoctorMirrors();
   if (mirroredDoctors > 0) {

@@ -30,7 +30,16 @@ module.exports = function register(app, deps) {
     app.get('/api/medicines', async (req, res) => {
       try {
         const { page, limit, company, category, subcategory, q, all } = req.query;
-        res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+        const filtered = (company && company !== 'all')
+          || (category && category !== 'all')
+          || (subcategory && subcategory !== 'all')
+          || q;
+        res.setHeader(
+          'Cache-Control',
+          filtered
+            ? 'private, no-store'
+            : 'public, max-age=300, stale-while-revalidate=600'
+        );
         if (String(all || '') === '1') {
           const medicines = await getMedicinesFromFirebase();
           return res.json(medicines);

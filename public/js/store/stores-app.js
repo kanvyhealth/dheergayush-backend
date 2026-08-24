@@ -3,7 +3,7 @@
   var PAGE_SIZE = 24;
   var EAGER_IMAGE_COUNT = 4;
   var PRELOAD_IMAGE_COUNT = 4;
-  var STORE_CACHE_PREFIX = 'dg-store-page-v7:';
+  var STORE_CACHE_PREFIX = 'dg-store-page-v10:';
   var STORE_CACHE_TTL_MS = 5 * 60 * 1000;
   var stores = [];
   var products = [];
@@ -322,6 +322,20 @@
     return d.innerHTML;
   }
 
+  function isFilteredStoreView() {
+    var q = (els.searchInput && els.searchInput.value.trim()) || '';
+    return currentStoreFilter !== 'all'
+      || currentCategory !== 'all'
+      || currentSubcategory !== 'all'
+      || !!q;
+  }
+
+  function medicinesFetchOpts() {
+    var opts = { cache: isFilteredStoreView() ? 'no-store' : 'default' };
+    if (productsAbort) opts.signal = productsAbort.signal;
+    return opts;
+  }
+
   function apiQuery() {
     var params = new URLSearchParams();
     params.set('page', String(currentPage));
@@ -330,7 +344,10 @@
     if (currentCategory !== 'all') params.set('category', currentCategory);
     if (currentSubcategory !== 'all') params.set('subcategory', currentSubcategory);
     var q = (els.searchInput && els.searchInput.value.trim()) || '';
-    if (q) params.set('q', q);
+    if (q) {
+      params.set('q', q);
+      params.set('limit', '100');
+    }
     return params.toString();
   }
 
@@ -360,6 +377,8 @@
 
   function writeStoreCache(pageData) {
     try {
+      var items = pageData && (pageData.items || pageData);
+      if (!Array.isArray(items) || !items.length) return;
       sessionStorage.setItem(storeCacheKey(), JSON.stringify({
         savedAt: Date.now(),
         stores: stores,
@@ -373,6 +392,8 @@
 
   function renderCachedStore(cached) {
     if (!cached || !cached.pageData) return false;
+    var cachedItems = cached.pageData.items || cached.pageData;
+    if (!Array.isArray(cachedItems) || !cachedItems.length) return false;
     stores = cached.stores || stores;
     currentPage = 1;
     products = [];
@@ -518,6 +539,20 @@
     });
   }
 
+  function departmentHasSubcategoryNav(name) {
+    if (window.DgStoreCategories && DgStoreCategories.departmentHasSubcategoryNav) {
+      return DgStoreCategories.departmentHasSubcategoryNav(name);
+    }
+    return name === 'Organic Foods' || name === 'Ayurvedic Medicines';
+  }
+
+  function subcategoriesForDepartment(name) {
+    if (window.DgStoreCategories && DgStoreCategories.STORE_SUBCATEGORIES) {
+      return DgStoreCategories.STORE_SUBCATEGORIES[name] || [];
+    }
+    return [];
+  }
+
   function storePathFor(department, subcategory) {
     if (window.DgStoreCategories && DgStoreCategories.storePathFor) {
       return DgStoreCategories.storePathFor(department, subcategory);
@@ -573,7 +608,7 @@
     } catch (_) { /* ignore */ }
     currentCategory = parsed.category || 'all';
     currentSubcategory = parsed.subcategory || 'all';
-    if (currentCategory !== 'Organic Foods') currentSubcategory = 'all';
+    if (!departmentHasSubcategoryNav(currentCategory)) currentSubcategory = 'all';
     if (!opts.skipRender) {
       renderDepartmentFilters();
       renderSubcategoryStrip();
@@ -584,7 +619,10 @@
   function setCategoryFilter(category, subcategory, opts) {
     opts = opts || {};
     currentCategory = category || 'all';
-    currentSubcategory = (currentCategory === 'Organic Foods' && subcategory) ? subcategory : 'all';
+    currentSubcategory = (departmentHasSubcategoryNav(currentCategory) && subcategory) ? subcategory : 'all';
+    if (els.searchInput && els.searchInput.value && !opts.keepSearch) {
+      els.searchInput.value = '';
+    }
     if (!opts.skipUrl) syncStoreUrl(!!opts.replaceUrl);
     renderDepartmentFilters();
     renderSubcategoryStrip();
@@ -602,10 +640,10 @@
     var html = '<a href="/store" class="filter-link' + (currentCategory === 'all' ? ' active' : '') +
       '" data-category="all"><span class="filter-label">All products</span></a>';
     depts.forEach(function (dept) {
-      var isOrganic = dept.name === 'Organic Foods';
+      var hasSubs = departmentHasSubcategoryNav(dept.name);
       var isActive = currentCategory === dept.name;
       var countHtml = dept.count ? '<span class="filter-count">(' + dept.count + ')</span>' : '';
-      if (isOrganic) {
+      if (hasSubs) {
         var open = isActive ? ' is-open' : '';
         html += '<div class="filter-group' + open + '" data-department="' + escapeHtml(dept.name) + '">';
         html += '<button type="button" class="filter-group-toggle' + (isActive ? ' active' : '') +
@@ -616,8 +654,13 @@
         html += '<a href="' + escapeHtml(dept.href || storePathFor(dept.name)) +
           '" class="filter-sublink' + (isActive && currentSubcategory === 'all' ? ' active' : '') +
           '" data-category="' + escapeHtml(dept.name) + '" data-subcategory="all">' +
-          '<span class="filter-label">All Organic Foods</span></a>';
-        (dept.subcategories || []).forEach(function (sub) {
+          '<span class="filter-label">All ' + escapeHtml(dept.name) + '</span></a>';
+        var deptSubs = (dept.subcategories && dept.subcategories.length)
+          ? dept.subcategories
+          : subcategoriesForDepartment(dept.name).map(function (name) {
+            return { name: name, count: 0, href: storePathFor(dept.name, name) };
+          });
+        deptSubs.forEach(function (sub) {
           html += '<a href="' + escapeHtml(sub.href || storePathFor(dept.name, sub.name)) +
             '" class="filter-sublink' + (currentSubcategory === sub.name ? ' active' : '') +
             '" data-category="' + escapeHtml(dept.name) + '" data-subcategory="' + escapeHtml(sub.name) + '">' +
@@ -638,25 +681,23 @@
 
   function renderSubcategoryStrip() {
     if (!els.subcategoryStripWrap || !els.subcategoryStrip) return;
-    var show = currentCategory === 'Organic Foods';
+    var show = departmentHasSubcategoryNav(currentCategory);
     els.subcategoryStripWrap.classList.toggle('is-visible', show);
     if (!show) {
       els.subcategoryStrip.innerHTML = '';
       return;
     }
-    var organic = (taxonomy && taxonomy.departments || []).find(function (d) {
-      return d.name === 'Organic Foods';
+    var deptTax = (taxonomy && taxonomy.departments || []).find(function (d) {
+      return d.name === currentCategory;
     });
-    var subs = (organic && organic.subcategories) || (
-      window.DgStoreCategories ? DgStoreCategories.ORGANIC_FOOD_SUBCATEGORIES.map(function (name) {
-        return { name: name, count: 0, href: storePathFor('Organic Foods', name) };
-      }) : []
-    );
+    var subs = (deptTax && deptTax.subcategories) || subcategoriesForDepartment(currentCategory).map(function (name) {
+      return { name: name, count: 0, href: storePathFor(currentCategory, name) };
+    });
     var html = '<button type="button" class="store-chip' + (currentSubcategory === 'all' ? ' active' : '') +
-      '" data-category="Organic Foods" data-subcategory="all">All</button>';
+      '" data-category="' + escapeHtml(currentCategory) + '" data-subcategory="all">All</button>';
     subs.forEach(function (sub) {
       html += '<button type="button" class="store-chip' + (currentSubcategory === sub.name ? ' active' : '') +
-        '" data-category="Organic Foods" data-subcategory="' + escapeHtml(sub.name) + '">' +
+        '" data-category="' + escapeHtml(currentCategory) + '" data-subcategory="' + escapeHtml(sub.name) + '">' +
         escapeHtml(sub.name) +
         (sub.count ? ' <span class="chip-count">(' + sub.count + ')</span>' : '') +
         '</button>';
@@ -912,7 +953,8 @@
       return;
     }
     products = products.concat(items);
-    if (currentPage === 1) sortProducts(products);
+    var searching = !!(els.searchInput && els.searchInput.value.trim());
+    if (currentPage === 1 && !searching) sortProducts(products);
     appendProducts(items);
     if (currentPage === 1) preloadProductImages(items);
     updateProductCount();
@@ -946,8 +988,7 @@
         appendLegacyPage();
         return;
       }
-      var fetchOpts = productsAbort ? { signal: productsAbort.signal } : {};
-      var res = await fetch('/api/medicines?' + apiQuery(), fetchOpts);
+      var res = await fetch('/api/medicines?' + apiQuery(), medicinesFetchOpts());
       if (!isCurrentProductsRequest(requestId)) return;
       if (!res.ok) throw new Error('fail');
       var data = await res.json();
@@ -965,6 +1006,11 @@
       if (isCurrentProductsRequest(requestId)) {
         loading = false;
         setLoadingState(false);
+        var searching = !!(els.searchInput && els.searchInput.value.trim());
+        if (searching && hasMore && products.length < totalProducts && products.length < 400) {
+          currentPage += 1;
+          fetchProductsPage();
+        }
       }
     }
   }
@@ -1084,7 +1130,7 @@
     try {
       var prevPage = currentPage;
       currentPage = 1;
-      var res = await fetch('/api/medicines?' + apiQuery());
+      var res = await fetch('/api/medicines?' + apiQuery(), medicinesFetchOpts());
       if (!isCurrentProductsRequest(requestId)) return;
       currentPage = prevPage;
       if (!res.ok) return;
@@ -1115,11 +1161,17 @@
 
   async function loadTaxonomy() {
     try {
+      var boot = await loadStoreBootstrap();
+      if (boot && boot.taxonomy) {
+        taxonomy = boot.taxonomy;
+        renderDepartmentFilters();
+        renderSubcategoryStrip();
+      }
       var res = await fetch('/api/store/taxonomy');
       if (!res.ok) throw new Error('taxonomy fail');
       taxonomy = await res.json();
     } catch (_) {
-      taxonomy = null;
+      if (!taxonomy) taxonomy = null;
     }
     renderDepartmentFilters();
     renderSubcategoryStrip();
@@ -1342,10 +1394,24 @@
       && !q;
   }
 
+  var bootstrapPromise = null;
   function loadStoreBootstrap() {
-    return fetch('/data/store-bootstrap.json', { cache: 'force-cache' })
-      .then(function (res) { return res.ok ? res.json() : null; })
-      .catch(function () { return null; });
+    if (!bootstrapPromise) {
+      bootstrapPromise = fetch('/data/store-bootstrap.json?v=store-fast-1', { cache: 'force-cache' })
+        .then(function (res) { return res.ok ? res.json() : null; })
+        .catch(function () { return null; });
+    }
+    return bootstrapPromise;
+  }
+
+  function bootstrapPageForCurrentView(bootstrap) {
+    if (!bootstrap) return null;
+    var q = (els.searchInput && els.searchInput.value.trim()) || '';
+    if (q || currentStoreFilter !== 'all') return null;
+    if (currentCategory === 'all' && currentSubcategory === 'all') {
+      return bootstrap.page1 && Array.isArray(bootstrap.page1.items) ? bootstrap.page1 : null;
+    }
+    return null;
   }
 
   function prefetchNextPage() {
@@ -1374,14 +1440,15 @@
       var renderedCached = renderCachedStore(readStoreCache());
       if (!renderedCached && els.productGrid) els.productGrid.innerHTML = '';
 
-      var fetchOpts = productsAbort ? { signal: productsAbort.signal } : {};
+      var fetchOpts = medicinesFetchOpts();
       var usedBootstrap = false;
 
-      // Instant first paint from static bootstrap (default unfiltered view only).
-      if (!renderedCached && isDefaultStoreView()) {
+      // Instant first paint from static bootstrap on the default store view.
+      if (!renderedCached) {
         var bootstrap = await loadStoreBootstrap();
         if (!isCurrentProductsRequest(requestId)) return;
-        if (bootstrap && bootstrap.page1 && Array.isArray(bootstrap.page1.items)) {
+        var bootPage = bootstrapPageForCurrentView(bootstrap);
+        if (bootPage && Array.isArray(bootPage.items) && bootPage.items.length) {
           if (bootstrap.summary) {
             stores = mapStoreSummary(bootstrap.summary);
             renderStoresStrip();
@@ -1391,7 +1458,7 @@
             renderDepartmentFilters();
             renderSubcategoryStrip();
           }
-          applyProductsPage(bootstrap.page1, { skipCacheWrite: true });
+          applyProductsPage(bootPage, { skipCacheWrite: true });
           usedBootstrap = true;
           scheduleSoftRefresh();
           prefetchNextPage();
@@ -1421,12 +1488,12 @@
 
       if (renderedCached) {
         scheduleSoftRefresh();
-        await summaryPromise;
+        summaryPromise.catch(function () {});
         return;
       }
 
       if (usedBootstrap) {
-        await summaryPromise;
+        summaryPromise.catch(function () {});
         return;
       }
 
@@ -1439,7 +1506,7 @@
       if (!isCurrentProductsRequest(requestId)) return;
       applyProductsPage(productsData);
       prefetchNextPage();
-      await summaryPromise;
+      await summaryPromise.catch(function () {});
     } catch (e) {
       if (e && e.name === 'AbortError') return;
       if (!isCurrentProductsRequest(requestId)) return;
@@ -1482,7 +1549,7 @@
     els.subcategoryStrip.addEventListener('click', function (e) {
       var chip = e.target.closest('[data-subcategory]');
       if (!chip) return;
-      setCategoryFilter(chip.dataset.category || 'Organic Foods', chip.dataset.subcategory || 'all');
+      setCategoryFilter(chip.dataset.category || currentCategory || 'Organic Foods', chip.dataset.subcategory || 'all');
     });
   }
 

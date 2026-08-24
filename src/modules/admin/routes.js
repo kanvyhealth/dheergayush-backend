@@ -645,7 +645,7 @@ module.exports = function register(app, deps) {
             const { warmCatalogCache } = require('../../core/firebase/catalog');
             const result = upsertMedicineAdmin(req.body || {});
             await upsertFirebaseMedicine(result.medicine);
-            warmCatalogCache().catch(() => {});
+            warmCatalogCache({ forceRebuild: true }).catch(() => {});
             res.status(result.created ? 201 : 200).json(result);
         } catch (err) {
             res.status(err.status || 500).json({ message: err.message });
@@ -661,7 +661,7 @@ module.exports = function register(app, deps) {
             const { warmCatalogCache } = require('../../core/firebase/catalog');
             const result = upsertMedicineAdmin({ ...(req.body || {}), _id: req.params.id });
             await upsertFirebaseMedicine(result.medicine);
-            warmCatalogCache().catch(() => {});
+            warmCatalogCache({ forceRebuild: true }).catch(() => {});
             res.json(result);
         } catch (err) {
             res.status(err.status || 500).json({ message: err.message });
@@ -678,7 +678,7 @@ module.exports = function register(app, deps) {
             const med = hideMedicineAdmin(req.params.id);
             if (!med) return res.status(404).json({ message: 'Medicine not found' });
             await upsertFirebaseMedicine(med);
-            warmCatalogCache().catch(() => {});
+            warmCatalogCache({ forceRebuild: true }).catch(() => {});
             res.json({ ok: true, medicine: med });
         } catch (err) {
             res.status(500).json({ message: err.message });
@@ -691,7 +691,7 @@ module.exports = function register(app, deps) {
             const { warmCatalogCache } = require('../../core/firebase/catalog');
             const stores = readStoresRaw();
             writeStoresRaw(stores);
-            await warmCatalogCache();
+            await warmCatalogCache({ forceRebuild: true });
             res.json({
                 ok: true,
                 path: CATALOG_PATH,

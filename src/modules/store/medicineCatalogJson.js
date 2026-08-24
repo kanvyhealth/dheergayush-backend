@@ -6,8 +6,6 @@ const fs = require('fs');
 const path = require('path');
 const { filterExcludedStores, isExcludedMedicine } = require('./excludedBrands');
 const { isValidAyurvedicProduct } = require('./excludedProducts');
-const { classifyStoreProduct, classifyStoreSubcategory } = require('./storeCategories');
-
 const CATALOG_PATH = path.join(__dirname, '..', '..', '..', 'public', 'data', 'medicine-catalog.json');
 
 let catalogMemo = {
@@ -25,15 +23,12 @@ function flattenCatalogStores(stores) {
       if (isExcludedMedicine({ ...med, storeName: storeBrand })) return;
       if (!isValidAyurvedicProduct(med)) return;
       const brand = String(med.brand || med.company || storeBrand || '').trim();
-      const classified = { ...med, storeName: storeBrand };
       medicines.push({
         ...med,
         company: brand,
         brand,
         storeName: storeBrand,
-        storeId: store._id,
-        category: classifyStoreProduct(classified),
-        subCategory: classifyStoreSubcategory(classified)
+        storeId: store._id
       });
     });
   });

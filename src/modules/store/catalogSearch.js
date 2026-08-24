@@ -128,26 +128,99 @@ function buildSearchIndex(medicines) {
   return { tokenToIds, size: list.length };
 }
 
+const SEARCH_TOKEN_ALIASES = {
+  triphala: ['thriphala', 'triphala'],
+  thriphala: ['triphala', 'thriphala'],
+  churna: ['choorna', 'churnam', 'choornam', 'chooran', 'churna'],
+  choorna: ['churna', 'churnam', 'choornam', 'chooran'],
+  churnam: ['churna', 'choorna', 'choornam'],
+  choornam: ['churna', 'choorna', 'churnam'],
+  ashwagandha: ['aswagandha', 'ashwagandha', 'aswagandha'],
+  aswagandha: ['ashwagandha', 'aswagandha'],
+  arishta: ['arishtam', 'arishta', 'aristham', 'arista'],
+  arishtam: ['arishta', 'arishtam', 'arista'],
+  asava: ['asavam', 'asav', 'asava'],
+  asavam: ['asava', 'asav'],
+  guggulu: ['guggul', 'guggulu'],
+  guggul: ['guggulu', 'guggul'],
+  taila: ['tailam', 'thailam', 'thaila', 'tail'],
+  tailam: ['taila', 'thailam', 'thaila'],
+  thailam: ['taila', 'tailam', 'thaila'],
+  ghrita: ['ghritam', 'ghritham', 'ghrit'],
+  ghritam: ['ghrita', 'ghritham', 'ghrit'],
+  vati: ['vatika', 'guti', 'gutika', 'gulika'],
+  kashayam: ['kashaya', 'kadha', 'kwath'],
+  kashaya: ['kashayam', 'kadha'],
+  kadha: ['kashayam', 'kashaya', 'kwath']
+};
+
+const PACK_QUERY_TOKENS = new Set([
+  'ml', 'gm', 'gms', 'g', 'kg', 'mg', 'l', 'ltr', 'litre', 'liter',
+  'nos', 'no', 'tab', 'tabs', 'tablet', 'tablets', 'cap', 'caps',
+  'capsule', 'capsules', 'pack', 'packs', 'strip', 'strips',
+  'bottle', 'bottles', 'unit', 'units'
+]);
+
+function expandSearchTokens(tokens) {
+  const out = new Set();
+  (tokens || []).forEach((token) => {
+    const t = String(token || '').trim();
+    if (!t) return;
+    out.add(t);
+    const aliases = SEARCH_TOKEN_ALIASES[t];
+    if (aliases) aliases.forEach((alias) => out.add(alias));
+  });
+  return [...out];
+}
+
+function meaningfulQueryTokens(query) {
+  return normalizeText(query)
+    .split(' ')
+    .filter((t) => t.length >= 2 && !PACK_QUERY_TOKENS.has(t) && !/^\d+$/.test(t));
+}
+
+function lookupTokenBucket(index, token) {
+  let bucket = index.tokenToIds.get(token);
+  if (bucket && bucket.size) return bucket;
+  if (token.length >= 3) {
+    bucket = index.tokenToIds.get(token.slice(0, Math.min(token.length, 8)));
+  }
+  return bucket && bucket.size ? bucket : null;
+}
+
+const GENERIC_FORM_TOKENS = new Set([
+  'churna', 'choorna', 'churnam', 'choornam', 'chooran',
+  'tablet', 'tablets', 'capsule', 'capsules', 'syrup',
+  'vati', 'gutika', 'guti', 'oil', 'taila', 'tailam', 'thailam'
+]);
+
 function candidateIdsFromIndex(index, query) {
   if (!index || !index.tokenToIds) return null;
-  const q = normalizeText(query);
-  const queryTokens = q.split(' ').filter((t) => t.length >= 2);
+  const tokens = meaningfulQueryTokens(query);
+  const productTokens = tokens.filter((t) => !GENERIC_FORM_TOKENS.has(t));
+  const queryTokens = expandSearchTokens(productTokens.length ? productTokens : tokens);
   if (!queryTokens.length) return null;
 
-  let intersection = null;
-  for (const token of queryTokens) {
-    let bucket = index.tokenToIds.get(token);
-    if (!bucket || !bucket.size) {
-      if (token.length >= 3) {
-        bucket = index.tokenToIds.get(token.slice(0, Math.min(token.length, 8)));
-      }
-      if (!bucket || !bucket.size) return new Set();
-    }
-    intersection = intersection
-      ? new Set([...intersection].filter((id) => bucket.has(id)))
-      : new Set(bucket);
-  }
-  return intersection || new Set();
+  const union = new Set();
+  queryTokens.forEach((token) => {
+    const bucket = lookupTokenBucket(index, token);
+    if (bucket) bucket.forEach((id) => union.add(id));
+  });
+  return union;
+}
+
+function nameContainsQuery(medicine, query) {
+  const q = normalizeText(query);
+  if (!q) return false;
+  const name = normalizeText(medicine && medicine.name);
+  const brand = normalizeText((medicine && (medicine.company || medicine.brand || medicine.storeName)) || '');
+  if (name.includes(q) || brand.includes(q)) return true;
+  const tokens = meaningfulQueryTokens(query);
+  if (!tokens.length) return false;
+  return tokens.every((token) => {
+    const aliases = expandSearchTokens([token]);
+    return aliases.some((alias) => name.includes(alias) || brand.includes(alias));
+  });
 }
 
 function searchMedicines(medicines, query, options = {}) {
@@ -157,19 +230,40 @@ function searchMedicines(medicines, query, options = {}) {
 
   if (!q) return list.slice();
 
-  let pool = list;
+  const byId = new Map();
+  const add = (medicine) => {
+    const id = String((medicine && (medicine._id || medicine.id)) || '');
+    if (id) byId.set(id, medicine);
+    else byId.set(`row-${byId.size}`, medicine);
+  };
+
   if (q.length >= 2 && options.index) {
     const candidateIds = candidateIdsFromIndex(options.index, q);
     if (candidateIds && candidateIds.size > 0) {
-      const narrowed = list.filter((m) => candidateIds.has(String(m._id || m.id || '')));
-      if (narrowed.length) pool = narrowed;
+      list.forEach((m) => {
+        if (candidateIds.has(String(m._id || m.id || ''))) add(m);
+      });
     }
   }
+  list.forEach((m) => {
+    if (nameContainsQuery(m, q)) add(m);
+  });
+
+  const pool = byId.size ? [...byId.values()] : list;
 
   return pool
-    .map((medicine) => ({ medicine, score: scoreMedicine(medicine, q) }))
+    .map((medicine) => ({
+      medicine,
+      score: nameContainsQuery(medicine, q) ? Math.max(0.96, scoreMedicine(medicine, q)) : scoreMedicine(medicine, q)
+    }))
     .filter((row) => row.score >= minScore)
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      const nameCmp = String(a.medicine.name || '').localeCompare(String(b.medicine.name || ''));
+      if (nameCmp) return nameCmp;
+      return String(a.medicine.company || a.medicine.brand || '')
+        .localeCompare(String(b.medicine.company || b.medicine.brand || ''));
+    })
     .map((row) => row.medicine);
 }
 
