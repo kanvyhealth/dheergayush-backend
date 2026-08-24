@@ -31,11 +31,20 @@ function revokeAdminToken(token) {
   if (token) activeTokens.delete(token);
 }
 
-function requireAdmin(req, res, next) {
+function readAdminToken(req) {
   const auth = req.headers.authorization || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : (req.headers['x-admin-token'] || '').trim();
+  return auth.startsWith('Bearer ') ? auth.slice(7).trim() : (req.headers['x-admin-token'] || '').trim();
+}
+
+function isAdminTokenValid(token) {
+  pruneExpired();
   const exp = activeTokens.get(token);
-  if (!token || !exp || Date.now() > exp) {
+  return !!(token && exp && Date.now() <= exp);
+}
+
+function requireAdmin(req, res, next) {
+  const token = readAdminToken(req);
+  if (!isAdminTokenValid(token)) {
     return res.status(401).json({ message: 'Admin authentication required' });
   }
   req.adminToken = token;
@@ -46,5 +55,7 @@ module.exports = {
   validateCredentials,
   issueAdminToken,
   revokeAdminToken,
-  requireAdmin
+  requireAdmin,
+  isAdminTokenValid,
+  readAdminToken
 };

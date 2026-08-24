@@ -501,6 +501,11 @@ module.exports = function register(app, deps) {
         }
     });
     
+    app.get('/api/admin/session', (req, res) => {
+        const { isAdminTokenValid, readAdminToken } = require('./adminAuth');
+        return res.json({ ok: isAdminTokenValid(readAdminToken(req)) });
+    });
+
     app.post('/api/admin/login', authLimiter, (req, res) => {
         const username = (req.body.username || req.body.email || '').trim();
         const password = req.body.password || '';
@@ -511,14 +516,25 @@ module.exports = function register(app, deps) {
             ip: clientIp(req),
             ua: req.get('user-agent') || ''
         });
+        const otpRequired = String(process.env.ADMIN_REQUIRE_OTP_PROVIDERS || '').toLowerCase() === 'true';
         sendAdminOtp(challenge.otp)
             .then((delivery) => {
                 if (!delivery.ok) {
                     dropAdminOtpChallenge(challenge.challengeId);
-                    return res.status(503).json({
-                        ok: false,
-                        message: 'Admin OTP delivery is not configured. Configure email and SMS OTP providers, then try again.',
-                        delivery
+                    if (otpRequired) {
+                        return res.status(503).json({
+                            ok: false,
+                            message: 'Admin OTP delivery is not configured. Configure email and SMS OTP providers, then try again.',
+                            delivery
+                        });
+                    }
+                    const token = issueAdminToken();
+                    console.warn('Admin OTP delivery unavailable; signed in with password only.');
+                    return res.json({
+                        ok: true,
+                        mfaRequired: false,
+                        token,
+                        message: 'Signed in. Configure email/SMS OTP on the server to require a second factor.'
                     });
                 }
                 const payload = {
@@ -540,10 +556,20 @@ module.exports = function register(app, deps) {
             })
             .catch((err) => {
                 dropAdminOtpChallenge(challenge.challengeId);
-                return res.status(503).json({
-                    ok: false,
-                    message: 'Could not send admin OTP. Please try again later.',
-                    error: err.message
+                if (otpRequired) {
+                    return res.status(503).json({
+                        ok: false,
+                        message: 'Could not send admin OTP. Please try again later.',
+                        error: err.message
+                    });
+                }
+                const token = issueAdminToken();
+                console.warn('Admin OTP send failed; signed in with password only:', err.message);
+                return res.json({
+                    ok: true,
+                    mfaRequired: false,
+                    token,
+                    message: 'Signed in. Configure email/SMS OTP on the server to require a second factor.'
                 });
             });
     });

@@ -162,8 +162,10 @@ async function main() {
     });
     if (r.ok && r.body.mfaRequired === true && r.body.challengeId && !r.body.token) {
       pass('Admin login requires OTP before token');
+    } else if (r.ok && r.body.token && r.body.mfaRequired === false) {
+      pass('Admin login falls back to password when OTP cannot be delivered');
     } else if (r.status === 503 && !r.body.token) {
-      pass('Admin login blocks access when OTP delivery is unavailable', r.body.message || '503');
+      pass('Admin login blocks access when OTP delivery is required', r.body.message || '503');
     } else if (r.status === 401) {
       pass('Admin login rejects invalid configured credentials');
     } else {

@@ -349,6 +349,7 @@ app.use((req, res, next) => {
   if (p === '/api/admin/login/verify' && req.method === 'POST') return next();
   if (p === '/api/admin/login/resend' && req.method === 'POST') return next();
   if (p === '/api/admin/logout' && req.method === 'POST') return next();
+  if (p === '/api/admin/session' && req.method === 'GET') return next();
   if (p.startsWith('/api/admin/')) return requireAdmin(req, res, next);
   if (p === '/api/doctors/debug') return requireAdmin(req, res, next);
   if ((p === '/api/orders' && req.method === 'GET') ||

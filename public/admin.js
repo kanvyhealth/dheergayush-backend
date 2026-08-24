@@ -2041,6 +2041,11 @@ if (adminLoginForm) {
                 body: JSON.stringify({ username, password })
             });
             const data = await res.json();
+            if (res.ok && data.token && !data.mfaRequired) {
+                DgApi.setAdminToken(data.token);
+                showDashboard();
+                return;
+            }
             if (res.ok && data.mfaRequired && data.challengeId) {
                 showAdminOtpStep(data);
             } else {
@@ -2133,11 +2138,23 @@ async function initAdminPage() {
     if (window.DgApi) {
         await DgApi.bootstrapApp({ skipOnLocalhost: false });
     }
-    if (isAdminLoggedIn()) {
-        showDashboard();
-    } else {
-        showLogin();
+    var token = window.DgApi && DgApi.getAdminToken();
+    if (token) {
+        try {
+            var sessionRes = await fetch('/api/admin/session', {
+                headers: { Authorization: 'Bearer ' + token }
+            });
+            var session = await sessionRes.json();
+            if (session && session.ok) {
+                showDashboard();
+                refreshFirebaseStatus();
+                setupAdminRealtime();
+                return;
+            }
+        } catch (_) { /* treat as logged out */ }
+        DgApi.setAdminToken('');
     }
+    showLogin();
     refreshFirebaseStatus();
     setupAdminRealtime();
 }
