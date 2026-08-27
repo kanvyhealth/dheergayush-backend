@@ -2088,6 +2088,7 @@ app.use(express.static(path.join(ROOT_DIR, 'public')));
   require('./modules/prescriptions/routes')(app, deps);
   require('./modules/consultations/routes')(app, deps);
   require('./modules/admin/routes')(app, deps);
+  require('./modules/analytics/routes')(app);
   require('./modules/account/routes')(app, deps);
   require('./modules/pages/routes')(app, deps);
 

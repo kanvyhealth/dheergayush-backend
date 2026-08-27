@@ -55,6 +55,53 @@ header h1 {
     margin: 0;
 }
 
+.admin-visit-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.admin-visit-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+}
+
+.admin-visit-card h3 {
+    margin: 0 0 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #666;
+}
+
+.admin-visit-card .num {
+    margin: 0;
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1.2;
+}
+
+.admin-visit-card .hint {
+    margin: 6px 0 0;
+    font-size: 0.78rem;
+    color: #888;
+}
+
+@media (max-width: 900px) {
+    .admin-visit-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+    .admin-visit-strip {
+        grid-template-columns: 1fr;
+    }
+}
+
 .user-info {
     display: flex;
     align-items: center;

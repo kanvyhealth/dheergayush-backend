@@ -50,7 +50,31 @@
             </div>
         </header>
 
+        <div class="admin-visit-strip" id="adminVisitStrip" aria-live="polite">
+            <div class="admin-visit-card">
+                <h3>Unique visitors today</h3>
+                <p class="num" id="statUniqueToday">—</p>
+                <p class="hint">India calendar day</p>
+            </div>
+            <div class="admin-visit-card">
+                <h3>Page views today</h3>
+                <p class="num" id="statViewsToday">—</p>
+                <p class="hint">Public pages opened</p>
+            </div>
+            <div class="admin-visit-card">
+                <h3>Registered patients</h3>
+                <p class="num" id="statPatients">—</p>
+                <p class="hint">Members in Firestore</p>
+            </div>
+            <div class="admin-visit-card">
+                <h3>Approved doctors</h3>
+                <p class="num" id="statDoctors">—</p>
+                <p class="hint" id="statDoctorsHint">On the platform</p>
+            </div>
+        </div>
+
         <nav class="tab-navigation">
+            <button class="tab-btn" data-tab="visitors">Visitors</button>
             <button class="tab-btn active" data-tab="doctors">Doctors</button>
             <button class="tab-btn" data-tab="patients">Patients</button>
             <button class="tab-btn" data-tab="payments">Payments</button>
@@ -62,6 +86,28 @@
         </nav>
 
         <main>
+            <section id="visitors" class="tab-content">
+                <div class="section-header">
+                    <h2>Website visitors</h2>
+                    <div class="filter-buttons">
+                        <button type="button" class="filter-btn" onclick="loadSiteStats()">Refresh</button>
+                    </div>
+                </div>
+                <p class="section-subtitle">Unique visitors are counted once per browser per day (Asia/Kolkata). Page views count each public page load. Admin pages are not counted.</p>
+                <div class="table-container">
+                    <table id="visitorsTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Unique visitors</th>
+                                <th>Page views</th>
+                            </tr>
+                        </thead>
+                        <tbody id="visitorsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
             <!-- Doctors Tab -->
             <section id="doctors" class="tab-content active">
                 <div class="section-header">
@@ -427,7 +473,7 @@
     <script src="js/doctor/dg-doctor-status.js"></script>
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
     <script src="js/shared/dg-realtime.js"></script>
-    <script src="admin.js?v=admin-login-1"></script>
+    <script src="admin.js?v=admin-visits-1"></script>
     <script src="js/shared/dg-responsive-nav.js"></script>
 </body>
 </html> 

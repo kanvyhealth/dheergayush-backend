@@ -67,6 +67,10 @@ tabButtons.forEach(button => {
 // Load data for each tab
 async function loadTabData(tabName) {
     try {
+        if (tabName === 'visitors') {
+            await loadSiteStats();
+            return;
+        }
         if (tabName === 'payments') {
             await loadPaymentsWithFiltering();
             return;
@@ -1380,6 +1384,65 @@ async function updateDeletionRequest(id, status) {
 }
 
 window.loadDeletionRequests = loadDeletionRequests;
+
+function formatStatNumber(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return '0';
+    return n.toLocaleString('en-IN');
+}
+
+function formatStatDate(key) {
+    const parts = String(key || '').split('-');
+    if (parts.length !== 3) return key || '—';
+    const dt = new Date(Date.UTC(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])));
+    return dt.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+}
+
+async function loadSiteStats() {
+    const uniqueEl = document.getElementById('statUniqueToday');
+    const viewsEl = document.getElementById('statViewsToday');
+    const patientsEl = document.getElementById('statPatients');
+    const doctorsEl = document.getElementById('statDoctors');
+    const doctorsHint = document.getElementById('statDoctorsHint');
+    const tbody = document.getElementById('visitorsTableBody');
+    try {
+        const response = await DgApi.apiFetch('/api/admin/site-stats?days=14');
+        if (!response.ok) throw new Error('Failed to load visitor stats');
+        const data = await response.json();
+        const today = data.today || {};
+        const members = data.members || {};
+        if (uniqueEl) uniqueEl.textContent = formatStatNumber(today.uniqueVisitors);
+        if (viewsEl) viewsEl.textContent = formatStatNumber(today.pageViews);
+        if (patientsEl) patientsEl.textContent = formatStatNumber(members.patients);
+        if (doctorsEl) doctorsEl.textContent = formatStatNumber(members.approvedDoctors);
+        if (doctorsHint) {
+            doctorsHint.textContent = members.doctors
+                ? formatStatNumber(members.doctors) + ' total registered'
+                : 'On the platform';
+        }
+        if (tbody) {
+            const rows = Array.isArray(data.days) ? data.days.slice().reverse() : [];
+            if (!rows.length) {
+                tbody.innerHTML = '<tr><td colspan="3">No visitor data yet. Counts start after public pages are opened.</td></tr>';
+            } else {
+                tbody.innerHTML = rows.map(function (row) {
+                    return '<tr>' +
+                        '<td>' + escapeAdminHtml(formatStatDate(row.date)) + '</td>' +
+                        '<td>' + formatStatNumber(row.uniqueVisitors) + '</td>' +
+                        '<td>' + formatStatNumber(row.pageViews) + '</td>' +
+                        '</tr>';
+                }).join('');
+            }
+        }
+    } catch (error) {
+        if (uniqueEl) uniqueEl.textContent = '—';
+        if (viewsEl) viewsEl.textContent = '—';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="3">Could not load visitor stats.</td></tr>';
+        console.error('loadSiteStats failed:', error);
+    }
+}
+
+window.loadSiteStats = loadSiteStats;
 window.updateDeletionRequest = updateDeletionRequest;
 
 function adminOrderInvoice(orderId) {
@@ -1888,6 +1951,7 @@ function showDashboard() {
     const activeTab = document.querySelector('.tab-btn.active');
     const tabName = activeTab ? activeTab.dataset.tab : 'doctors';
     loadTabData(tabName);
+    loadSiteStats();
     refreshFirebaseStatus();
 }
 

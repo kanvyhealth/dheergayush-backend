@@ -506,6 +506,17 @@ module.exports = function register(app, deps) {
         return res.json({ ok: isAdminTokenValid(readAdminToken(req)) });
     });
 
+    app.get('/api/admin/site-stats', async (req, res) => {
+        try {
+            const { getSiteStats } = require('../analytics/siteVisits');
+            const stats = await getSiteStats({ days: req.query.days });
+            res.setHeader('Cache-Control', 'no-store');
+            res.json(stats);
+        } catch (err) {
+            res.status(500).json({ message: err.message || 'Failed to load site stats' });
+        }
+    });
+
     app.post('/api/admin/login', authLimiter, (req, res) => {
         const username = (req.body.username || req.body.email || '').trim();
         const password = req.body.password || '';

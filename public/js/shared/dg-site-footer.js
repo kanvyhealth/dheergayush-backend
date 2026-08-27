@@ -99,10 +99,19 @@
     document.body.appendChild(s);
   }
 
+  function loadVisitScript() {
+    if (document.querySelector('script[src*="dg-site-visits.js"]')) return;
+    var s = document.createElement('script');
+    s.src = '/js/shared/dg-site-visits.js';
+    s.defer = true;
+    document.body.appendChild(s);
+  }
+
   function init() {
     mountFooter();
     loadFabScript();
     loadScrollScript();
+    loadVisitScript();
   }
 
   if (document.readyState === 'loading') {
